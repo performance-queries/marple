@@ -1,8 +1,9 @@
 grammar Sql;
 query   : SELECT (predicate)
-        | PROJECT
+        | PACKETLOG
 SELECT : 'SELECT';
 GROUP  : 'GROUP';
 BY     : 'BY';
 PROJECT: 'PROJECT';
 AS     : 'AS';
+PACKETLOG : 'T';
