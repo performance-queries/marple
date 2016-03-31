@@ -1,4 +1,5 @@
 grammar Sql;
+prog : (query NEWLINE)+;
 query   : SELECT predicate query
         | PACKETLOG ;
 SELECT : 'SELECT' ;
@@ -12,6 +13,7 @@ predicate : field '=' VALUE
 field : 'srcip'
       | 'dstip' ;
 VALUE : [0-9]+ ;
+NEWLINE : [\r\n]+ ;
 // GROUP  : 'GROUP';
 // BY     : 'BY';
 // PROJECT: 'PROJECT';
