@@ -1,9 +1,8 @@
 grammar Sql;
 prog : (query)+;
 query   : SELECT predicate query
+        | PROJECT field_list query
         | PACKETLOG ;
-SELECT : 'SELECT' ;
-PACKETLOG : 'T' ;
 predicate : field '=' VALUE
           | field '>' VALUE
           | field '<' VALUE
@@ -12,9 +11,19 @@ predicate : field '=' VALUE
           | 'NOT' predicate ;
 field : 'srcip'
       | 'dstip' ;
+
+field_with_comma : ',' field;
+
+field_list : '[' field ']'
+           | '[' field field_with_comma+ ']';
+
+// Identifiers 
 VALUE : [0-9]+ ;
 WS: [ \n\t\r]+ -> skip;
-// GROUP  : 'GROUP';
-// BY     : 'BY';
-// PROJECT: 'PROJECT';
-// AS     : 'AS';
+
+// Keywords
+SELECT : 'SELECT' ;
+PROJECT : 'PROJECT' ;
+GROUPBY : 'GROUPBY' ;
+AS     : 'AS';
+PACKETLOG : 'T' ;
