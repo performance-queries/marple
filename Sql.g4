@@ -1,3 +1,5 @@
+// TODO: parentheses, rewrite fields, actions for each rule
+
 grammar Sql;
 
 // Main production rule for queries
