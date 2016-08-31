@@ -1,9 +1,7 @@
-// TODO: parentheses, rewrite fields, actions for each rule
-
 grammar Sql;
 
 // Main production rule for queries
-prog : (ID '=' query)+;
+prog : (ID '=' query ';')+;
 query : SELECT predicate (ID | PACKETLOG)
       | PROJECT field_list (ID | PACKETLOG)
       | GROUPBY field_list ',' agg_fun field_list AS field_list (ID | PACKETLOG)
