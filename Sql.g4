@@ -3,11 +3,11 @@
 grammar Sql;
 
 // Main production rule for queries
-prog : (query)+;
-query   : SELECT predicate query
-        | PROJECT field_list query
-        | GROUPBY field_list ',' agg_fun field_list AS field_list query
-        | PACKETLOG ;
+prog : (ID '=' query)+;
+query : SELECT predicate (ID | PACKETLOG)
+      | PROJECT field_list (ID | PACKETLOG)
+      | GROUPBY field_list ',' agg_fun field_list AS field_list (ID | PACKETLOG)
+      | (ID | PACKETLOG) JOIN (ID | PACKETLOG);
 
 // Predicates or filters
 predicate : field '=' VALUE
@@ -57,9 +57,10 @@ VALUE : [0-9]+ ;
 WS : [ \n\t\r]+ -> skip;
 
 // Keywords
-SELECT : 'SELECT' ;
-PROJECT : 'PROJECT' ;
-GROUPBY : 'GROUPBY' ;
+SELECT : 'SELECT';
+PROJECT : 'PROJECT';
+GROUPBY : 'GROUPBY';
+JOIN   : 'JOIN';
 AS     : 'AS';
 IF     : 'IF';
 THEN   : 'THEN';
