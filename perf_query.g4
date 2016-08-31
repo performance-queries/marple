@@ -14,6 +14,7 @@ THEN   : 'THEN' | 'then';
 ELSE   : 'ELSE' | 'else';
 DEF    : 'def';
 PKTLOG : 'T' ;
+EMIT   : 'emit';
 
 // Fields
 field : 'srcip'
@@ -74,7 +75,8 @@ predicate : expr '==' expr
 // Aggregation functions for group by
 stmt : ID '=' expr
      | ';'
-     | IF predicate THEN stmt (ELSE stmt)?;
+     | EMIT
+     | IF predicate THEN stmt+ (ELSE stmt+)?;
 
 agg_fun : DEF ID '(' id_list ',' field_list ')' ':' stmt+;
 
