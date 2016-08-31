@@ -2,3 +2,6 @@
 2. End-to-end aggregate for e2e latency.
 3. Member operator, i.e., handling the dot in 'pkt.x'
 4. Precedence order in evaluation
+5. use ID and fields in SELECT operations.
+6. Support SELECT 2 * srcport AS twiceport
+7. Flattening nested queries: punt on this for now. Automate later. 
