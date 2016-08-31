@@ -5,34 +5,21 @@ ID : [a-z]+;
 VALUE : [0-9]+ ;
 WS : [ \n\t\r]+ -> skip;
 
+// Id list
+id_with_comma : ',' ID;
+id_list : '[' ID ']'
+        | '[' ID id_with_comma+ ']';
+
 // Keywords
-SELECT : 'SELECT';
-WHERE : 'WHERE';
-FROM : 'FROM';
-GROUPBY : 'GROUPBY';
-JOIN   : 'JOIN';
-AS     : 'AS';
-IF     : 'IF';
-THEN   : 'THEN';
-ELSE   : 'ELSE';
+SELECT : 'SELECT' | 'select' ;
+WHERE : 'WHERE' | 'where' ;
+FROM : 'FROM' | 'from' ;
+GROUPBY : 'GROUPBY' | 'groupby';
+JOIN   : 'JOIN' | 'join';
+IF     : 'IF' | 'if';
+THEN   : 'THEN' | 'then';
+ELSE   : 'ELSE' | 'else';
 PKTLOG : 'T' ;
-
-// Predicates or filters
-predicate : field '=' VALUE
-          | field '>' VALUE
-          | field '<' VALUE
-          | predicate 'AND' predicate
-          | predicate  'OR' predicate
-          | 'NOT' predicate ;
-
-// Expressions
-expr : ID
-     | VALUE
-     | field
-     | expr '+' expr
-     | expr '-' expr
-     | expr '*' expr
-     | expr '/' expr;
 
 // Fields
 field : 'srcip'
@@ -54,10 +41,22 @@ field_with_comma : ',' field;
 field_list : '[' field ']'
            | '[' field field_with_comma+ ']';
 
-// Id list
-id_with_comma : ',' ID;
-id_list : '[' ID ']'
-        | '[' ID id_with_comma+ ']';
+// Expressions
+expr : ID
+     | VALUE
+     | field
+     | expr '+' expr
+     | expr '-' expr
+     | expr '*' expr
+     | expr '/' expr;
+
+// Predicates or filters
+predicate : expr '=' VALUE
+          | expr '>' VALUE
+          | expr '<' VALUE
+          | predicate 'AND' predicate
+          | predicate  'OR' predicate
+          | 'NOT' predicate ;
 
 // Aggregation functions for group by
 stmt : ID '=' expr
@@ -67,7 +66,7 @@ code : stmt
 agg_fun : 'def' ID '(' id_list ',' field_list ')' ':' code;
 
 // Main production rule for queries
-prog : (agg_fun)+ (ID '=' query ';')+;
+prog : (agg_fun)* (ID '=' query ';')+;
 query : SELECT (field_list | '*') FROM (ID | PKTLOG) (WHERE predicate)?
       | SELECT ID GROUPBY field_list FROM (ID | PKTLOG)
       | (ID | PKTLOG) JOIN (ID | PKTLOG);
