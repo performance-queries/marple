@@ -12,6 +12,7 @@ JOIN   : 'JOIN' | 'join';
 IF     : 'IF' | 'if';
 THEN   : 'THEN' | 'then';
 ELSE   : 'ELSE' | 'else';
+DEF    : 'def';
 PKTLOG : 'T' ;
 
 // Fields
@@ -22,6 +23,8 @@ field : 'srcip'
       | 'proto'
       | 'pkt_path'
       | 'pkt_len'
+      | 'payload_len'
+      | 'tcpseq'
       | 'qid'
       | 'tin'
       | 'tout'
@@ -43,6 +46,11 @@ id_with_comma : ',' ID;
 id_list : '[' ID ']'
         | '[' ID id_with_comma+ ']';
 
+// Field or Id list
+fid_with_comma : ',' (ID | field);
+fid_list : '[' (ID | field) ']'
+         | '[' (ID | field) fid_with_comma+ ']';
+
 // Expressions
 expr : ID
      | VALUE
@@ -54,22 +62,24 @@ expr : ID
      | '(' expr ')';
 
 // Predicates or filters
-predicate : expr '=' VALUE
-          | expr '>' VALUE
-          | expr '<' VALUE
-          | predicate 'AND' predicate
-          | predicate  'OR' predicate
-          | 'NOT' predicate ;
+predicate : expr '==' expr
+          | expr '>' expr
+          | expr '<' expr
+          | expr '!=' expr
+          | predicate '&&' predicate
+          | predicate '||' predicate
+          | '(' predicate ')'
+          | '!' predicate ;
 
 // Aggregation functions for group by
 stmt : ID '=' expr
-     | stmt ';' stmt;
-code : stmt
-     | IF predicate THEN code ELSE code;
-agg_fun : 'def' ID '(' id_list ',' field_list ')' ':' code;
+     | ';'
+     | IF predicate THEN stmt (ELSE stmt)?;
+
+agg_fun : DEF ID '(' id_list ',' field_list ')' ':' stmt+;
 
 // Main production rule for queries
 prog : (agg_fun)* (ID '=' query ';')+;
 query : SELECT (field_list | '*') FROM (ID | PKTLOG) (WHERE predicate)?
-      | SELECT ID GROUPBY field_list FROM (ID | PKTLOG)
+      | SELECT fid_list GROUPBY field_list FROM (ID | PKTLOG) (WHERE predicate)?
       | (ID | PKTLOG) JOIN (ID | PKTLOG);
