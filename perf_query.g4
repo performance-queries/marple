@@ -48,7 +48,8 @@ expr : ID
      | expr '+' expr
      | expr '-' expr
      | expr '*' expr
-     | expr '/' expr;
+     | expr '/' expr
+     | '(' expr ')';
 
 // Predicates or filters
 predicate : expr '=' VALUE
