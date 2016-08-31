@@ -1,14 +1,7 @@
 grammar perf_query;
 
-// Identifiers, i.e., stuff that goes into the lexer
-ID : [a-z]+;
-VALUE : [0-9]+ ;
+// Skip whitespace
 WS : [ \n\t\r]+ -> skip;
-
-// Id list
-id_with_comma : ',' ID;
-id_list : '[' ID ']'
-        | '[' ID id_with_comma+ ']';
 
 // Keywords
 SELECT : 'SELECT' | 'select' ;
@@ -40,6 +33,15 @@ field : 'srcip'
 field_with_comma : ',' field;
 field_list : '[' field ']'
            | '[' field field_with_comma+ ']';
+
+// Identifiers
+ID : ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
+VALUE : [0-9]+ ;
+
+// Id list
+id_with_comma : ',' ID;
+id_list : '[' ID ']'
+        | '[' ID id_with_comma+ ']';
 
 // Expressions
 expr : ID
