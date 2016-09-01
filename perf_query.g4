@@ -84,7 +84,7 @@ predicate : expr '==' expr
 stmt : ID '=' expr
      | ';'
      | EMIT
-     | IF predicate THEN stmt+ (ELSE stmt+)?;
+     | IF predicate THEN '{' stmt+ '}' (ELSE '{' stmt+ '}' )?;
 
 agg_fun : DEF ID '(' column_list ',' column_list ')' ':' stmt+;
 
