@@ -9,6 +9,7 @@ WHERE : 'WHERE' | 'where' ;
 FROM : 'FROM' | 'from' ;
 GROUPBY : 'GROUPBY' | 'groupby';
 JOIN   : 'JOIN' | 'join';
+AS     : 'AS' | 'as';
 IF     : 'IF' | 'if';
 THEN   : 'THEN' | 'then';
 ELSE   : 'ELSE' | 'else';
@@ -62,6 +63,12 @@ expr : ID
      | expr '/' expr
      | '(' expr ')';
 
+// Expression list
+expr_with_comma : ',' expr;
+expr_list : '[' expr ']'
+          | '[' expr expr_with_comma+ ']';
+
+
 // Predicates or filters
 predicate : expr '==' expr
           | expr '>' expr
@@ -83,5 +90,6 @@ agg_fun : DEF ID '(' id_list ',' field_list ')' ':' stmt+;
 // Main production rule for queries
 prog : (agg_fun)* (ID '=' query ';')+;
 query : SELECT (field_list | '*') FROM (ID | PKTLOG) (WHERE predicate)?
+      | SELECT expr_list FROM (ID | PKTLOG) AS fid_list
       | SELECT fid_list GROUPBY field_list FROM (ID | PKTLOG) (WHERE predicate)?
       | (ID | PKTLOG) JOIN (ID | PKTLOG);
