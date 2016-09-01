@@ -26,6 +26,7 @@ VALUE : [0-9]+;
 // column names and stream names
 stream : ID;
 column : ID;
+agg_func : ID;
 
 // Column list
 column_with_comma : ',' column;
@@ -35,7 +36,7 @@ column_list : '[' column ']'
             | '[' column column_with_comma+ ']';
 
 // Expressions
-expr : ID
+expr : column
      | VALUE
      | INFINITY
      | expr '+' expr
@@ -63,16 +64,16 @@ predicate : expr '==' expr
           | FALSE;
 
 // Aggregation functions for group by
-stmt : ID '=' expr
+stmt : column '=' expr
      | ';'
      | EMIT
      | IF predicate THEN '{' stmt+ '}' (ELSE '{' stmt+ '}' )?;
 
-agg_fun : DEF ID '(' column_list ',' column_list ')' ':' stmt+;
+agg_fun : DEF agg_func '(' column_list ',' column_list ')' ':' stmt+;
 
 // Main production rule for queries
-prog : (agg_fun)* (ID '=' query ';')+;
+prog : (agg_fun)* (stream '=' query ';')+;
 query : SELECT '*' FROM stream WHERE predicate
       | SELECT expr_list FROM stream AS column_list
-      | SELECT ID FROM stream GROUPBY column_list
+      | SELECT agg_func FROM stream GROUPBY column_list
       | stream JOIN stream;
