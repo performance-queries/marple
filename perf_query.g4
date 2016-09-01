@@ -40,8 +40,8 @@ field_list : '[' field ']'
 ID : ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
 VALUE : [0-9]+;
 
-// column names and table names
-table : PKTLOG | ID;
+// column names and stream names
+stream : PKTLOG | ID;
 column : field | ID;
 
 // Column list
@@ -90,7 +90,7 @@ agg_fun : DEF ID '(' column_list ',' column_list ')' ':' stmt+;
 
 // Main production rule for queries
 prog : (agg_fun)* (ID '=' query ';')+;
-query : SELECT '*' FROM table WHERE predicate
-      | SELECT expr_list FROM table AS column_list
-      | SELECT ID FROM table GROUPBY column_list
-      | table JOIN table;
+query : SELECT '*' FROM stream WHERE predicate
+      | SELECT expr_list FROM stream AS column_list
+      | SELECT ID FROM stream GROUPBY column_list
+      | stream JOIN stream;

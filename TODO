@@ -1,3 +1,4 @@
-1. Precedence order in evaluation
-2. fix the expr -> infinity production. why is value -> infinity and expr ->
+1. fix the expr -> infinity production. why is value -> infinity and expr ->
    value not working?
+2. How do you visit a token from the lexer, as opposed to a rule from the parser?
+E.g., ID, which tracks all identifiers.

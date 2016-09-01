@@ -1,7 +1,7 @@
 def e2esum([e2e_latency], [tout, tin]):
   e2e_latency = e2e_latency + (tout - tin)
 
-def empty([dummy], [tout]):
+def empty([], []):
   ;
 
 R1 = SELECT e2esum FROM T GROUPBY [uid];
