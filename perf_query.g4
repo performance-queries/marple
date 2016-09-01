@@ -18,15 +18,9 @@ PKTLOG : 'T' ;
 EMIT   : 'emit';
 
 // Fields
-field : 'srcip'
-      | 'dstip'
-      | 'srcport'
-      | 'dstport'
-      | 'proto'
-      | 'pkt_path'
+field : 'pkt_path'
       | 'pkt_len'
       | 'payload_len'
-      | 'tcpseq'
       | 'qid'
       | 'tin'
       | 'tout'
@@ -46,11 +40,6 @@ VALUE : [0-9]+ ;
 // column names and table names
 table : PKTLOG | ID;
 column : field | ID;
-
-// Id list
-id_with_comma : ',' ID;
-id_list : '[' ID ']'
-        | '[' ID id_with_comma+ ']';
 
 // Column list
 column_with_comma : ',' column;
@@ -90,7 +79,7 @@ stmt : ID '=' expr
      | EMIT
      | IF predicate THEN stmt+ (ELSE stmt+)?;
 
-agg_fun : DEF ID '(' id_list ',' column_list ')' ':' stmt+;
+agg_fun : DEF ID '(' column_list ',' column_list ')' ':' stmt+;
 
 // Main production rule for queries
 prog : (agg_fun)* (ID '=' query ';')+;
