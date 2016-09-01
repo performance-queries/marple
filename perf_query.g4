@@ -94,7 +94,7 @@ agg_fun : DEF ID '(' id_list ',' column_list ')' ':' stmt+;
 
 // Main production rule for queries
 prog : (agg_fun)* (ID '=' query ';')+;
-query : SELECT '*' FROM table (WHERE predicate)?
+query : SELECT '*' FROM table WHERE predicate
       | SELECT expr_list FROM table AS column_list
       | SELECT '*' FROM table GROUPBY column_list
       | table JOIN table;
