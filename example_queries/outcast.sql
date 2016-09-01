@@ -1,9 +1,8 @@
 def new_flow ([perflowcount], []):
-    if perflowcount == 0 then { perflowcount = 1 };
-    emit
+    if perflowcount == 0 then { emit; perflowcount = 1 } else { emit }
 
 def flow_count ([portpaircount], [perflowcount]):
-    portpaircount = portpaircount + perflowcount
+    portpaircount = portpaircount + (1 - perflowcount)
     emit
 
 def maxfc ([maxportcount], [portpaircount]):
