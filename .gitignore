@@ -1,2 +1,3 @@
 *.tokens
 *.class
+perf_query*.java
