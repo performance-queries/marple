@@ -48,6 +48,7 @@ column : field | ID;
 column_with_comma : ',' column;
 column_list : '[' column ']'
             | '*'
+	    | '[' ']'
             | '[' column column_with_comma+ ']';
 
 // Expressions
