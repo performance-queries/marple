@@ -16,6 +16,9 @@ ELSE   : 'ELSE' | 'else';
 DEF    : 'def';
 PKTLOG : 'T' ;
 EMIT   : 'emit';
+TRUE   : 'true'  | 'TRUE';
+FALSE  : 'false' | 'FALSE';
+INFINITY : 'INFINITY';
 
 // Fields
 field : 'pkt_path'
@@ -35,7 +38,8 @@ field_list : '[' field ']'
 
 // Identifiers
 ID : ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
-VALUE : [0-9]+ ;
+VALUE : [0-9]+
+      | INFINITY ;
 
 // column names and table names
 table : PKTLOG | ID;
@@ -71,7 +75,9 @@ predicate : expr '==' expr
           | predicate '&&' predicate
           | predicate '||' predicate
           | '(' predicate ')'
-          | '!' predicate ;
+          | '!' predicate
+          | TRUE
+          | FALSE;
 
 // Aggregation functions for group by
 stmt : ID '=' expr

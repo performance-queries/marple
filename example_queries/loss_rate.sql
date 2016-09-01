@@ -1,7 +1,12 @@
-def loss_calc ([counter, loss_counter, loss_rate], [tout]):
-  counter = counter + 1
-  if tout == 5555 then loss_counter = loss_counter + 1
-  loss_rate = loss_counter / counter
+def total_counter([total_count], [uid]):
+  total_count = total_count + 1
 
-R1 = SELECT loss_calc FROM T GROUPBY [srcip, dstip, srcport, dstport, proto];
-R2 = SELECT [loss_rate] FROM R1 AS [loss_rate];
+def loss_counter([loss_count], [uid]):
+  loss_count  = loss_count + 1
+
+total_counts  = SELECT total_counter FROM T GROUPBY [srcip, dstip, srcport, dstport, proto];
+lost_pkts     = SELECT * FROM T WHERE tout == INFINITY;
+lost_counts   = SELECT loss_counter  FROM lost_pkts
+                GROUPBY [srcip, dstip, srcport, dstport, proto];
+joined_stream = total_counts JOIN lost_counts;
+result = SELECT [loss_count / total_count] FROM joined_stream AS [loss_rate];

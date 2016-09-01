@@ -1,3 +1,1 @@
-1. Expressing loss rate example using JOINs.
 4. Precedence order in evaluation
-5. Maybe remove the SELECT [a, b, c] FROM GROUPBY and make it SELECT *
