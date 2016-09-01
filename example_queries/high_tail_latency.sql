@@ -1,5 +1,5 @@
 def perc([tot, high], [qin]):
-  if qin > K then high = high + 1
+  if qin > K then {high = high + 1}
   tot = tot + 1;
 
 R1 = SELECT perc FROM T GROUPBY [qid];
