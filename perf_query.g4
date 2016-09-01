@@ -90,7 +90,7 @@ stmt : ID '=' expr
      | EMIT
      | IF predicate THEN stmt+ (ELSE stmt+)?;
 
-agg_fun : DEF ID '(' id_list ',' field_list ')' ':' stmt+;
+agg_fun : DEF ID '(' id_list ',' column_list ')' ':' stmt+;
 
 // Main production rule for queries
 prog : (agg_fun)* (ID '=' query ';')+;
