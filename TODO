@@ -4,4 +4,3 @@
 4. Precedence order in evaluation
 5. use ID and fields in SELECT operations.
 6. Support SELECT 2 * srcport AS twiceport
-7. Flattening nested queries: punt on this for now. Automate later. 
