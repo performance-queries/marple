@@ -18,7 +18,7 @@ PKTLOG : 'T' ;
 EMIT   : 'emit';
 TRUE   : 'true'  | 'TRUE';
 FALSE  : 'false' | 'FALSE';
-INFINITY : 'INFINITY';
+INFINITY : 'INFINITY' | 'infinity';
 
 // Fields
 field : 'pkt_path'
@@ -38,8 +38,7 @@ field_list : '[' field ']'
 
 // Identifiers
 ID : ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
-VALUE : [0-9]+
-      | INFINITY ;
+VALUE : [0-9]+;
 
 // column names and table names
 table : PKTLOG | ID;
@@ -54,6 +53,7 @@ column_list : '[' column ']'
 // Expressions
 expr : ID
      | VALUE
+     | INFINITY
      | field
      | expr '+' expr
      | expr '-' expr
