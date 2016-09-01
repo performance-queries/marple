@@ -14,35 +14,18 @@ IF     : 'IF' | 'if';
 THEN   : 'THEN' | 'then';
 ELSE   : 'ELSE' | 'else';
 DEF    : 'def';
-PKTLOG : 'T' ;
 EMIT   : 'emit';
 TRUE   : 'true'  | 'TRUE';
 FALSE  : 'false' | 'FALSE';
 INFINITY : 'INFINITY' | 'infinity';
-
-// Fields
-field : 'pkt_path'
-      | 'pkt_len'
-      | 'payload_len'
-      | 'qid'
-      | 'tin'
-      | 'tout'
-      | 'qin'
-      | 'qout'
-      | 'uid';
-
-// Field list
-field_with_comma : ',' field;
-field_list : '[' field ']'
-           | '[' field field_with_comma+ ']';
 
 // Identifiers
 ID : ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
 VALUE : [0-9]+;
 
 // column names and stream names
-stream : PKTLOG | ID;
-column : field | ID;
+stream : ID;
+column : ID;
 
 // Column list
 column_with_comma : ',' column;
@@ -55,7 +38,6 @@ column_list : '[' column ']'
 expr : ID
      | VALUE
      | INFINITY
-     | field
      | expr '+' expr
      | expr '-' expr
      | expr '*' expr
