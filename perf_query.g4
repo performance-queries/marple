@@ -52,10 +52,11 @@ id_with_comma : ',' ID;
 id_list : '[' ID ']'
         | '[' ID id_with_comma+ ']';
 
-// Field or Id list
-fid_with_comma : ',' (ID | field);
-fid_list : '[' (ID | field) ']'
-         | '[' (ID | field) fid_with_comma+ ']';
+// Column list
+column_with_comma : ',' column;
+column_list : '[' column ']'
+            | '*'
+            | '[' column column_with_comma+ ']';
 
 // Expressions
 expr : ID
@@ -93,7 +94,7 @@ agg_fun : DEF ID '(' id_list ',' field_list ')' ':' stmt+;
 
 // Main production rule for queries
 prog : (agg_fun)* (ID '=' query ';')+;
-query : SELECT (field_list | '*') FROM table (WHERE predicate)?
-      | SELECT expr_list FROM table AS fid_list
-      | SELECT fid_list GROUPBY field_list FROM table
+query : SELECT column_list FROM table (WHERE predicate)?
+      | SELECT expr_list FROM table AS column_list
+      | SELECT column_list GROUPBY column_list FROM table
       | table JOIN table;
