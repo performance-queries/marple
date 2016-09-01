@@ -43,6 +43,10 @@ field_list : '[' field ']'
 ID : ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
 VALUE : [0-9]+ ;
 
+// column names and table names
+table : PKTLOG | ID;
+column : field | ID;
+
 // Id list
 id_with_comma : ',' ID;
 id_list : '[' ID ']'
@@ -89,7 +93,7 @@ agg_fun : DEF ID '(' id_list ',' field_list ')' ':' stmt+;
 
 // Main production rule for queries
 prog : (agg_fun)* (ID '=' query ';')+;
-query : SELECT (field_list | '*') FROM (ID | PKTLOG) (WHERE predicate)?
-      | SELECT expr_list FROM (ID | PKTLOG) AS fid_list
-      | SELECT fid_list GROUPBY field_list FROM (ID | PKTLOG) (WHERE predicate)?
-      | (ID | PKTLOG) JOIN (ID | PKTLOG);
+query : SELECT (field_list | '*') FROM table (WHERE predicate)?
+      | SELECT expr_list FROM table AS fid_list
+      | SELECT fid_list GROUPBY field_list FROM table (WHERE predicate)?
+      | table JOIN table;
