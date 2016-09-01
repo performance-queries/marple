@@ -1,5 +1,4 @@
 1. Expressing loss rate example using JOINs.
-3. Member operator, i.e., handling the dot in 'pkt.x'
 4. Precedence order in evaluation
 5. use ID and fields in SELECT operations.
 6. Support SELECT 2 * srcport AS twiceport
