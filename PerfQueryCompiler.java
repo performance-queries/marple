@@ -16,6 +16,11 @@ public class PerfQueryCompiler {
     // create a parser that feeds off the tokens buffer
     perf_queryParser parser = new perf_queryParser(tokens);
     ParseTree tree = parser.prog(); // begin parsing at the prog production
-    System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+//    System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+
+    // Create symbol table
+    ParseTreeWalker walker = new ParseTreeWalker();
+    SymbolTableCreator symbol_table_creator = new SymbolTableCreator();
+    walker.walk(symbol_table_creator, tree);
   }
 }
