@@ -95,5 +95,5 @@ agg_fun : DEF ID '(' id_list ',' field_list ')' ':' stmt+;
 prog : (agg_fun)* (ID '=' query ';')+;
 query : SELECT (field_list | '*') FROM table (WHERE predicate)?
       | SELECT expr_list FROM table AS fid_list
-      | SELECT fid_list GROUPBY field_list FROM table (WHERE predicate)?
+      | SELECT fid_list GROUPBY field_list FROM table
       | table JOIN table;
