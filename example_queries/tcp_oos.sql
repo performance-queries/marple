@@ -4,4 +4,6 @@ def outofseq([lastseq, oos_count], [tcpseq]):
   lastseq = tcpseq + payload_len;
 
 tcp_pkts = SELECT * FROM T WHERE proto == TCP;
-oos_query = SELECT [srcip, dstip, srcport, dstport, proto, outofseq] GROUPBY [srcip, dstip, srcport, dstport, proto] FROM tcp_pkts;
+oos_query = SELECT [srcip, dstip, srcport, dstport, proto, outofseq]
+            FROM tcp_pkts
+            GROUPBY [srcip, dstip, srcport, dstport, proto];

@@ -5,4 +5,5 @@ def nonmt([maxseq, nm_count], [tcpseq]):
     maxseq = tcpseq
 
 tcp_pkts = SELECT * FROM T WHERE proto == TCP;
-nmo_query = SELECT [srcip, dstip, srcport, dstport, proto, nonmt] GROUPBY [srcip, dstip, srcport, dstport, proto] FROM tcp_pkts;
+nmo_query = SELECT [srcip, dstip, srcport, dstport, proto, nonmt]
+            FROM tcp_pkts GROUPBY [srcip, dstip, srcport, dstport, proto];
