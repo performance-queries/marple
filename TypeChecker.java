@@ -5,11 +5,17 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.lang.RuntimeException;
 
 public class TypeChecker extends perf_queryBaseListener {
   private int id_ttype_;
+  private HashMap<String, IdentifierType> symbol_table_;
 
-  public TypeChecker(int identifier_ttype) { id_ttype_ = identifier_ttype; }
+  public TypeChecker(int identifier_ttype, HashMap<String, IdentifierType> symbol_table) {
+    id_ttype_ = identifier_ttype;
+    symbol_table_ = symbol_table;
+  }
 
   @Override public void exitRelational_stmt(perf_queryParser.Relational_stmtContext ctx) {
     ParseTree relation = ctx.getChild(0);
@@ -18,8 +24,14 @@ public class TypeChecker extends perf_queryBaseListener {
     ParseTree query = ctx.getChild(2);
     assert(query instanceof perf_queryParser.Relational_queryContext);
 
-    System.out.println(relation.getText() + " <- " +
-                       getInputStreams((perf_queryParser.Relational_queryContext)query));
+    ArrayList<String> input_streams = getInputStreams((perf_queryParser.Relational_queryContext)query);
+    for (int i = 0; i < input_streams.size(); i++) {
+      if (symbol_table_.get(input_streams.get(i)) != IdentifierType.STREAM) {
+        throw new RuntimeException("Type mismatch, only STREAMS can be input to a query");
+      }
+    }
+    System.out.println("Typechecks ok: " + relation.getText() + " <- " +
+                       input_streams);
   }
 
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
@@ -29,8 +41,14 @@ public class TypeChecker extends perf_queryBaseListener {
     ParseTree query = ctx.getChild(2);
     assert(query instanceof perf_queryParser.Stream_queryContext);
 
-    System.out.println(stream.getText() + " <- " +
-                       getInputStreams((perf_queryParser.Stream_queryContext)query));
+    ArrayList<String> input_streams = getInputStreams((perf_queryParser.Stream_queryContext)query);
+    for (int i = 0; i < input_streams.size(); i++) {
+      if (symbol_table_.get(input_streams.get(i)) != IdentifierType.STREAM) {
+        throw new RuntimeException("Type mismatch, only STREAMS can be input to a query");
+      }
+    }
+    System.out.println("Typechecks ok: " + stream.getText() + " <- " +
+                       input_streams);
   }
 
   /// Get streams that are required for the given query
@@ -70,8 +88,7 @@ public class TypeChecker extends perf_queryBaseListener {
     }
   }
 
-
-  ArrayList<String> getAllTokens(ParseTree node, int ttype) {
+  private ArrayList<String> getAllTokens(ParseTree node, int ttype) {
     if (node instanceof TerminalNode) {
       ArrayList<String> token = new ArrayList<String>();
       if (((TerminalNode)node).getSymbol().getType() == ttype) {
