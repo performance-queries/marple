@@ -20,7 +20,7 @@ public class PerfQueryCompiler {
 
     // Create symbol table
     ParseTreeWalker walker = new ParseTreeWalker();
-    SymbolTableCreator symbol_table_creator = new SymbolTableCreator(lexer);
+    SymbolTableCreator symbol_table_creator = new SymbolTableCreator();
     walker.walk(symbol_table_creator, tree);
   }
 }
