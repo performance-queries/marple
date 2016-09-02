@@ -22,5 +22,9 @@ public class PerfQueryCompiler {
     ParseTreeWalker walker = new ParseTreeWalker();
     SymbolTableCreator symbol_table_creator = new SymbolTableCreator();
     walker.walk(symbol_table_creator, tree);
+
+    // Type checker
+    TypeChecker type_checker = new TypeChecker(parser.ID);
+    walker.walk(type_checker, tree);
   }
 }
