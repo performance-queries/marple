@@ -73,12 +73,25 @@ stmt : column '=' expr
 
 agg_fun : DEF agg_func '(' column_list ',' column_list ')' ':' stmt+;
 
-// Main production rule for queries
-prog : (agg_fun)* ((stream '=' stream_query ';') | (relation '=' relational_query ';'))+;
-stream_query : SELECT '*' FROM stream WHERE predicate
-             | SELECT expr_list FROM stream AS column_list
-             | SELECT agg_func FROM stream SGROUPBY column_list
-             | stream JOIN stream;
-relational_query : SELECT agg_func FROM stream RGROUPBY column_list;
+// The five operators
+filter  :  SELECT '*' FROM stream WHERE predicate;
+project :  SELECT expr_list FROM stream AS column_list;
+sfold   :  SELECT agg_func FROM stream SGROUPBY column_list;
+join    :  stream JOIN stream;
+rfold   :  SELECT agg_func FROM stream RGROUPBY column_list;
 // Note: The semantics of a S/RGROUPBY are that we return all columns in the GROUPBY field
 // as well as all state maintained as part of the aggregation function.
+
+// The two types of queries
+stream_query : filter
+             | project
+             | sfold
+             | join;
+relational_query : rfold;
+
+// Single statements in the language
+stream_stmt : stream '=' stream_query ';';
+relational_stmt    : relation '=' relational_query ';';
+
+// Main production rule for queries
+prog : (agg_fun)* (stream_stmt | relational_stmt)+;
