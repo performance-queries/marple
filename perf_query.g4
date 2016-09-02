@@ -77,3 +77,6 @@ query : SELECT '*' FROM stream WHERE predicate
       | SELECT expr_list FROM stream AS column_list
       | SELECT agg_func FROM stream GROUPBY column_list
       | stream JOIN stream;
+
+// The semantics of a GROUPBY are that we return all columns in the GROUPBY field
+// as well as all state maintained as part of the aggregation function.

@@ -7,6 +7,3 @@ tcp_pkts = SELECT * FROM T WHERE proto == TCP;
 oos_query = SELECT outofseq
             FROM tcp_pkts
             GROUPBY [srcip, dstip, srcport, dstport, proto];
-result = SELECT [srcip, dstip, srcport, dstport, proto, oos_count]
-         FROM oos_query
-         AS [srcip, dstip, srcport, dstport, proto, oos_count];

@@ -1,3 +1,4 @@
 1. fix the expr -> infinity production. why is value -> infinity and expr ->
    value not working?
+2. The e2e latency query and tail latency query seem a little confusing.
 3. How does ANTLR deal with multiple alternatives for the same parser rule?
