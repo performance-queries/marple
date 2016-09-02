@@ -33,16 +33,16 @@ public class TypeChecker extends perf_queryBaseListener {
     System.out.println("Query has " + getAllTokens(query, id_ttype_).size() + " identifiers");
   }
 
-  ArrayList<Token> getAllTokens(ParseTree node, int ttype) {
+  ArrayList<String> getAllTokens(ParseTree node, int ttype) {
     if (node instanceof TerminalNode) {
-      ArrayList<Token> token = new ArrayList<Token>();
+      ArrayList<String> token = new ArrayList<String>();
       if (((TerminalNode)node).getSymbol().getType() == ttype) {
-        token.add(((TerminalNode)node).getSymbol());
+        token.add(((TerminalNode)node).getSymbol().getText());
       }
       return token;
     } else {
       assert(node instanceof ParserRuleContext);
-      ArrayList<Token> tokens = new ArrayList<Token>();
+      ArrayList<String> tokens = new ArrayList<String>();
       // get all tokens of children
       for (int i = 0; i < node.getChildCount(); i++) {
         tokens.addAll(getAllTokens(node.getChild(i), ttype));
