@@ -14,24 +14,62 @@ public class TypeChecker extends perf_queryBaseListener {
   @Override public void exitRelational_stmt(perf_queryParser.Relational_stmtContext ctx) {
     ParseTree relation = ctx.getChild(0);
     assert(relation instanceof perf_queryParser.RelationContext);
-    System.out.println("Assigning to relation " + relation.getText());
 
-    // Get all identifiers within the query
     ParseTree query = ctx.getChild(2);
     assert(query instanceof perf_queryParser.Relational_queryContext);
-    System.out.println("Query has " + getAllTokens(query, id_ttype_).size() + " identifiers");
+
+    System.out.println(relation.getText() + " <- " +
+                       getInputStreams((perf_queryParser.Relational_queryContext)query));
   }
 
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
     ParseTree stream = ctx.getChild(0);
     assert(stream instanceof perf_queryParser.StreamContext);
-    System.out.println("Assigning to stream " + stream.getText());
 
-    // Get all identifiers within the query
     ParseTree query = ctx.getChild(2);
     assert(query instanceof perf_queryParser.Stream_queryContext);
-    System.out.println("Query has " + getAllTokens(query, id_ttype_).size() + " identifiers");
+
+    System.out.println(stream.getText() + " <- " +
+                       getInputStreams((perf_queryParser.Stream_queryContext)query));
   }
+
+  /// Get streams that are required for the given query
+  ArrayList<String> getInputStreams(perf_queryParser.Stream_queryContext query) {
+    assert(query.getChildCount() == 1);
+    ParseTree op = query.getChild(0);
+    if (op instanceof perf_queryParser.FilterContext) {
+      // SELECT * FROM stream, so stream is at location 3
+      return getAllTokens(op.getChild(3), id_ttype_);
+    } else if (op instanceof perf_queryParser.SfoldContext) {
+      // SELECT agg_func FROM stream SGROUPBY ...
+      return getAllTokens(op.getChild(3), id_ttype_);
+    } else if (op instanceof perf_queryParser.ProjectContext) {
+      // SELECT expre_list FROM stream
+      return getAllTokens(op.getChild(3), id_ttype_);
+    } else if (op instanceof perf_queryParser.JoinContext) {
+      // stream JOIN stream
+      ArrayList<String> ret = getAllTokens(op.getChild(0), id_ttype_);
+      ret.addAll(getAllTokens(op.getChild(2), id_ttype_));
+      return ret;
+    } else {
+      assert(false);
+      return new ArrayList<String>();
+    }
+  }
+
+  /// Same as above, but do it for a relational query
+  ArrayList<String> getInputStreams(perf_queryParser.Relational_queryContext query) {
+    assert(query.getChildCount() == 1);
+    ParseTree op = query.getChild(0);
+    if (op instanceof perf_queryParser.RfoldContext) {
+      // SELECT agg_func FROM stream RGROUPBY ...
+      return getAllTokens(op.getChild(3), id_ttype_);
+    } else {
+      assert(false);
+      return new ArrayList<String>();
+    }
+  }
+
 
   ArrayList<String> getAllTokens(ParseTree node, int ttype) {
     if (node instanceof TerminalNode) {
