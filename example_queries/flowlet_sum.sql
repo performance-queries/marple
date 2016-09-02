@@ -10,6 +10,6 @@ def fl_detect ([last_time, size], [tin]):
 def flsum ([sum], [size]):
     sum = sum + size
 
-R1 = SELECT fl_detect FROM T GROUPBY [srcip, dstip, srcport, dstport,
+R1 = SELECT fl_detect FROM T SGROUPBY [srcip, dstip, srcport, dstport,
          proto];
-result = SELECT flsum from R1 GROUPBY [];
+result = SELECT flsum from R1 RGROUPBY [];

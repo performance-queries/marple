@@ -6,4 +6,4 @@ def nonmt([maxseq, nm_count], [tcpseq]):
 
 tcp_pkts = SELECT * FROM T WHERE proto == TCP;
 nmo_query = SELECT nonmt
-            FROM tcp_pkts GROUPBY [srcip, dstip, srcport, dstport, proto];
+            FROM tcp_pkts RGROUPBY [srcip, dstip, srcport, dstport, proto];

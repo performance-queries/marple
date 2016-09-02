@@ -6,6 +6,11 @@ import java.util.HashMap;
 public class SymbolTableCreator extends perf_queryBaseListener {
   HashMap<String, IdentifierType> identifiers_ = new HashMap<String, IdentifierType>();
 
+  @Override public void exitRelation(perf_queryParser.RelationContext ctx) {
+    assert(ctx.getChildCount() == 1);
+    identifiers_.put(ctx.getStart().getText(), IdentifierType.RELATION);
+  }
+
   @Override public void exitStream(perf_queryParser.StreamContext ctx) {
     assert(ctx.getChildCount() == 1);
     identifiers_.put(ctx.getStart().getText(), IdentifierType.STREAM);
