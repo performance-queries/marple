@@ -115,7 +115,9 @@ public class ExprTreeCreator extends perf_queryBaseListener {
    } else {
      // Get operands using dep_table_
      Operation operation = dep_table_.get(id_name);
-     assert(operation != null);
+     if (operation == null) {
+       throw new RuntimeException(id_name + " doesn't exist in dependency table. It was likely not defined before use.");
+     }
 
      // Recursively build_expr_tree for each operand
      ArrayList<ExprTree> children = new ArrayList<ExprTree>();

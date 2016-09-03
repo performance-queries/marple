@@ -6,5 +6,5 @@ def empty([], []):
   ;
 
 R1 = SELECT e2esum FROM T SGROUPBY [uid];
-R3 = SELECT * FROM R2 WHERE e2e_latency > L;
+R3 = SELECT * FROM R1 WHERE e2e_latency > L;
 R4 = SELECT empty FROM R3 RGROUPBY [srcip, dstip, srcport, dstport, proto];
