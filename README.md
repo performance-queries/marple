@@ -12,4 +12,6 @@ QuickStart:
 grun perf_query prog  example_queries/flowlet_hist.sql -gui
 (should open up a window showing the parse tree)
 5. Run compiler using
-cat example_queries/flowlet_hist.sql | java -ea PerfQueryCompiler
+cat example_queries/flowlet_hist.sql | java -ea PerfQueryCompiler 2> /tmp/tree.dot
+6. Generate expression tree using
+dot -Tpng /tmp/tree.dot > /tmp/tree.png

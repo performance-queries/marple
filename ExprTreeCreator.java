@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.lang.RuntimeException;
 
-/// Generate dependencies for each stream or relational query
+/// First, generate dependencies for each stream or relational query
 /// , i.e., for each query print out the streams written to and read from
-public class DepXtractor extends perf_queryBaseListener {
+/// Second, use this dependency table to build an expression tree
+public class ExprTreeCreator extends perf_queryBaseListener {
   /// The token type for identifiers. This is required to check if a given token
   /// is an identifier or not.
   private int id_ttype_;
@@ -26,7 +27,7 @@ public class DepXtractor extends perf_queryBaseListener {
   private String last_assigned_id_ = "";
 
   /// Constructor
-  public DepXtractor(int identifier_ttype, HashMap<String, IdentifierType> symbol_table) {
+  public ExprTreeCreator(int identifier_ttype, HashMap<String, IdentifierType> symbol_table) {
     id_ttype_ = identifier_ttype;
     symbol_table_ = symbol_table;
   }

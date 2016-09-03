@@ -25,9 +25,9 @@ public class PerfQueryCompiler {
     SymbolTableCreator symbol_table_creator = new SymbolTableCreator();
     walker.walk(symbol_table_creator, tree);
 
-    // Dependency extractor
-    System.out.println("Extracting dependencies ...");
-    DepXtractor dep_xtractor = new DepXtractor(parser.ID, symbol_table_creator.symbol_table());
-    walker.walk(dep_xtractor, tree);
+    // Expression tree creator
+    System.out.println("Creating expression tree ...");
+    ExprTreeCreator expr_tree_creator = new ExprTreeCreator(parser.ID, symbol_table_creator.symbol_table());
+    walker.walk(expr_tree_creator, tree);
   }
 }
