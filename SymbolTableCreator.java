@@ -35,7 +35,7 @@ public class SymbolTableCreator extends perf_queryBaseListener {
   /// Listener for the top-level, i.e., prog productions
   /// Prints out prepopulated symbol table
   @Override public void exitProg(perf_queryParser.ProgContext ctx) {
-    System.out.println("identifiers_: " + identifiers_.toString() + "\n");
+    System.out.println("identifiers_: " + identifiers_);
   }
 
   /// Add a new identifier to the symbol table

@@ -13,6 +13,7 @@ import java.lang.RuntimeException;
 public class DepXtractor extends perf_queryBaseListener {
   private int id_ttype_;
   private HashMap<String, IdentifierType> symbol_table_;
+  private HashMap<String, Operation> dep_table_ = new HashMap<String, Operation>();
 
   public DepXtractor(int identifier_ttype, HashMap<String, IdentifierType> symbol_table) {
     id_ttype_ = identifier_ttype;
@@ -26,15 +27,15 @@ public class DepXtractor extends perf_queryBaseListener {
     ParseTree query = ctx.getChild(2);
     assert(query instanceof perf_queryParser.Relational_queryContext);
 
-    ArrayList<String> input_streams = getInputStreams((perf_queryParser.Relational_queryContext)query);
-    for (int i = 0; i < input_streams.size(); i++) {
+    Operation operation = getOperation((perf_queryParser.Relational_queryContext)query);
+    for (int i = 0; i < operation.operands.size(); i++) {
       // TODO: For now, all inputs are streams. We can do operation-specific typechecking later if required.
       // Also, because typechecking is trivial and handled by the parser, we don't need to check types here.
       // The parser and the symbol table creator check for type violations, so all inputs will be streams.
       // This is why we have an assert and not an exception here. Similar comments apply to exitStream_stmt.
-      assert (symbol_table_.get(input_streams.get(i)) == IdentifierType.STREAM);
+      assert (symbol_table_.get(operation.operands.get(i)) == IdentifierType.STREAM);
     }
-    System.out.println(relation.getText() + " <- " + input_streams);
+    dep_table_.put(relation.getText(), operation);
   }
 
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
@@ -44,47 +45,52 @@ public class DepXtractor extends perf_queryBaseListener {
     ParseTree query = ctx.getChild(2);
     assert(query instanceof perf_queryParser.Stream_queryContext);
 
-    ArrayList<String> input_streams = getInputStreams((perf_queryParser.Stream_queryContext)query);
-    for (int i = 0; i < input_streams.size(); i++) {
-      assert(symbol_table_.get(input_streams.get(i)) == IdentifierType.STREAM);
+    Operation operation = getOperation((perf_queryParser.Stream_queryContext)query);
+    for (int i = 0; i < operation.operands.size(); i++) {
+      assert(symbol_table_.get(operation.operands.get(i)) == IdentifierType.STREAM);
     }
-    System.out.println(stream.getText() + " <- " + input_streams);
+    dep_table_.put(stream.getText(), operation);
   }
 
-  /// Get streams that are required for the given query
-  ArrayList<String> getInputStreams(perf_queryParser.Stream_queryContext query) {
+  @Override public void exitProg(perf_queryParser.ProgContext ctx) {
+    System.out.println("dep_table_: " + dep_table_);
+  }
+
+
+  /// Get operand streams and operator that are required for the given query
+  private Operation getOperation(perf_queryParser.Stream_queryContext query) {
     assert(query.getChildCount() == 1);
     ParseTree op = query.getChild(0);
     if (op instanceof perf_queryParser.FilterContext) {
       // SELECT * FROM stream, so stream is at location 3
-      return getAllTokens(op.getChild(3), id_ttype_);
+      return new Operation(OperationType.FILTER, getAllTokens(op.getChild(3), id_ttype_));
     } else if (op instanceof perf_queryParser.SfoldContext) {
       // SELECT agg_func FROM stream SGROUPBY ...
-      return getAllTokens(op.getChild(3), id_ttype_);
+      return new Operation(OperationType.SFOLD, getAllTokens(op.getChild(3), id_ttype_));
     } else if (op instanceof perf_queryParser.ProjectContext) {
       // SELECT expre_list FROM stream
-      return getAllTokens(op.getChild(3), id_ttype_);
+      return new Operation(OperationType.PROJECT, getAllTokens(op.getChild(3), id_ttype_));
     } else if (op instanceof perf_queryParser.JoinContext) {
       // stream JOIN stream
       ArrayList<String> ret = getAllTokens(op.getChild(0), id_ttype_);
       ret.addAll(getAllTokens(op.getChild(2), id_ttype_));
-      return ret;
+      return new Operation(OperationType.JOIN, ret);
     } else {
       assert(false);
-      return new ArrayList<String>();
+      return new Operation();
     }
   }
 
   /// Same as above, but do it for a relational query
-  ArrayList<String> getInputStreams(perf_queryParser.Relational_queryContext query) {
+  Operation getOperation(perf_queryParser.Relational_queryContext query) {
     assert(query.getChildCount() == 1);
     ParseTree op = query.getChild(0);
     if (op instanceof perf_queryParser.RfoldContext) {
       // SELECT agg_func FROM stream RGROUPBY ...
-      return getAllTokens(op.getChild(3), id_ttype_);
+      return new Operation(OperationType.RFOLD, getAllTokens(op.getChild(3), id_ttype_));
     } else {
       assert(false);
-      return new ArrayList<String>();
+      return new Operation();
     }
   }
 
