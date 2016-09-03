@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.lang.RuntimeException;
 
-public class TypeChecker extends perf_queryBaseListener {
+/// Generate dependencies for each stream or relational query
+/// , i.e., for each query print out the streams written to and read from
+public class DepXtractor extends perf_queryBaseListener {
   private int id_ttype_;
   private HashMap<String, IdentifierType> symbol_table_;
 
-  public TypeChecker(int identifier_ttype, HashMap<String, IdentifierType> symbol_table) {
+  public DepXtractor(int identifier_ttype, HashMap<String, IdentifierType> symbol_table) {
     id_ttype_ = identifier_ttype;
     symbol_table_ = symbol_table;
   }
@@ -30,8 +32,7 @@ public class TypeChecker extends perf_queryBaseListener {
         throw new RuntimeException("Type mismatch, only STREAMS can be input to a query");
       }
     }
-    System.out.println("Typechecks ok: " + relation.getText() + " <- " +
-                       input_streams);
+    System.out.println(relation.getText() + " <- " + input_streams);
   }
 
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
@@ -47,8 +48,7 @@ public class TypeChecker extends perf_queryBaseListener {
         throw new RuntimeException("Type mismatch, only STREAMS can be input to a query");
       }
     }
-    System.out.println("Typechecks ok: " + stream.getText() + " <- " +
-                       input_streams);
+    System.out.println(stream.getText() + " <- " + input_streams);
   }
 
   /// Get streams that are required for the given query
