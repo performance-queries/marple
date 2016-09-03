@@ -11,10 +11,21 @@ import java.lang.RuntimeException;
 /// Generate dependencies for each stream or relational query
 /// , i.e., for each query print out the streams written to and read from
 public class DepXtractor extends perf_queryBaseListener {
+  /// The token type for identifiers. This is required to check if a given token
+  /// is an identifier or not.
   private int id_ttype_;
+
+  /// A reference to the symbol table created by the SymbolTableCreator pass
   private HashMap<String, IdentifierType> symbol_table_;
+
+  /// The dependency table mapping from identifiers to operations, populated
+  /// by this pass.
   private HashMap<String, Operation> dep_table_ = new HashMap<String, Operation>();
 
+  /// The last identifier assigned so far. Used to build an expression tree.
+  private String last_assigned_id_ = "";
+
+  /// Constructor
   public DepXtractor(int identifier_ttype, HashMap<String, IdentifierType> symbol_table) {
     id_ttype_ = identifier_ttype;
     symbol_table_ = symbol_table;
@@ -36,6 +47,7 @@ public class DepXtractor extends perf_queryBaseListener {
       assert (symbol_table_.get(operation.operands.get(i)) == IdentifierType.STREAM);
     }
     dep_table_.put(relation.getText(), operation);
+    last_assigned_id_ = relation.getText();
   }
 
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
@@ -50,14 +62,16 @@ public class DepXtractor extends perf_queryBaseListener {
       assert(symbol_table_.get(operation.operands.get(i)) == IdentifierType.STREAM);
     }
     dep_table_.put(stream.getText(), operation);
+    last_assigned_id_ = stream.getText();
   }
 
   @Override public void exitProg(perf_queryParser.ProgContext ctx) {
     System.out.println("dep_table_: " + dep_table_);
+    System.out.println("expr_tree : " + build_expr_tree(last_assigned_id_));
+    System.err.println(build_expr_tree(last_assigned_id_).dot_output());
   }
 
-
-  /// Get operand streams and operator that are required for the given query
+  /// Get operands and operator that are required for the given query
   private Operation getOperation(perf_queryParser.Stream_queryContext query) {
     assert(query.getChildCount() == 1);
     ParseTree op = query.getChild(0);
@@ -92,6 +106,24 @@ public class DepXtractor extends perf_queryBaseListener {
       assert(false);
       return new Operation();
     }
+  }
+
+  private ExprTree build_expr_tree(String id_name) {
+   if (id_name.equals("T")) {
+     return new ExprTree(OperationType.PKTLOG);
+   } else {
+     // Get operands using dep_table_
+     Operation operation = dep_table_.get(id_name);
+     assert(operation != null);
+
+     // Recursively build_expr_tree for each operand
+     ArrayList<ExprTree> children = new ArrayList<ExprTree>();
+     assert(operation.operands.size() >= 1);
+     for (int i = 0; i < operation.operands.size(); i++) {
+       children.add(build_expr_tree(operation.operands.get(i)));
+     }
+     return new ExprTree(operation.opcode, children);
+   }
   }
 
   private ArrayList<String> getAllTokens(ParseTree node, int ttype) {
