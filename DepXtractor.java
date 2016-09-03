@@ -28,9 +28,11 @@ public class DepXtractor extends perf_queryBaseListener {
 
     ArrayList<String> input_streams = getInputStreams((perf_queryParser.Relational_queryContext)query);
     for (int i = 0; i < input_streams.size(); i++) {
-      if (symbol_table_.get(input_streams.get(i)) != IdentifierType.STREAM) {
-        throw new RuntimeException("Type mismatch, only STREAMS can be input to a query");
-      }
+      // TODO: For now, all inputs are streams. We can do operation-specific typechecking later if required.
+      // Also, because typechecking is trivial and handled by the parser, we don't need to check types here.
+      // The parser and the symbol table creator check for type violations, so all inputs will be streams.
+      // This is why we have an assert and not an exception here. Similar comments apply to exitStream_stmt.
+      assert (symbol_table_.get(input_streams.get(i)) == IdentifierType.STREAM);
     }
     System.out.println(relation.getText() + " <- " + input_streams);
   }
@@ -44,9 +46,7 @@ public class DepXtractor extends perf_queryBaseListener {
 
     ArrayList<String> input_streams = getInputStreams((perf_queryParser.Stream_queryContext)query);
     for (int i = 0; i < input_streams.size(); i++) {
-      if (symbol_table_.get(input_streams.get(i)) != IdentifierType.STREAM) {
-        throw new RuntimeException("Type mismatch, only STREAMS can be input to a query");
-      }
+      assert(symbol_table_.get(input_streams.get(i)) == IdentifierType.STREAM);
     }
     System.out.println(stream.getText() + " <- " + input_streams);
   }
