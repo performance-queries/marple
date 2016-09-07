@@ -30,6 +30,7 @@ stream : ID;
 column : ID;
 agg_func : ID;
 relation : ID;
+
 // Column list
 column_with_comma : ',' column;
 column_list : '[' column ']'
