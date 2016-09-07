@@ -15,9 +15,11 @@ IF     : 'IF' | 'if';
 THEN   : 'THEN' | 'then';
 ELSE   : 'ELSE' | 'else';
 DEF    : 'def';
-EMIT   : 'emit';
+EMIT   : 'emit()';
 TRUE   : 'true'  | 'TRUE';
 FALSE  : 'false' | 'FALSE';
+AND    : 'and';
+OR     : 'or';
 INFINITY : 'INFINITY' | 'infinity';
 
 // Identifiers
@@ -59,18 +61,19 @@ predicate : expr '==' expr
           | expr '>' expr
           | expr '<' expr
           | expr '!=' expr
-          | predicate '&&' predicate
-          | predicate '||' predicate
+          | predicate AND predicate
+          | predicate OR predicate
           | '(' predicate ')'
           | '!' predicate
           | TRUE
           | FALSE;
 
 // Aggregation functions for group by
-stmt : column '=' expr
-     | ';'
-     | EMIT
-     | IF predicate THEN '{' stmt+ '}' (ELSE '{' stmt+ '}' )?;
+primitive : column '=' expr
+          | ';'
+          | EMIT;
+stmt : primitive
+     | IF predicate ':' primitive+ (ELSE ':' primitive+)?;
 
 agg_fun : DEF agg_func '(' column_list ',' column_list ')' ':' stmt+;
 
