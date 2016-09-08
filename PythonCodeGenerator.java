@@ -48,9 +48,41 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     System.err.println("def " + ctx.getChild(1).getText() + " (state, tuple_var):\n");
     System.err.println(generate_state_preamble());
     System.err.println(generate_tuple_preamble());
-    System.err.println("  " + text_with_spaces((ParserRuleContext)(ctx.getChild(8))) + "\n");
+    System.err.println(process_code_block(ctx.stmt()) + "\n");
     System.err.println(generate_state_postamble());
     System.err.println(generate_tuple_postamble());
+  }
+
+  private String process_code_block(List<perf_queryParser.StmtContext> code_block) {
+    String ret = "";
+    for (int i = 0; i < code_block.size(); i++) {
+      assert(code_block.get(i).getChildCount() == 1);
+      assert(code_block.get(i).getChild(0) instanceof ParserRuleContext);
+      ParserRuleContext single_stmt = (ParserRuleContext)code_block.get(i).getChild(0);
+      if (single_stmt instanceof perf_queryParser.PrimitiveContext) {
+        ret += "  " + process_primitive(single_stmt) + "\n";
+      } else if (single_stmt instanceof perf_queryParser.If_constructContext) {
+        perf_queryParser.If_constructContext if_stmt = (perf_queryParser.If_constructContext)single_stmt;
+        ret += "  if " + text_with_spaces(if_stmt.pred()) + " : \n";
+        for (int j = 0; j < if_stmt.if_primitive().size(); j++) {
+          ret += "    " + process_primitive(if_stmt.if_primitive().get(j)) + "\n";
+        }
+        // Optional else
+        if (if_stmt.ELSE() != null) {
+          ret += "  else : \n";
+          for (int j = 0; j < if_stmt.else_primitive().size(); j++) {
+            ret += "    " + process_primitive(if_stmt.else_primitive().get(j)) + "\n";
+          }
+        }
+      }
+    }
+    return ret;
+  }
+
+  private String process_primitive(ParserRuleContext single_stmt) {
+    if (text_with_spaces(single_stmt).contains("emit()")) return emit_stub();
+    else if (text_with_spaces(single_stmt).contains(";")) return "";
+    else return text_with_spaces(single_stmt);
   }
 
   /// Turn selects into a Python function definition
@@ -87,8 +119,10 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     return (spg_query_signature(stream) +
             "  global state_dict;\n\n" +
             generate_tuple_preamble() + "\n" +
-            "  tuple_state = state_dict(" + text_with_spaces(groupby_list) + ");\n\n" +
+            "  key_for_dict = tuple(" + text_with_spaces(groupby_list) + ");\n\n" +
+            "  tuple_state = state_dict[key_for_dict] if key_for_dict in state_dict else State();\n\n" +
             "  return " + text_with_spaces(agg_func) + "(tuple_state, tuple_var);" + "\n");
+            // TODO: Support different values of initial state
   }
 
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
@@ -208,7 +242,17 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
         ret = ret + "    " + "self." + key + " = 0;\n";
       }
     }
-    ret += "    valid = False;\n";
+    return ret;
+  }
+
+  private String emit_stub() {
+    String ret = "";
+    for (String key : symbol_table_.keySet()) {
+      if (symbol_table_.get(key) == IdentifierType.STATE) {
+        ret = ret + key.substring(3) + " = " + key + ";";
+      }
+    }
+    ret += "# emit stub";
     return ret;
   }
 

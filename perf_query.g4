@@ -65,8 +65,11 @@ pred : expr '==' expr | expr '>' expr | expr '<' expr | expr '!=' expr
 
 // Aggregation functions for group by
 primitive : column '=' expr | state '=' expr | ';' | EMIT;
+if_primitive   : primitive;
+else_primitive : primitive;
+if_construct : IF pred '{' if_primitive+ '}' (ELSE '{' else_primitive+ '}')?;
 stmt : primitive
-     | IF pred '{' primitive+ '}' (ELSE '{' primitive+ '}')?;
+     | if_construct;
 
 agg_fun : DEF agg_func '(' state_list ',' column_list ')' ':' stmt+;
 
