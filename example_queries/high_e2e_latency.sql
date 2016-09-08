@@ -1,6 +1,6 @@
-def e2esum([e2e_latency, last_switch], [tout, tin, switch_id]):
-  e2e_latency = e2e_latency + (tout - tin);
-  last_switch = switch_id;
+def e2esum([_s_e2e_latency, _s_last_switch], [tout, tin, switch_id]):
+  _s_e2e_latency = _s_e2e_latency + (tout - tin);
+  _s_last_switch = switch_id;
   emit();
 
 def empty([], []):

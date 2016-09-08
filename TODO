@@ -5,3 +5,4 @@
 4. Need to use java -ea to enable assertions. Is there a cleaner option?
 5. Linting.
 6. A reasonable build system.
+7. Run type checker on all example_queries.

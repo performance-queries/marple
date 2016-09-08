@@ -2,5 +2,6 @@ public enum IdentifierType {
   STREAM,
   RELATION,
   COLUMN,
-  AGG_FUNC
+  AGG_FUNC,
+  STATE
 }

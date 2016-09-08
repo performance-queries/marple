@@ -22,6 +22,11 @@ public class SymbolTableCreator extends perf_queryBaseListener {
     add_to_symbol_table(ctx, IdentifierType.STREAM);
   }
 
+  /// Listern for state productions
+  @Override public void exitState(perf_queryParser.StateContext ctx) {
+    add_to_symbol_table(ctx, IdentifierType.STATE);
+  }
+
   /// Listener for column productions
   @Override public void exitColumn(perf_queryParser.ColumnContext ctx) {
     add_to_symbol_table(ctx, IdentifierType.COLUMN);
@@ -44,12 +49,12 @@ public class SymbolTableCreator extends perf_queryBaseListener {
     assert(ctx instanceof perf_queryParser.RelationContext ||
            ctx instanceof perf_queryParser.StreamContext   ||
            ctx instanceof perf_queryParser.ColumnContext   ||
-           ctx instanceof perf_queryParser.Agg_funcContext);
-    assert(ctx.getChildCount() == 1);
+           ctx instanceof perf_queryParser.Agg_funcContext ||
+           ctx instanceof perf_queryParser.StateContext);
 
     /// Get identifier's name. These productions have a fan-out of 1,
     /// so the identifier is right under the production
-    String id_name = ctx.getStart().getText();
+    String id_name = ctx.getText();
 
     /// Check that the identifier isn't already in the symbol table with a different type
     check_for_type_change(id_name, id_type);
@@ -63,6 +68,7 @@ public class SymbolTableCreator extends perf_queryBaseListener {
     if (identifiers_.get(id_name) != null) {
       /// If so, is id_name's type different from new_type?
       if (identifiers_.get(id_name) != new_type) {
+        // throw exception if type changes
         throw new RuntimeException("Trying to change type of " + id_name + " from " +
                                identifiers_.get(id_name) +
                                " to " + new_type);
