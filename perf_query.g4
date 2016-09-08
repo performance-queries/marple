@@ -1,7 +1,7 @@
 grammar perf_query;
 
-// Skip whitespace
-WS : [ \n\t\r]+ -> skip;
+// Hide whitespace, but don't skip it
+WS : [ \n\t\r]+ -> channel(HIDDEN);
 
 // Keywords
 SELECT : 'SELECT' | 'select' ;
