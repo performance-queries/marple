@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.lang.RuntimeException;
 
 public class PythonCodeGenerator extends perf_queryBaseListener {
-  private static int uid_count = 0; 
   private perf_queryParser parser_;
 
   /// A reference to the symbol table created by the SymbolTableCreator pass
@@ -30,7 +29,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     System.err.println("def " + ctx.getChild(1).getText() + " (state, tuple_var):\n");
     System.err.println(generate_state_preamble());
     System.err.println(generate_tuple_preamble());
-    System.err.println("  " + text_with_spaces((ParserRuleContext)(ctx.getChild(8))));
+    System.err.println("  " + text_with_spaces((ParserRuleContext)(ctx.getChild(8))) + "\n");
     System.err.println(generate_state_postamble());
     System.err.println(generate_tuple_postamble());
   }
@@ -45,28 +44,28 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     OperationType operation = getOperationType((perf_queryParser.Stream_queryContext)query);
     if (operation == OperationType.FILTER) {
       ParserRuleContext predicate = (ParserRuleContext)(query.getChild(0).getChild(5));
-      System.err.println("def func" + Integer.toString(uid_count++) + "(tuple_var): \n" +
+      System.err.println("def func" + text_with_spaces((ParserRuleContext)stream) + "(tuple_var): \n" +
                          generate_tuple_preamble() + "\n" +
                          "  valid = " + text_with_spaces(predicate) + "\n\n" +
                          generate_tuple_postamble());
     } else if (operation == OperationType.PROJECT) {
       ParserRuleContext expr_list = (ParserRuleContext)(query.getChild(0).getChild(1));
       ParserRuleContext col_list  = (ParserRuleContext)(query.getChild(0).getChild(5));
-      System.err.println("def func" + Integer.toString(uid_count++) + "(tuple_var): \n" +
+      System.err.println("def func" + text_with_spaces((ParserRuleContext)stream) + "(tuple_var): \n" +
                          generate_tuple_preamble() + "\n" +
                          "  " + text_with_spaces(col_list) + " = " + text_with_spaces(expr_list) + ";\n\n" +
                          generate_tuple_postamble());
     } else if (operation == OperationType.JOIN) {
       // TODO: Need to get the arguments to the join, and for that matter all functions
-      System.err.println("def func" + Integer.toString(uid_count++) + "(tuple1, tuple2): \n" +
+      System.err.println("def func" + text_with_spaces((ParserRuleContext)stream) + "(tuple1, tuple2): \n" +
                          "  ret_tuple = Tuple();\n" +
                          "  ret_tuple.valid = tuple1.valid and tuple2.valid\n" +
                          "  return ret;\n");
     } else if (operation == OperationType.SFOLD) {
       ParserRuleContext groupby_list = (ParserRuleContext)(query.getChild(0).getChild(5));
       ParserRuleContext agg_func     = (ParserRuleContext)(query.getChild(0).getChild(1));
-      System.err.println("def func" + Integer.toString(uid_count++) + "(tuple_var):\n" +
-                         "  global state_dict;\n" +
+      System.err.println("def func" + text_with_spaces((ParserRuleContext)stream) + "(tuple_var):\n" +
+                         "  global state_dict;\n\n" +
                          generate_tuple_preamble() + "\n" +
                          "  tuple_state = state_dict(" + text_with_spaces(groupby_list) + ");\n\n" +
                          "  return " + text_with_spaces(agg_func) + "(tuple_state, tuple_var);" + "\n");
@@ -80,7 +79,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   private String generate_tuple_class() {
-    String ret = "  # tuple class\n";
+    String ret = "# tuple class\n";
     ret += "class Tuple: \n";
     ret += "  def __init__(self):\n";
     for (String key : symbol_table_.keySet()) {
@@ -114,7 +113,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   private String generate_state_class() {
-    String ret = "  # state class\n";
+    String ret = "# state class\n";
     ret += "class State: \n";
     ret += "  def __init__(self):\n";
     for (String key : symbol_table_.keySet()) {
