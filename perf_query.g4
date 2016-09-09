@@ -49,9 +49,12 @@ state_list : '[' state ']'
            | '[' state state_with_comma+ ']';
 
 // Expressions
-expr : column | state | VALUE | INFINITY
-     | expr '+' expr | expr '-' expr | expr '*' expr | expr '/' expr
-     | '(' expr ')';
+expr : ID   # exprCol
+     | VALUE    # exprVal
+     | INFINITY # exprInf
+     | expr op=('+'|'-'|'*'|'/') expr # exprComb
+     | '(' expr ')' # exprParen
+     ;
 
 // Expression list
 expr_with_comma : ',' expr;
@@ -59,9 +62,17 @@ expr_list : '[' expr ']'
           | '[' expr expr_with_comma+ ']';
 
 // Predicates
-pred : expr '==' expr | expr '>' expr | expr '<' expr | expr '!=' expr
-     | pred AND pred | pred OR pred | '(' pred ')' | '!' pred
-     | TRUE | FALSE;
+predicate : expr '==' expr # exprEq
+          | expr '>' expr  # exprGt
+          | expr '<' expr  # exprLt
+          | expr '!=' expr # exprNe
+          | predicate '&&' predicate # predAnd
+          | predicate '||' predicate # predOr
+          | '(' predicate ')' # predParen
+          | '!' predicate # predNot
+          | TRUE # truePred
+          | FALSE #falsePred
+	  ;
 
 // Aggregation functions for group by
 primitive : column '=' expr | state '=' expr | ';' | EMIT;
