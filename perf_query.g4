@@ -49,7 +49,7 @@ state_list : '[' state ']'
            | '[' state state_with_comma+ ']';
 
 // Expressions
-expr : ID   # exprCol
+expr : ID       # exprCol
      | VALUE    # exprVal
      | INFINITY # exprInf
      | expr op=('+'|'-'|'*'|'/') expr # exprComb
