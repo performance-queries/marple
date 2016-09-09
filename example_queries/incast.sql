@@ -1,8 +1,8 @@
-def new_flow ([count], []):
-    if count == 0 : emit(); count = 1;
+def new_flow ([_s_count], []):
+    if _s_count == 0 { emit(); _s_count = 1; }
 
-def flow_count ([f_count], []):
-    f_count = f_count + 1
+def flow_count ([_s_f_count], []):
+    _s_f_count = _s_f_count + 1
     emit()
 
 R1 = select [srcip, dstip, srcport, dstport, proto, tin/128] from T as

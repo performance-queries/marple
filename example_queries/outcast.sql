@@ -1,13 +1,13 @@
-def new_flow ([perflowcount], []):
-    if perflowcount == 0 : emit(); perflowcount = 1;
+def new_flow ([_s_perflowcount], []):
+    if _s_perflowcount == 0 { emit(); _s_perflowcount = 1; }
     else: emit();
 
-def flow_count ([portpaircount], [perflowcount]):
-    portpaircount = portpaircount + (1 - perflowcount)
+def flow_count ([_s_portpaircount], [perflowcount]):
+    _s_portpaircount = _s_portpaircount + (1 - perflowcount)
     emit()
 
-def maxfc ([maxportcount], [portpaircount]):
-    if maxportcount == 0 or maxportcount < portpaircount : maxportcount = portpaircount;
+def maxfc ([_s_maxportcount], [portpaircount]):
+    if _s_maxportcount == 0 or _s_maxportcount < portpaircount { _s_maxportcount = portpaircount; }
     emit()
 
 R1 = select [srcip, dstip, srcport, dstport, proto, tin/128, inport, outport]
