@@ -39,14 +39,12 @@ column_list : '[' column ']'
             | '[' column column_with_comma+ ']';
 
 // Expressions
-expr : column
-     | VALUE
-     | INFINITY
-     | expr '+' expr
-     | expr '-' expr
-     | expr '*' expr
-     | expr '/' expr
-     | '(' expr ')';
+expr : column   # exprCol
+     | VALUE    # exprVal
+     | INFINITY # exprInf
+     | expr op=('+'|'-'|'*'|'/') expr # exprComb
+     | '(' expr ')' # exprParen
+     ;
 
 // Expression list
 expr_with_comma : ',' expr;
@@ -55,16 +53,17 @@ expr_list : '[' expr ']'
 
 
 // Predicates or filters
-predicate : expr '==' expr
-          | expr '>' expr
-          | expr '<' expr
-          | expr '!=' expr
-          | predicate '&&' predicate
-          | predicate '||' predicate
-          | '(' predicate ')'
-          | '!' predicate
-          | TRUE
-          | FALSE;
+predicate : expr '==' expr # exprEq
+          | expr '>' expr  # exprGt
+          | expr '<' expr  # exprLt
+          | expr '!=' expr # exprNe
+          | predicate '&&' predicate # predAnd
+          | predicate '||' predicate # predOr
+          | '(' predicate ')' # predParen
+          | '!' predicate # predNot
+          | TRUE # truePred
+          | FALSE #falsePred
+	  ;
 
 // Aggregation functions for group by
 stmt : column '=' expr
