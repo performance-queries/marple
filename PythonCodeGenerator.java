@@ -77,10 +77,10 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     System.err.println("state_dict = dict();");
     System.err.println("for i in range(1000):");
     System.err.println("  T = random_tuple(); # generates a random tuple");
-    System.err.println("  print \"input:\", T;");
+    System.err.println("  print(\"input:\", T);");
     System.err.println("  T.print_tuple();");
     System.err.println(function_calls_);
-    System.err.println("  print \"output:\"," + last_assigned_ + ";");
+    System.err.println("  print(\"output:\"," + last_assigned_ + ");");
     System.err.println("  " + last_assigned_ + ".print_tuple();");
   }
 
@@ -256,7 +256,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
 
     ret += "  def print_tuple(self):\n";
     for (String key : tuple_field_set_) {
-      ret += "    print \"" + key + "\"," + "self." + key + "\n";
+      ret += "    print(\"" + key + "\"," + "self." + key + ")\n";
     }
     ret += "    self.state.print_state();\n";
 
@@ -297,7 +297,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     }
     ret += "  def print_state(self):\n";
     for (String key : state_field_set_) {
-      ret = ret + "    print \"" + key + "\", self." + key +";\n";
+      ret = ret + "    print(\"" + key + "\", self." + key +");\n";
     }
 
     return ret;

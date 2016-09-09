@@ -17,3 +17,5 @@ Run interpreter using
 cat example_queries/flowlet_hist.sql | java -ea Interpreter 2> /tmp/output.py
 6. Generate expression tree using
 dot -Tpng /tmp/tree.dot > /tmp/tree.png
+7. Run interpreted code using
+python3 /tmp/output.py
