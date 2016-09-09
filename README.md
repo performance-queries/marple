@@ -6,7 +6,7 @@ goal of finding needles in a haystack. It is pronounced "needle stack"
 QuickStart:
 
 1. . setup.sh (Don't execute setup.sh, source it)
-2. antlr4 perf_query.g4 
+2. antlr4 -visitor perf_query.g4
 3. javac *.java
 4. Generate parse tree using
 grun perf_query prog  example_queries/flowlet_hist.sql -gui
