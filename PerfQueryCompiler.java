@@ -29,5 +29,10 @@ public class PerfQueryCompiler {
     System.out.println("Creating expression tree ...");
     ExprTreeCreator expr_tree_creator = new ExprTreeCreator(parser.ID, symbol_table_creator.symbol_table());
     walker.walk(expr_tree_creator, tree);
+
+    System.out.println("Trying out visitor pattern ...");
+    GlobalAnalyzer global_analyzer = new GlobalAnalyzer(
+        symbol_table_creator.symbol_table());
+    global_analyzer.visit(tree);
   }
 }
