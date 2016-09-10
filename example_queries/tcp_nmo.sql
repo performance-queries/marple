@@ -1,6 +1,6 @@
-def nonmt([_s_maxseq, _s_nm_count], [tcpseq]):
-  if _s_maxseq > tcpseq { _s_nm_count = _s_nm_count + 1; }
-  if _s_maxseq < tcpseq { _s_maxseq = tcpseq; }
+def nonmt([maxseq, nm_count], [tcpseq]):
+  if maxseq > tcpseq { nm_count = nm_count + 1; }
+  if maxseq < tcpseq { maxseq = tcpseq; }
 
 tcp_pkts = SELECT * FROM T WHERE proto == TCP;
 nmo_query = SELECT nonmt

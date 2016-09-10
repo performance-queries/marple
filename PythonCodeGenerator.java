@@ -19,6 +19,9 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   /// Required to preserve spaces and retrieve them when unparsing productions
   private perf_queryParser parser_;
 
+  /// Names of all key-value stores used for groupbys
+  private TreeSet<String> kv_stores_ = new TreeSet<String>();
+
   /// All fields in tuples,
   /// start with intrinsic fields alone
   private TreeSet<String> tuple_field_set_ = new TreeSet<String>(intrinsic_fields_);
@@ -39,14 +42,16 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     parser_ = t_parser;
     
     for (String key : t_symbol_table.keySet()) {
-      if (t_symbol_table.get(key) == IdentifierType.COLUMN) {
+      if ((t_symbol_table.get(key) == IdentifierType.COLUMN) ||
+          (t_symbol_table.get(key) == IdentifierType.STATE_OR_COLUMN)) {
         tuple_field_set_.add(key);
       }
     }
     tuple_field_set_.add("valid");
 
     for (String key : t_symbol_table.keySet()) {
-      if (t_symbol_table.get(key) == IdentifierType.STATE) {
+      if ((t_symbol_table.get(key) == IdentifierType.STATE) ||
+          (t_symbol_table.get(key) == IdentifierType.STATE_OR_COLUMN)) {
         state_field_set_.add(key);
       }
     }
@@ -64,7 +69,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     System.err.println("def random_tuple():");
     System.err.println("  ret = Tuple();");
     for (String key : intrinsic_fields_) {
-      System.err.println("  " + "ret." + key + " = random.randint(1, 65536);\n");
+      System.err.println("  " + "ret." + key + " = random.randint(1, 65536);");
     }
     System.err.println("  return ret;");
   }
@@ -74,7 +79,9 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   @Override public void exitProg(perf_queryParser.ProgContext ctx) {
     System.err.println(function_defs_);
     System.err.println("# main loop of function calls");
-    System.err.println("state_dict = dict();");
+    for (String kv : kv_stores_) {
+      System.err.println(kv+ " = dict();");
+    }
     System.err.println("for i in range(1000):");
     System.err.println("  T = random_tuple(); # generates a random tuple");
     System.err.println("  print(\"input:\", T);");
@@ -86,33 +93,35 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
 
   /// Turn aggregation function into a Python function definitoon
   @Override public void exitAgg_fun(perf_queryParser.Agg_funContext ctx) {
-    System.err.println("def " + ctx.getChild(1).getText() + " (state, tuple_var):\n");
-    System.err.println(generate_state_preamble());
-    System.err.println(generate_tuple_preamble());
-    System.err.println(process_code_block(ctx.stmt()) + "\n");
-    System.err.println(generate_state_postamble());
-    System.err.println(generate_tuple_postamble());
+    System.err.println("def " + ctx.agg_func().getText() + " (state, tuple_var):\n");
+    TreeSet<String> states = new TreeSet<>(Utility.getAllTokens(ctx.state_list(), perf_queryParser.ID));
+    TreeSet<String> cols = new TreeSet<>(Utility.getAllTokens(ctx.column_list(), perf_queryParser.ID));
+    System.err.println(generate_state_preamble(states));
+    System.err.println(generate_tuple_preamble(cols));
+    System.err.println(process_code_block(ctx.stmt(), states) + "\n");
+    System.err.println(generate_state_postamble(states));
+    System.err.println("  return tuple_var;");
   }
 
-  private String process_code_block(List<perf_queryParser.StmtContext> code_block) {
+  private String process_code_block(List<perf_queryParser.StmtContext> code_block, TreeSet<String> states) {
     String ret = "";
     for (int i = 0; i < code_block.size(); i++) {
       assert(code_block.get(i).getChildCount() == 1);
       assert(code_block.get(i).getChild(0) instanceof ParserRuleContext);
       ParserRuleContext single_stmt = (ParserRuleContext)code_block.get(i).getChild(0);
       if (single_stmt instanceof perf_queryParser.PrimitiveContext) {
-        ret += "  " + process_primitive(single_stmt) + "\n";
+        ret += "  " + process_primitive(single_stmt, states) + "\n";
       } else if (single_stmt instanceof perf_queryParser.If_constructContext) {
         perf_queryParser.If_constructContext if_stmt = (perf_queryParser.If_constructContext)single_stmt;
-        ret += "  if " + text_with_spaces(if_stmt.pred()) + " : \n";
+        ret += "  if " + text_with_spaces(if_stmt.predicate()) + " : \n";
         for (int j = 0; j < if_stmt.if_primitive().size(); j++) {
-          ret += "    " + process_primitive(if_stmt.if_primitive().get(j)) + "\n";
+          ret += "    " + process_primitive(if_stmt.if_primitive().get(j), states) + "\n";
         }
         // Optional else
         if (if_stmt.ELSE() != null) {
           ret += "  else : \n";
           for (int j = 0; j < if_stmt.else_primitive().size(); j++) {
-            ret += "    " + process_primitive(if_stmt.else_primitive().get(j)) + "\n";
+            ret += "    " + process_primitive(if_stmt.else_primitive().get(j), states) + "\n";
           }
         }
       }
@@ -120,8 +129,8 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     return ret;
   }
 
-  private String process_primitive(ParserRuleContext single_stmt) {
-    if (text_with_spaces(single_stmt).contains("emit()")) return emit_stub();
+  private String process_primitive(ParserRuleContext single_stmt, TreeSet<String> states) {
+    if (text_with_spaces(single_stmt).contains("emit()")) return emit_stub(states);
     else if (text_with_spaces(single_stmt).contains(";")) return "";
     else return text_with_spaces(single_stmt);
   }
@@ -130,9 +139,9 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   private String filter_def(ParseTree query, ParseTree stream) {
     ParserRuleContext predicate = (ParserRuleContext)(query.getChild(0).getChild(5));
     return (spg_query_signature(stream) +
-            generate_tuple_preamble() + "\n" +
+            generate_tuple_preamble(tuple_field_set_) + "\n" +
             "  valid = " + text_with_spaces(predicate) + "\n\n" +
-            generate_tuple_postamble() + "\n");
+            generate_tuple_postamble(tuple_field_set_) + "\n");
   }
 
   /// Turn SQL projections into Python function definitions
@@ -140,9 +149,9 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     ParserRuleContext expr_list = (ParserRuleContext)(query.getChild(0).getChild(1));
     ParserRuleContext col_list  = (ParserRuleContext)(query.getChild(0).getChild(5));
     return (spg_query_signature(stream) +
-            generate_tuple_preamble() + "\n" +
+            generate_tuple_preamble(tuple_field_set_) + "\n" +
             "  " + text_with_spaces(col_list) + " = " + text_with_spaces(expr_list) + ";\n\n" +
-            generate_tuple_postamble()+ "\n");
+            generate_tuple_postamble(tuple_field_set_)+ "\n");
   }
 
   /// Turn SQL joins into Python function definitions
@@ -158,11 +167,13 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   private String groupby_def(ParseTree query, ParseTree stream) {
     ParserRuleContext groupby_list = (ParserRuleContext)(query.getChild(0).getChild(5));
     ParserRuleContext agg_func     = (ParserRuleContext)(query.getChild(0).getChild(1));
+    String stream_name = text_with_spaces((ParserRuleContext)stream);
+    kv_stores_.add("state_dict" + stream_name);
     return (spg_query_signature(stream) +
-            "  global state_dict;\n\n" +
-            generate_tuple_preamble() + "\n" +
+            "  global state_dict" + stream_name + " ;\n\n" +
+            generate_tuple_preamble(tuple_field_set_) + "\n" +
             "  key_for_dict = tuple(" + text_with_spaces(groupby_list) + ");\n\n" +
-            "  tuple_state = state_dict[key_for_dict] if key_for_dict in state_dict else State();\n\n" +
+            "  tuple_state = state_dict" + stream_name + "[key_for_dict] if key_for_dict in state_dict" + stream_name + " else State();\n\n" +
             "  return " + text_with_spaces(agg_func) + "(tuple_state, tuple_var);" + "\n" + "\n");
   }
 
@@ -251,14 +262,12 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     for (String key : tuple_field_set_) {
       ret = ret + "    " + "self." + key + " = None;\n";
     }
-    ret += "    self.state = State();\n";
     ret += "    self.valid = True;\n"; // Everything is valid in the base stream
 
     ret += "  def print_tuple(self):\n";
     for (String key : tuple_field_set_) {
       ret += "    print(\"" + key + "\"," + "self." + key + ")\n";
     }
-    ret += "    self.state.print_state();\n";
 
     ret += "  def join_tuple(self, other):\n";
     ret += "    ret = Tuple();\n";
@@ -270,17 +279,17 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     return ret;
   }
 
-  private String generate_tuple_preamble() {
+  private String generate_tuple_preamble(TreeSet<String> columns) {
     String ret = "  # tuple preamble\n";
-    for (String key : tuple_field_set_) {
+    for (String key : columns) {
       ret = ret + "  " + key + " = tuple_var." + key + "\n";
     }
     return ret;
   }
 
-  private String generate_tuple_postamble() {
+  private String generate_tuple_postamble(TreeSet<String> columns) {
     String ret = "  # tuple postamble\n";
-    for (String key : tuple_field_set_) {
+    for (String key : columns) {
       ret = ret + "  " + "tuple_var." + key + " = " + key + "\n";
     }
     ret += "  return tuple_var;\n";
@@ -303,26 +312,26 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     return ret;
   }
 
-  private String emit_stub() {
+  private String emit_stub(TreeSet<String> states) {
     String ret = "";
-    for (String key : state_field_set_) {
-      ret = ret + key.substring(3) + " = " + key + ";";
+    for (String key : states) {
+      ret = ret + "tuple_var." + key + " = " + key + ";";
     }
     ret += "# emit stub";
     return ret;
   }
 
-  private String generate_state_preamble() {
+  private String generate_state_preamble(TreeSet<String> states) {
     String ret = "  # state preamble\n";
-    for (String key : state_field_set_) {
+    for (String key : states) {
       ret = ret + "  " + key + " = state." + key + "\n";
     }
     return ret;
   }
 
-  private String generate_state_postamble() {
+  private String generate_state_postamble(TreeSet<String> states) {
     String ret = "  # state postamble\n";
-    for (String key : state_field_set_) {
+    for (String key : states) {
       ret = ret + "  " + "state." + key + " = " + key + "\n";
     }
     return ret;

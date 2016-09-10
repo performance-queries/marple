@@ -78,17 +78,17 @@ public class ExprTreeCreator extends perf_queryBaseListener {
     ParseTree op = query.getChild(0);
     if (op instanceof perf_queryParser.FilterContext) {
       // SELECT * FROM stream, so stream is at location 3
-      return new Operation(OperationType.FILTER, getAllTokens(op.getChild(3), id_ttype_));
+      return new Operation(OperationType.FILTER, Utility.getAllTokens(op.getChild(3), id_ttype_));
     } else if (op instanceof perf_queryParser.SfoldContext) {
       // SELECT agg_func FROM stream SGROUPBY ...
-      return new Operation(OperationType.SFOLD, getAllTokens(op.getChild(3), id_ttype_));
+      return new Operation(OperationType.SFOLD, Utility.getAllTokens(op.getChild(3), id_ttype_));
     } else if (op instanceof perf_queryParser.ProjectContext) {
       // SELECT expre_list FROM stream
-      return new Operation(OperationType.PROJECT, getAllTokens(op.getChild(3), id_ttype_));
+      return new Operation(OperationType.PROJECT, Utility.getAllTokens(op.getChild(3), id_ttype_));
     } else if (op instanceof perf_queryParser.JoinContext) {
       // stream JOIN stream
-      ArrayList<String> ret = getAllTokens(op.getChild(0), id_ttype_);
-      ret.addAll(getAllTokens(op.getChild(2), id_ttype_));
+      ArrayList<String> ret = Utility.getAllTokens(op.getChild(0), id_ttype_);
+      ret.addAll(Utility.getAllTokens(op.getChild(2), id_ttype_));
       return new Operation(OperationType.JOIN, ret);
     } else {
       assert(false);
@@ -102,7 +102,7 @@ public class ExprTreeCreator extends perf_queryBaseListener {
     ParseTree op = query.getChild(0);
     if (op instanceof perf_queryParser.RfoldContext) {
       // SELECT agg_func FROM stream RGROUPBY ...
-      return new Operation(OperationType.RFOLD, getAllTokens(op.getChild(3), id_ttype_));
+      return new Operation(OperationType.RFOLD, Utility.getAllTokens(op.getChild(3), id_ttype_));
     } else {
       assert(false);
       return new Operation();
@@ -127,23 +127,5 @@ public class ExprTreeCreator extends perf_queryBaseListener {
      }
      return new ExprTree(operation.opcode, children);
    }
-  }
-
-  private ArrayList<String> getAllTokens(ParseTree node, int ttype) {
-    if (node instanceof TerminalNode) {
-      ArrayList<String> token = new ArrayList<String>();
-      if (((TerminalNode)node).getSymbol().getType() == ttype) {
-        token.add(((TerminalNode)node).getSymbol().getText());
-      }
-      return token;
-    } else {
-      assert(node instanceof ParserRuleContext);
-      ArrayList<String> tokens = new ArrayList<String>();
-      // get all tokens of children
-      for (int i = 0; i < node.getChildCount(); i++) {
-        tokens.addAll(getAllTokens(node.getChild(i), ttype));
-      }
-      return tokens;
-    }
   }
 }

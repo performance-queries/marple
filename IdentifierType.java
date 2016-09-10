@@ -3,5 +3,6 @@ public enum IdentifierType {
   RELATION,
   COLUMN,
   AGG_FUNC,
-  STATE
+  STATE,
+  STATE_OR_COLUMN,
 }

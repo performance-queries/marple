@@ -23,12 +23,12 @@ OR     : 'or';
 INFINITY : 'INFINITY' | 'infinity';
 
 // Identifiers
-ID : ('a'..'z' | 'A'..'Z') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
+ID : ('a'..'z' | 'A'..'Z' |  '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
 VALUE : [0-9]+;
 
 // alias ID to stream, column, agg_func and relations
 // reuses the parser for type checking as well
-state    : '_s_' ID;
+state    : ID;
 stream   : ID;
 agg_func : ID;
 relation : ID;
@@ -66,8 +66,8 @@ predicate : expr '==' expr # exprEq
           | expr '>' expr  # exprGt
           | expr '<' expr  # exprLt
           | expr '!=' expr # exprNe
-          | predicate '&&' predicate # predAnd
-          | predicate '||' predicate # predOr
+          | predicate AND predicate # predAnd
+          | predicate OR predicate # predOr
           | '(' predicate ')' # predParen
           | '!' predicate # predNot
           | TRUE # truePred
@@ -75,17 +75,17 @@ predicate : expr '==' expr # exprEq
 	  ;
 
 // Aggregation functions for group by
-primitive : column '=' expr | state '=' expr | ';' | EMIT;
+primitive : ID '=' expr | ';' | EMIT;
 if_primitive   : primitive;
 else_primitive : primitive;
-if_construct : IF pred '{' if_primitive+ '}' (ELSE '{' else_primitive+ '}')?;
+if_construct : IF predicate '{' if_primitive+ '}' (ELSE '{' else_primitive+ '}')?;
 stmt : primitive
      | if_construct;
 
 agg_fun : DEF agg_func '(' state_list ',' column_list ')' ':' stmt+;
 
 // The five operators
-filter  :  SELECT '*' FROM stream WHERE pred;
+filter  :  SELECT '*' FROM stream WHERE predicate;
 project :  SELECT expr_list FROM stream AS column_list;
 sfold   :  SELECT agg_func FROM stream SGROUPBY column_list;
 join    :  stream JOIN stream;

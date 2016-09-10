@@ -27,7 +27,7 @@ public class PerfQueryCompiler {
 
     // Expression tree creator
     System.out.println("Creating expression tree ...");
-    ExprTreeCreator expr_tree_creator = new ExprTreeCreator(parser.ID, symbol_table_creator.symbol_table());
+    ExprTreeCreator expr_tree_creator = new ExprTreeCreator(perf_queryParser.ID, symbol_table_creator.symbol_table());
     walker.walk(expr_tree_creator, tree);
 
     System.out.println("Trying out visitor pattern ...");
