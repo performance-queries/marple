@@ -1,6 +1,7 @@
 // import ANTLR's runtime libraries
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
+import java.util.HashSet;
 
 public class PerfQueryCompiler {
   public static void main(String[] args) throws Exception {
@@ -41,8 +42,8 @@ public class PerfQueryCompiler {
     walker.walk(expr_tree_creator, tree);
 
     System.out.println("Trying out visitor pattern ...");
-    GlobalAnalyzer global_analyzer = new GlobalAnalyzer(
-        symbol_table_creator.symbol_table());
+    SwitchSet network_sws = new SwitchSet(20);
+    GlobalAnalyzer global_analyzer = new GlobalAnalyzer(network_sws.get_switches());
     global_analyzer.visit(tree);
   }
 }
