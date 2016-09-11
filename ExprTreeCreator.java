@@ -23,6 +23,9 @@ public class ExprTreeCreator extends perf_queryBaseListener {
   /// by this pass.
   private HashMap<String, Operation> dep_table_ = new HashMap<String, Operation>();
 
+  /// A map from a stream/relation symbol to its context in the overall parse tree.
+  private HashMap<String, ParserRuleContext> sym_tree_ = new HashMap<String, ParserRuleContext>();
+
   /// The last identifier assigned so far. Used to build an expression tree.
   private String last_assigned_id_ = "";
 
@@ -43,6 +46,7 @@ public class ExprTreeCreator extends perf_queryBaseListener {
     }
     dep_table_.put(stream.getText(), operation);
     last_assigned_id_ = stream.getText();
+    sym_tree_.put(stream.getText(), (ParserRuleContext)query);
   }
 
   @Override public void exitProg(perf_queryParser.ProgContext ctx) {
