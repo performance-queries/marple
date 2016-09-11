@@ -10,12 +10,22 @@ public class Interpreter {
     // create a lexer that feeds off of input CharStream
     perf_queryLexer lexer = new perf_queryLexer(input);
 
+    // Add an error listener
+    lexer.removeErrorListeners();
+    lexer.addErrorListener(new ThrowingErrorListener());
+
     // create a buffer of tokens pulled from the lexer
     CommonTokenStream tokens = new CommonTokenStream(lexer);
 
     // create a parser that feeds off the tokens buffer
     perf_queryParser parser = new perf_queryParser(tokens);
-    ParseTree tree = parser.prog(); // begin parsing at the prog production
+
+    // Add an error listener
+    parser.removeErrorListeners();
+    parser.addErrorListener(new ThrowingErrorListener());
+
+    // begin parsing at the prog production
+    ParseTree tree = parser.prog();
 
     // Create a walker for the parse tree
     ParseTreeWalker walker = new ParseTreeWalker();
