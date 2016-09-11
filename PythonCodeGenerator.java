@@ -2,8 +2,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.misc.Interval;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.ArrayList;
@@ -38,23 +38,23 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   /// Last assigned stream
   private String last_assigned_ = "";
 
-  public PythonCodeGenerator(perf_queryParser t_parser, HashMap<String, IdentifierType> t_symbol_table) {
+  public PythonCodeGenerator(perf_queryParser t_parser, HashMap<String, IdentifierType> t_sym_table) {
     parser_ = t_parser;
-    
-    for (String key : t_symbol_table.keySet()) {
-      if ((t_symbol_table.get(key) == IdentifierType.COLUMN) ||
-          (t_symbol_table.get(key) == IdentifierType.STATE_OR_COLUMN)) {
-        tuple_field_set_.add(key);
-      }
-    }
+
+    tuple_field_set_ = t_sym_table.entrySet()
+                       .stream()
+                       .filter(kv -> (kv.getValue() == IdentifierType.COLUMN) ||
+                              (kv.getValue() == IdentifierType.STATE_OR_COLUMN))
+                       .map(kv -> kv.getKey())
+                       .collect(Collectors.toCollection(TreeSet::new));
     tuple_field_set_.add("valid");
 
-    for (String key : t_symbol_table.keySet()) {
-      if ((t_symbol_table.get(key) == IdentifierType.STATE) ||
-          (t_symbol_table.get(key) == IdentifierType.STATE_OR_COLUMN)) {
-        state_field_set_.add(key);
-      }
-    }
+    state_field_set_ = t_sym_table.entrySet()
+                       .stream()
+                       .filter(kv -> (kv.getValue() == IdentifierType.STATE) ||
+                              (kv.getValue() == IdentifierType.STATE_OR_COLUMN))
+                       .map(kv -> kv.getKey())
+                       .collect(Collectors.toCollection(TreeSet::new));
   }
 
   /// Use this to print declarations at the beginning of Python code
@@ -136,8 +136,8 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn selects into a Python function definition
-  private String filter_def(ParseTree query, ParseTree stream) {
-    ParserRuleContext predicate = (ParserRuleContext)(query.getChild(0).getChild(5));
+  private String filter_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
+    ParserRuleContext predicate = query.filter().predicate();
     return (spg_query_signature(stream) +
             generate_tuple_preamble(tuple_field_set_) + "\n" +
             "  valid = " + text_with_spaces(predicate) + "\n\n" +
@@ -145,9 +145,9 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn SQL projections into Python function definitions
-  private String project_def(ParseTree query, ParseTree stream) {
-    ParserRuleContext expr_list = (ParserRuleContext)(query.getChild(0).getChild(1));
-    ParserRuleContext col_list  = (ParserRuleContext)(query.getChild(0).getChild(5));
+  private String project_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
+    ParserRuleContext expr_list = query.project().expr_list();
+    ParserRuleContext col_list  = query.project().column_list();
     return (spg_query_signature(stream) +
             generate_tuple_preamble(tuple_field_set_) + "\n" +
             "  " + text_with_spaces(col_list) + " = " + text_with_spaces(expr_list) + ";\n\n" +
@@ -155,7 +155,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn SQL joins into Python function definitions
-  private String join_def(ParseTree query, ParseTree stream) {  
+  private String join_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream){
     return (join_query_signature(stream) +
             "  ret_tuple = Tuple();\n" +
             "  ret_tuple = tuple1.join_tuple(tuple2);\n" +
@@ -164,10 +164,10 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn SQL GROUPBYs into Python function definitions
-  private String groupby_def(ParseTree query, ParseTree stream) {
-    ParserRuleContext groupby_list = (ParserRuleContext)(query.getChild(0).getChild(5));
-    ParserRuleContext agg_func     = (ParserRuleContext)(query.getChild(0).getChild(1));
-    String stream_name = text_with_spaces((ParserRuleContext)stream);
+  private String groupby_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
+    ParserRuleContext groupby_list = query.groupby().column_list();
+    ParserRuleContext agg_func     = query.groupby().agg_func();
+    String stream_name = text_with_spaces(stream);
     kv_stores_.add("state_dict" + stream_name);
     return (spg_query_signature(stream) +
             "  global state_dict" + stream_name + " ;\n\n" +
@@ -178,11 +178,8 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
-    ParseTree stream = ctx.getChild(0);
-    assert(stream instanceof perf_queryParser.StreamContext);
-
-    ParseTree query = ctx.getChild(2);
-    assert(query instanceof perf_queryParser.Stream_queryContext);
+    perf_queryParser.StreamContext stream = ctx.stream();
+    perf_queryParser.Stream_queryContext query = ctx.stream_query();
 
     last_assigned_ = text_with_spaces((ParserRuleContext)stream);
     OperationType operation = Utility.getOperationType((perf_queryParser.Stream_queryContext)query);
@@ -204,29 +201,29 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Signature for Python function for select, project, and group by
-  private String spg_query_signature(ParseTree stream) {
-    String stream_name = text_with_spaces((ParserRuleContext)stream);
+  private String spg_query_signature(perf_queryParser.StreamContext stream) {
+    String stream_name = text_with_spaces(stream);
     return "def func" + stream_name + "(tuple_var):\n";
   }
 
   /// Signature for Python functions for join
-  private String join_query_signature(ParseTree stream) {
-    String stream_name = text_with_spaces((ParserRuleContext)stream);
+  private String join_query_signature(perf_queryParser.StreamContext stream) {
+    String stream_name = text_with_spaces(stream);
     return "def func" + stream_name + "(tuple1, tuple2):\n";
   }
 
   /// Generate Python function calls for select, project, and group by queries
-  private String generate_spg_queries(ParseTree query, ParseTree stream) {
-    String stream_name = text_with_spaces((ParserRuleContext)stream);
-    String arg_name    = text_with_spaces((ParserRuleContext)query.getChild(0).getChild(3));
+  private String generate_spg_queries(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
+    String stream_name = text_with_spaces(stream);
+    String arg_name    = text_with_spaces((ParserRuleContext)(query.getChild(0).getChild(3)));
     return "  " + stream_name + " = func" + stream_name + "(" + arg_name + ")\n";
   }
 
   /// Generate Python function call for join queries
-  private String generate_join_queries(ParseTree query, ParseTree stream) {
-    String stream_name = text_with_spaces((ParserRuleContext)stream);
-    String arg1   = text_with_spaces((ParserRuleContext)query.getChild(0).getChild(0));
-    String arg2   = text_with_spaces((ParserRuleContext)query.getChild(0).getChild(2));
+  private String generate_join_queries(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
+    String stream_name = text_with_spaces(stream);
+    String arg1   = text_with_spaces((ParserRuleContext)(query.join().getChild(0)));
+    String arg2   = text_with_spaces((ParserRuleContext)(query.join().getChild(2)));
     return "  " + stream_name + " = func" + stream_name + "(" + arg1 + ", " + arg2 + ")\n";
   }
 

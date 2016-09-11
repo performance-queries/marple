@@ -59,11 +59,9 @@ public class SymbolTableCreator extends perf_queryBaseListener {
 
   /// Listener for groupby operations/queries
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
-    ParseTree stream = ctx.getChild(0);
-    assert(stream instanceof perf_queryParser.StreamContext);
+    perf_queryParser.StreamContext stream = ctx.stream();
 
-    ParseTree query = ctx.getChild(2);
-    assert(query instanceof perf_queryParser.Stream_queryContext); 
+    perf_queryParser.Stream_queryContext query = ctx.stream_query();
 
     OperationType operation = Utility.getOperationType((perf_queryParser.Stream_queryContext)query);
 
