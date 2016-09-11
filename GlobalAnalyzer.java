@@ -10,7 +10,7 @@ import java.lang.RuntimeException;
 /// Determine which queries run where, and (conceptually) which set of packets
 /// each instance of the query processes. This results in an annotated query
 /// expression tree.
-public class GlobalAnalyzer extends perf_queryBaseVisitor<Void> {
+public class GlobalAnalyzer extends perf_queryBaseVisitor<OpLocation> {
     /// A reference to the set of switches globally in the network
     private HashSet<Integer> all_switches_;
 
@@ -24,10 +24,13 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<Void> {
     }
 
     /// Test methods to check out some basic functionalities
-    @Override public Void visitFilter(perf_queryParser.FilterContext ctx) {
-	HashSet<Integer> affected_sw = switch_extractor_.visit(ctx.pred());
+    @Override public OpLocation visitFilter(perf_queryParser.FilterContext ctx) {
+	HashSet<Integer> sw_set = switch_extractor_.visit(ctx.pred());
+	OpLocation filter_opl = new OpLocation(predicated_sw, StreamType.SINGLE_SWITCH_STREAM);
 	System.out.println("This filter restricts the stream to the following switches:");
-	System.out.println(affected_sw.toString());
-	return null;
+	System.out.println(sw_set.toString());
+	/* TODO: Recursive call to input stream/relation's OpLocation, and merging of the two
+	OpLocations. */
+	return filter_opl;
     }
 }
