@@ -20,7 +20,7 @@ dot -Tpng /tmp/tree.dot > /tmp/tree.png
 8. Run interpreted code using
 python3 /tmp/output.py
 
-Some quick smoke tests:
+Some quick smoke tests (wrapped in ./smoke_test.sh)
 grun perf_query prog example_queries/*.sql
 ./test_everything.sh Interpreter
 ./test_everything.sh PerfQueryCompiler
