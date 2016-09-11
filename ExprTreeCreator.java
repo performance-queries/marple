@@ -99,4 +99,12 @@ public class ExprTreeCreator extends perf_queryBaseListener {
      return new ExprTree(operation.opcode, children);
    }
   }
+
+  public HashMap<String, ParserRuleContext> getSymTree() {
+    return sym_tree_;
+  }
+
+  public String getLastAssignedId() {
+    return last_assigned_id_;
+  }
 }
