@@ -42,9 +42,11 @@ public class PerfQueryCompiler {
     ExprTreeCreator expr_tree_creator = new ExprTreeCreator(perf_queryParser.ID, symbol_table_creator.symbol_table());
     walker.walk(expr_tree_creator, tree);
 
-    System.out.println("Trying out visitor pattern ...");
-    SwitchSet network_sws = new SwitchSet(20);
-    GlobalAnalyzer global_analyzer = new GlobalAnalyzer(network_sws.get_switches());
-    global_analyzer.visit(tree);
+    System.out.println("Analyzing queries globally ...");
+    GlobalAnalyzer global_analyzer = new GlobalAnalyzer(new SwitchSet().getSwitches(),
+							expr_tree_creator.getSymTree(),
+							expr_tree_creator.getLastAssignedId());
+    OpLocation query_opl = global_analyzer.visit(tree);
+    System.out.println(query_opl.toString());
   }
 }
