@@ -6,5 +6,6 @@ if [ $# -ne 1 ]; then
 fi
 
 for f in example_queries/*.sql; do
+  echo "Testing $f ...";
   cat $f | java -ea $1 ;
 done 
