@@ -15,15 +15,19 @@ public class OpLocation {
     /// once all visitors that must output OpLocation instantiate it using the argumented
     /// constructor.
     public OpLocation() {
-	switch_set_ = new HashSet<Integer>();
+	switch_set_ = new SwitchSet().getSwitches();
 	stream_type_ = StreamType.MULTI_SWITCH_STREAM;
     }
 
-    public HashSet<Integer> get_switch_set() {
+    public HashSet<Integer> getSwitchSet() {
 	return switch_set_;
     }
 
-    public StreamType get_stream_type() {
+    public StreamType getStreamType() {
 	return stream_type_;
+    }
+
+    public String toString() {
+	return "Switch set:" + switch_set_.toString() + "\nStream type:" + stream_type_.toString();
     }
 }
