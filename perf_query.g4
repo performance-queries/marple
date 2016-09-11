@@ -7,8 +7,7 @@ WS : [ \n\t\r]+ -> channel(HIDDEN);
 SELECT : 'SELECT' | 'select' ;
 WHERE : 'WHERE' | 'where' ;
 FROM : 'FROM' | 'from' ;
-SGROUPBY : 'SGROUPBY' | 'sgroupby';
-RGROUPBY : 'RGROUPBY' | 'rgroupby';
+GROUPBY : 'GROUPBY' | 'groupby';
 JOIN   : 'JOIN' | 'join';
 AS     : 'AS' | 'as';
 IF     : 'IF' | 'if';
@@ -31,7 +30,6 @@ VALUE : [0-9]+;
 state    : ID;
 stream   : ID;
 agg_func : ID;
-relation : ID;
 column   : ID;
 
 // Column list
@@ -84,22 +82,19 @@ stmt : primitive
 
 agg_fun : DEF agg_func '(' state_list ',' column_list ')' ':' stmt+;
 
-// The five operators
-filter  :  SELECT '*' FROM stream WHERE predicate;
-project :  SELECT expr_list FROM stream AS column_list;
-sfold   :  SELECT agg_func FROM stream SGROUPBY column_list;
-join    :  stream JOIN stream;
-rfold   :  SELECT agg_func FROM stream RGROUPBY column_list;
-// Note: The semantics of a S/RGROUPBY are that we return all columns in the GROUPBY field
+// The four operators
+filter    :  SELECT '*' FROM stream WHERE predicate;
+project   :  SELECT expr_list FROM stream AS column_list;
+groupby   :  SELECT agg_func FROM stream GROUPBY column_list;
+join      :  stream JOIN stream;
+// Note: The semantics of a GROUPBY are that we return all columns in the GROUPBY field
 // as well as all state maintained as part of the aggregation function.
 
 // The two types of queries
-stream_query : filter | project | sfold | join;
-relational_query : rfold;
+stream_query : filter | project | groupby | join;
 
 // Single statements in the language
 stream_stmt : stream '=' stream_query ';';
-relational_stmt    : relation '=' relational_query ';';
 
 // Main production rule for queries
-prog : (agg_fun)* (stream_stmt | relational_stmt)+;
+prog : (agg_fun)* (stream_stmt)+;

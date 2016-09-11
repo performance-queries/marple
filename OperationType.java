@@ -1,6 +1,5 @@
 public enum OperationType {
-  SFOLD,
-  RFOLD,
+  GROUPBY,
   JOIN,
   FILTER,
   PROJECT,

@@ -185,7 +185,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     assert(query instanceof perf_queryParser.Stream_queryContext);
 
     last_assigned_ = text_with_spaces((ParserRuleContext)stream);
-    OperationType operation = getOperationType((perf_queryParser.Stream_queryContext)query);
+    OperationType operation = Utility.getOperationType((perf_queryParser.Stream_queryContext)query);
     if (operation == OperationType.FILTER) {
       function_defs_  += filter_def(query, stream);
       function_calls_ += generate_spg_queries(query, stream);
@@ -195,24 +195,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     } else if (operation == OperationType.JOIN) {
       function_defs_  += join_def(query, stream);
       function_calls_ += generate_join_queries(query, stream); 
-    } else if (operation == OperationType.SFOLD) {
-      function_defs_  += groupby_def(query, stream);
-      function_calls_ += generate_spg_queries(query, stream);
-    } else {
-      assert(false);
-    }
-  }
-
-  @Override public void exitRelational_stmt(perf_queryParser.Relational_stmtContext ctx) {
-    ParseTree stream = ctx.getChild(0);
-    assert(stream instanceof perf_queryParser.RelationContext);
-
-    ParseTree query = ctx.getChild(2);
-    assert(query instanceof perf_queryParser.Relational_queryContext);
-
-    last_assigned_ = text_with_spaces((ParserRuleContext)stream);
-    OperationType operation = getOperationType((perf_queryParser.Relational_queryContext)query);
-    if (operation == OperationType.RFOLD) {
+    } else if (operation == OperationType.GROUPBY) {
       function_defs_  += groupby_def(query, stream);
       function_calls_ += generate_spg_queries(query, stream);
     } else {
@@ -335,31 +318,5 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
       ret = ret + "  " + "state." + key + " = " + key + "\n";
     }
     return ret;
-  }
-
-  /// Get operation type for the given query
-  private OperationType getOperationType(ParserRuleContext query) {
-    assert(query instanceof perf_queryParser.Stream_queryContext ||
-           query instanceof perf_queryParser.Relational_queryContext);
-    assert(query.getChildCount() == 1);
-    ParseTree op = query.getChild(0);
-    if (op instanceof perf_queryParser.FilterContext) {
-      // SELECT * FROM stream, so stream is at location 3
-      return OperationType.FILTER;
-    } else if (op instanceof perf_queryParser.SfoldContext) {
-      // SELECT agg_func FROM stream SGROUPBY ...
-      return OperationType.SFOLD;
-    } else if (op instanceof perf_queryParser.ProjectContext) {
-      // SELECT expr_list FROM stream
-      return OperationType.PROJECT;
-    } else if (op instanceof perf_queryParser.JoinContext) {
-      // stream JOIN stream
-      return OperationType.JOIN;
-    } else if (op instanceof perf_queryParser.RfoldContext) {
-      return OperationType.RFOLD;
-    } else {
-      assert(false);
-      return OperationType.UNDEFINED;
-    }
   }
 }

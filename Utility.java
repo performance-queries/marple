@@ -40,4 +40,27 @@ class Utility {
       return tokens;
     }
   }
+
+  /// Get operation type for the given query
+  public static OperationType getOperationType(ParserRuleContext query) {
+    assert(query instanceof perf_queryParser.Stream_queryContext);
+    assert(query.getChildCount() == 1);
+    ParseTree op = query.getChild(0);
+    if (op instanceof perf_queryParser.FilterContext) {
+      // SELECT * FROM stream, so stream is at location 3
+      return OperationType.FILTER;
+    } else if (op instanceof perf_queryParser.GroupbyContext) {
+      // SELECT agg_func FROM stream SGROUPBY ...
+      return OperationType.GROUPBY;
+    } else if (op instanceof perf_queryParser.ProjectContext) {
+      // SELECT expr_list FROM stream
+      return OperationType.PROJECT;
+    } else if (op instanceof perf_queryParser.JoinContext) {
+      // stream JOIN stream
+      return OperationType.JOIN;
+    } else {
+      assert(false);
+      return OperationType.UNDEFINED;
+    }
+  }
 }

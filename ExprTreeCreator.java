@@ -32,25 +32,6 @@ public class ExprTreeCreator extends perf_queryBaseListener {
     symbol_table_ = symbol_table;
   }
 
-  @Override public void exitRelational_stmt(perf_queryParser.Relational_stmtContext ctx) {
-    ParseTree relation = ctx.getChild(0);
-    assert(relation instanceof perf_queryParser.RelationContext);
-
-    ParseTree query = ctx.getChild(2);
-    assert(query instanceof perf_queryParser.Relational_queryContext);
-
-    Operation operation = getOperation((perf_queryParser.Relational_queryContext)query);
-    for (int i = 0; i < operation.operands.size(); i++) {
-      // TODO: For now, all inputs are streams. We can do operation-specific typechecking later if required.
-      // Also, because typechecking is trivial and handled by the parser, we don't need to check types here.
-      // The parser and the symbol table creator check for type violations, so all inputs will be streams.
-      // This is why we have an assert and not an exception here. Similar comments apply to exitStream_stmt.
-      assert (symbol_table_.get(operation.operands.get(i)) == IdentifierType.STREAM);
-    }
-    dep_table_.put(relation.getText(), operation);
-    last_assigned_id_ = relation.getText();
-  }
-
   @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
     ParseTree stream = ctx.getChild(0);
     assert(stream instanceof perf_queryParser.StreamContext);
@@ -79,9 +60,9 @@ public class ExprTreeCreator extends perf_queryBaseListener {
     if (op instanceof perf_queryParser.FilterContext) {
       // SELECT * FROM stream, so stream is at location 3
       return new Operation(OperationType.FILTER, Utility.getAllTokens(op.getChild(3), id_ttype_));
-    } else if (op instanceof perf_queryParser.SfoldContext) {
+    } else if (op instanceof perf_queryParser.GroupbyContext) {
       // SELECT agg_func FROM stream SGROUPBY ...
-      return new Operation(OperationType.SFOLD, Utility.getAllTokens(op.getChild(3), id_ttype_));
+      return new Operation(OperationType.GROUPBY, Utility.getAllTokens(op.getChild(3), id_ttype_));
     } else if (op instanceof perf_queryParser.ProjectContext) {
       // SELECT expre_list FROM stream
       return new Operation(OperationType.PROJECT, Utility.getAllTokens(op.getChild(3), id_ttype_));
@@ -90,19 +71,6 @@ public class ExprTreeCreator extends perf_queryBaseListener {
       ArrayList<String> ret = Utility.getAllTokens(op.getChild(0), id_ttype_);
       ret.addAll(Utility.getAllTokens(op.getChild(2), id_ttype_));
       return new Operation(OperationType.JOIN, ret);
-    } else {
-      assert(false);
-      return new Operation();
-    }
-  }
-
-  /// Same as above, but do it for a relational query
-  Operation getOperation(perf_queryParser.Relational_queryContext query) {
-    assert(query.getChildCount() == 1);
-    ParseTree op = query.getChild(0);
-    if (op instanceof perf_queryParser.RfoldContext) {
-      // SELECT agg_func FROM stream RGROUPBY ...
-      return new Operation(OperationType.RFOLD, Utility.getAllTokens(op.getChild(3), id_ttype_));
     } else {
       assert(false);
       return new Operation();
