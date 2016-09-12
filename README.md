@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/anirudhSK/needlstk.svg?branch=master)](https://travis-ci.org/anirudhSK/needlstk)
+
 needlstk: A system for expressing network performance queries
 
 The name is a portmanteau of needle and stack to reflect the
