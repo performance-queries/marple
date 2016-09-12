@@ -7,7 +7,7 @@ import java.lang.RuntimeException;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-public class SymbolTableCreator extends perf_queryBaseListener {
+public class SymbolTableCreator extends PerfQueryBaseListener {
   /// Hash table for storing identifiers with their type
   /// Maybe add other attributes as required
   private HashMap<String, IdentifierType> identifiers_ = new HashMap<>();
@@ -21,53 +21,53 @@ public class SymbolTableCreator extends perf_queryBaseListener {
   private HashMap<String, GroupbyType> agg_fun_map_ = new HashMap<>();
   
   /// Listener for stream productions
-  @Override public void exitStream(perf_queryParser.StreamContext ctx) {
+  @Override public void exitStream(PerfQueryParser.StreamContext ctx) {
     add_to_symbol_table(ctx.getText(), IdentifierType.STREAM);
   }
 
   /// Listern for state productions
-  @Override public void exitState(perf_queryParser.StateContext ctx) {
+  @Override public void exitState(PerfQueryParser.StateContext ctx) {
     add_to_symbol_table(ctx.getText(), IdentifierType.STATE);
   }
 
   /// Listener for column productions
-  @Override public void exitColumn(perf_queryParser.ColumnContext ctx) {
+  @Override public void exitColumn(PerfQueryParser.ColumnContext ctx) {
     add_to_symbol_table(ctx.getText(), IdentifierType.COLUMN);
   }
 
   /// Listener for "name of aggregation function" productions
-  @Override public void exitAgg_func(perf_queryParser.Agg_funcContext ctx) {
+  @Override public void exitAggFunc(PerfQueryParser.AggFuncContext ctx) {
     add_to_symbol_table(ctx.getText(), IdentifierType.AGG_FUNC);
   }
 
   /// Listener for "body of aggregation function" productions
-  @Override public void exitAgg_fun(perf_queryParser.Agg_funContext ctx) {
+  @Override public void exitAggFun(PerfQueryParser.AggFunContext ctx) {
     ArrayList<String> all_tokens = Utility.getAllTokens(ctx);
     assert(! all_tokens.isEmpty());
     Boolean has_emit = all_tokens.stream().anyMatch(token -> token.equals("emit()"));
     if (has_emit) {
       // An emit makes all state accessible as columns
-      Utility.getAllTokens(ctx.state_list(), perf_queryParser.ID)
+      Utility.getAllTokens(ctx.stateList(), PerfQueryParser.ID)
              .forEach(state -> add_to_symbol_table(state, IdentifierType.COLUMN));
 
       // It also makes this aggregation function a streaming group by
-      agg_fun_map_.put(ctx.agg_func().getText(), GroupbyType.STREAMING);
+      agg_fun_map_.put(ctx.aggFunc().getText(), GroupbyType.STREAMING);
     } else {
-      agg_fun_map_.put(ctx.agg_func().getText(), GroupbyType.RELATIONAL);
+      agg_fun_map_.put(ctx.aggFunc().getText(), GroupbyType.RELATIONAL);
     }
   }
 
   /// Listener for groupby operations/queries
-  @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
-    perf_queryParser.StreamContext stream = ctx.stream();
+  @Override public void exitStreamStmt(PerfQueryParser.StreamStmtContext ctx) {
+    PerfQueryParser.StreamContext stream = ctx.stream();
 
-    perf_queryParser.Stream_queryContext query = ctx.stream_query();
+    PerfQueryParser.StreamQueryContext query = ctx.streamQuery();
 
-    OperationType operation = Utility.getOperationType((perf_queryParser.Stream_queryContext)query);
+    OperationType operation = Utility.getOperationType((PerfQueryParser.StreamQueryContext)query);
 
     if (operation == OperationType.GROUPBY) {
-      perf_queryParser.GroupbyContext groupby = (perf_queryParser.GroupbyContext) query.getChild(0);
-      if (agg_fun_map_.get(groupby.agg_func().getText()) == GroupbyType.RELATIONAL) {
+      PerfQueryParser.GroupbyContext groupby = (PerfQueryParser.GroupbyContext) query.getChild(0);
+      if (agg_fun_map_.get(groupby.aggFunc().getText()) == GroupbyType.RELATIONAL) {
         add_to_symbol_table(stream.getText(), IdentifierType.RELATION);
       } else {
         add_to_symbol_table(stream.getText(), IdentifierType.STREAM);
@@ -77,7 +77,7 @@ public class SymbolTableCreator extends perf_queryBaseListener {
 
   /// Listener for the top-level, i.e., prog productions
   /// Prints out prepopulated symbol table
-  @Override public void exitProg(perf_queryParser.ProgContext ctx) {
+  @Override public void exitProg(PerfQueryParser.ProgContext ctx) {
     System.out.println("identifiers_: " + identifiers_);
   }
 

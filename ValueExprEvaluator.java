@@ -7,24 +7,24 @@ import java.util.HashMap;
 import java.lang.RuntimeException;
 
 /// Class implementation to evaluate a value expression.
-public class ValueExprEvaluator extends perf_queryBaseVisitor<Integer> {
+public class ValueExprEvaluator extends PerfQueryBaseVisitor<Integer> {
     /// expr : column. A column is not a value expression; just return -1.
-    @Override public Integer visitExprCol(perf_queryParser.ExprColContext ctx) {
+    @Override public Integer visitExprCol(PerfQueryParser.ExprColContext ctx) {
 	return -1;
     }
     /// expr : value. A value is a value, return it.
-    @Override public Integer visitExprVal(perf_queryParser.ExprValContext ctx) {
+    @Override public Integer visitExprVal(PerfQueryParser.ExprValContext ctx) {
 	return Integer.valueOf(ctx.getText());
     }
 
     /// expr: infinity. Infinity is not a value for our purposes.
-    @Override public Integer visitExprInf(perf_queryParser.ExprInfContext ctx) {
+    @Override public Integer visitExprInf(PerfQueryParser.ExprInfContext ctx) {
 	return -1;
     }
 
     /// expr : expr <combinator> expr. Result is valid only if both
     /// sub-expressions are value expressions.
-    @Override public Integer visitExprComb(perf_queryParser.ExprCombContext ctx)
+    @Override public Integer visitExprComb(PerfQueryParser.ExprCombContext ctx)
     {
 	Integer e1 = visit(ctx.expr(0));
 	Integer e2 = visit(ctx.expr(1));
@@ -40,7 +40,7 @@ public class ValueExprEvaluator extends perf_queryBaseVisitor<Integer> {
     }
 
     /// expr: ( expr ). Value expression iff internal expr is also one.
-    @Override public Integer visitExprParen(perf_queryParser.ExprParenContext ctx) {
+    @Override public Integer visitExprParen(PerfQueryParser.ExprParenContext ctx) {
 	return visit(ctx.expr());
     }
 }

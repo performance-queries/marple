@@ -1,4 +1,4 @@
-grammar perf_query;
+grammar PerfQuery;
 
 // Hide whitespace, but don't skip it
 WS : [ \n\t\r]+ -> channel(HIDDEN);
@@ -23,26 +23,25 @@ INFINITY : 'INFINITY' | 'infinity';
 ID : ('a'..'z' | 'A'..'Z' |  '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
 VALUE : [0-9]+;
 
-// alias ID to stream, column, agg_func and relations
+// alias ID to stream, column, aggFunc and relations
 // reuses the parser for type checking as well
 state    : ID;
 stream   : ID;
-agg_func : ID;
+aggFunc  : ID;
 column   : ID;
 
 // Column list
-column_with_comma : ',' column;
-column_list : '[' column ']'  # oneColsList
-	    | '[' ']'         # noColsList
-            | '[' column column_with_comma+ ']' # mulColsList
-	    ;
-
+columnWithComma : ',' column;
+columnList : '[' column ']' #oneColsList
+	   | '[' ']'        #noColsList
+           | '[' column columnWithComma+ ']' #mulColsList
+           ;
 
 // List of state variables
-state_with_comma : ',' state;
-state_list : '[' state ']'
+stateWithComma : ',' state;
+stateList : '[' state ']'
            | '[' ']'
-           | '[' state state_with_comma+ ']';
+           | '[' state stateWithComma+ ']';
 
 // Expressions
 expr : ID       # exprCol
@@ -53,9 +52,9 @@ expr : ID       # exprCol
      ;
 
 // Expression list
-expr_with_comma : ',' expr;
-expr_list : '[' expr ']'
-          | '[' expr expr_with_comma+ ']';
+exprWithComma : ',' expr;
+exprList : '[' expr ']'
+         | '[' expr exprWithComma+ ']';
 
 // Predicates
 predicate : expr '==' expr # exprEq
@@ -72,28 +71,27 @@ predicate : expr '==' expr # exprEq
 
 // Aggregation functions for group by
 primitive : ID '=' expr | ';' | EMIT;
-if_primitive   : primitive;
-else_primitive : primitive;
-if_construct : IF predicate '{' if_primitive+ '}' (ELSE '{' else_primitive+ '}')?;
+ifPrimitive    : primitive;
+elsePrimitive  : primitive;
+ifConstruct    : IF predicate '{' ifPrimitive+ '}' (ELSE '{' elsePrimitive+ '}')?;
 stmt : primitive
-     | if_construct;
+     | ifConstruct;
 
-agg_fun : DEF agg_func '(' state_list ',' column_list ')' ':' stmt+;
+aggFun : DEF aggFunc '(' stateList ',' columnList ')' ':' stmt+;
 
 // The four operators
 filter    :  FILTER '(' stream ',' predicate ')';
-map       :  MAP '(' stream ',' column_list ',' expr_list ')';
-// TODO: Check that you can't interchange column_list and expr_list
-groupby   :  GROUPBY '(' stream ',' column_list ',' agg_func ')';
+map       :  MAP '(' stream ',' columnList ',' exprList ')';
+groupby   :  GROUPBY '(' stream ',' columnList ',' aggFunc ')';
 zip       :  ZIP '(' stream ',' stream ')';
 // Note: The semantics of a GROUPBY are that we return all columns in the GROUPBY field
 // as well as all state maintained as part of the aggregation function.
 
 // The two types of queries
-stream_query : filter | map | groupby | zip;
+streamQuery : filter | map | groupby | zip;
 
 // Single statements in the language
-stream_stmt : stream '=' stream_query ';';
+streamStmt : stream '=' streamQuery ';';
 
 // Main production rule for queries
-prog : (agg_fun)* (stream_stmt)+;
+prog : (aggFun)* (streamStmt)+;

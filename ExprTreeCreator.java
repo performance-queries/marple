@@ -11,7 +11,7 @@ import java.lang.RuntimeException;
 /// First, generate dependencies for each stream or relational query
 /// , i.e., for each query print out the streams written to and read from
 /// Second, use this dependency table to build an expression tree
-public class ExprTreeCreator extends perf_queryBaseListener {
+public class ExprTreeCreator extends PerfQueryBaseListener {
   /// The token type for identifiers. This is required to check if a given token
   /// is an identifier or not.
   private int id_ttype_;
@@ -35,10 +35,10 @@ public class ExprTreeCreator extends perf_queryBaseListener {
     symbol_table_ = symbol_table;
   }
 
-  @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
-    perf_queryParser.StreamContext stream = ctx.stream();
+  @Override public void exitStreamStmt(PerfQueryParser.StreamStmtContext ctx) {
+    PerfQueryParser.StreamContext stream = ctx.stream();
 
-    perf_queryParser.Stream_queryContext query = ctx.stream_query();
+    PerfQueryParser.StreamQueryContext query = ctx.streamQuery();
 
     Operation operation = getOperation(query);
     for (int i = 0; i < operation.operands.size(); i++) {
@@ -49,28 +49,28 @@ public class ExprTreeCreator extends perf_queryBaseListener {
     sym_tree_.put(stream.getText(), (ParserRuleContext)query);
   }
 
-  @Override public void exitProg(perf_queryParser.ProgContext ctx) {
+  @Override public void exitProg(PerfQueryParser.ProgContext ctx) {
     System.out.println("dep_table_: " + dep_table_);
     System.out.println("expr_tree : " + build_expr_tree(last_assigned_id_));
     //System.err.println(build_expr_tree(last_assigned_id_).dot_output());
   }
 
   /// Get operands and operator that are required for the given query
-  private Operation getOperation(perf_queryParser.Stream_queryContext query) {
+  private Operation getOperation(PerfQueryParser.StreamQueryContext query) {
     assert(query.getChildCount() == 1);
     ParseTree op = query.getChild(0);
-    if (op instanceof perf_queryParser.FilterContext) {
-      perf_queryParser.FilterContext filter = (perf_queryParser.FilterContext)op;
+    if (op instanceof PerfQueryParser.FilterContext) {
+      PerfQueryParser.FilterContext filter = (PerfQueryParser.FilterContext)op;
       return new Operation(OperationType.FILTER, Utility.getAllTokens(filter.stream(), id_ttype_));
-    } else if (op instanceof perf_queryParser.GroupbyContext) {
-      perf_queryParser.GroupbyContext groupby = (perf_queryParser.GroupbyContext)op;
+    } else if (op instanceof PerfQueryParser.GroupbyContext) {
+      PerfQueryParser.GroupbyContext groupby = (PerfQueryParser.GroupbyContext)op;
       return new Operation(OperationType.GROUPBY, Utility.getAllTokens(groupby.stream(), id_ttype_));
-    } else if (op instanceof perf_queryParser.MapContext) {
-      perf_queryParser.MapContext map = (perf_queryParser.MapContext)op;
+    } else if (op instanceof PerfQueryParser.MapContext) {
+      PerfQueryParser.MapContext map = (PerfQueryParser.MapContext)op;
       return new Operation(OperationType.PROJECT, Utility.getAllTokens(map.stream(), id_ttype_));
-    } else if (op instanceof perf_queryParser.ZipContext) {
-      perf_queryParser.ZipContext zip = (perf_queryParser.ZipContext)op;
-      ArrayList<perf_queryParser.StreamContext> stream_list = new ArrayList<>(zip.stream());
+    } else if (op instanceof PerfQueryParser.ZipContext) {
+      PerfQueryParser.ZipContext zip = (PerfQueryParser.ZipContext)op;
+      ArrayList<PerfQueryParser.StreamContext> stream_list = new ArrayList<>(zip.stream());
       ArrayList<String> ret = Utility.getAllTokens(stream_list.get(0), id_ttype_);
       ret.addAll(Utility.getAllTokens(stream_list.get(1), id_ttype_));
       return new Operation(OperationType.JOIN, ret);

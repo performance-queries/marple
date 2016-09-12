@@ -11,13 +11,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.lang.RuntimeException;
 
-public class PythonCodeGenerator extends perf_queryBaseListener {
+public class PythonCodeGenerator extends PerfQueryBaseListener {
   /// Intrinsic fields understood by the compiler
   private final TreeSet<String> intrinsic_fields_ = new TreeSet<String>(Arrays.asList("qid", "qin", "tin", "tout", "pkt_path", "switch_id", "uid"));
 
   /// Reference to parser to get underlying token stream.
   /// Required to preserve spaces and retrieve them when unparsing productions
-  private perf_queryParser parser_;
+  private PerfQueryParser parser_;
 
   /// Names of all key-value stores used for groupbys
   private TreeSet<String> kv_stores_ = new TreeSet<String>();
@@ -38,7 +38,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   /// Last assigned stream
   private String last_assigned_ = "";
 
-  public PythonCodeGenerator(perf_queryParser t_parser, HashMap<String, IdentifierType> t_sym_table) {
+  public PythonCodeGenerator(PerfQueryParser t_parser, HashMap<String, IdentifierType> t_sym_table) {
     parser_ = t_parser;
 
     tuple_field_set_ = t_sym_table.entrySet()
@@ -59,7 +59,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
 
   /// Use this to print declarations at the beginning of Python code
   /// For tuples and state
-  @Override public void enterProg(perf_queryParser.ProgContext ctx) {
+  @Override public void enterProg(PerfQueryParser.ProgContext ctx) {
     System.err.println(generate_state_class());
     System.err.println(generate_tuple_class());
     System.err.println("def fuse(x, y):");
@@ -76,7 +76,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
 
   /// Use this to print the packet loop that tests the given sql program
   /// at the end of the Python code
-  @Override public void exitProg(perf_queryParser.ProgContext ctx) {
+  @Override public void exitProg(PerfQueryParser.ProgContext ctx) {
     System.err.println(function_defs_);
     System.err.println("# main loop of function calls");
     for (String kv : kv_stores_) {
@@ -92,10 +92,10 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn aggregation function into a Python function definitoon
-  @Override public void exitAgg_fun(perf_queryParser.Agg_funContext ctx) {
-    System.err.println("def " + ctx.agg_func().getText() + " (state, tuple_var):\n");
-    TreeSet<String> states = new TreeSet<>(Utility.getAllTokens(ctx.state_list(), perf_queryParser.ID));
-    TreeSet<String> cols = new TreeSet<>(Utility.getAllTokens(ctx.column_list(), perf_queryParser.ID));
+  @Override public void exitAggFun(PerfQueryParser.AggFunContext ctx) {
+    System.err.println("def " + ctx.aggFunc().getText() + " (state, tuple_var):\n");
+    TreeSet<String> states = new TreeSet<>(Utility.getAllTokens(ctx.stateList(), PerfQueryParser.ID));
+    TreeSet<String> cols = new TreeSet<>(Utility.getAllTokens(ctx.columnList(), PerfQueryParser.ID));
     System.err.println(generate_state_preamble(states));
     System.err.println(generate_tuple_preamble(cols));
     System.err.println(process_code_block(ctx.stmt(), states) + "\n");
@@ -103,25 +103,25 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
     System.err.println("  return tuple_var;");
   }
 
-  private String process_code_block(List<perf_queryParser.StmtContext> code_block, TreeSet<String> states) {
+  private String process_code_block(List<PerfQueryParser.StmtContext> code_block, TreeSet<String> states) {
     String ret = "";
     for (int i = 0; i < code_block.size(); i++) {
       assert(code_block.get(i).getChildCount() == 1);
       assert(code_block.get(i).getChild(0) instanceof ParserRuleContext);
       ParserRuleContext single_stmt = (ParserRuleContext)code_block.get(i).getChild(0);
-      if (single_stmt instanceof perf_queryParser.PrimitiveContext) {
+      if (single_stmt instanceof PerfQueryParser.PrimitiveContext) {
         ret += "  " + process_primitive(single_stmt, states) + "\n";
-      } else if (single_stmt instanceof perf_queryParser.If_constructContext) {
-        perf_queryParser.If_constructContext if_stmt = (perf_queryParser.If_constructContext)single_stmt;
+      } else if (single_stmt instanceof PerfQueryParser.IfConstructContext) {
+        PerfQueryParser.IfConstructContext if_stmt = (PerfQueryParser.IfConstructContext)single_stmt;
         ret += "  if " + text_with_spaces(if_stmt.predicate()) + " : \n";
-        for (int j = 0; j < if_stmt.if_primitive().size(); j++) {
-          ret += "    " + process_primitive(if_stmt.if_primitive().get(j), states) + "\n";
+        for (int j = 0; j < if_stmt.ifPrimitive().size(); j++) {
+          ret += "    " + process_primitive(if_stmt.ifPrimitive().get(j), states) + "\n";
         }
         // Optional else
         if (if_stmt.ELSE() != null) {
           ret += "  else : \n";
-          for (int j = 0; j < if_stmt.else_primitive().size(); j++) {
-            ret += "    " + process_primitive(if_stmt.else_primitive().get(j), states) + "\n";
+          for (int j = 0; j < if_stmt.elsePrimitive().size(); j++) {
+            ret += "    " + process_primitive(if_stmt.elsePrimitive().get(j), states) + "\n";
           }
         }
       }
@@ -136,7 +136,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn selects into a Python function definition
-  private String filter_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
+  private String filter_def(PerfQueryParser.StreamQueryContext query, PerfQueryParser.StreamContext stream) {
     ParserRuleContext predicate = query.filter().predicate();
     return (spg_query_signature(stream) +
             generate_tuple_preamble(tuple_field_set_) + "\n" +
@@ -145,9 +145,9 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn SQL projections into Python function definitions
-  private String project_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
-    ParserRuleContext expr_list = query.map().expr_list();
-    ParserRuleContext col_list  = query.map().column_list();
+  private String project_def(PerfQueryParser.StreamQueryContext query, PerfQueryParser.StreamContext stream) {
+    ParserRuleContext expr_list = query.map().exprList();
+    ParserRuleContext col_list  = query.map().columnList();
     return (spg_query_signature(stream) +
             generate_tuple_preamble(tuple_field_set_) + "\n" +
             "  " + text_with_spaces(col_list) + " = " + text_with_spaces(expr_list) + ";\n\n" +
@@ -155,7 +155,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn SQL joins into Python function definitions
-  private String join_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream){
+  private String join_def(PerfQueryParser.StreamQueryContext query, PerfQueryParser.StreamContext stream){
     return (join_query_signature(stream) +
             "  ret_tuple = Tuple();\n" +
             "  ret_tuple = tuple1.join_tuple(tuple2);\n" +
@@ -164,9 +164,9 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Turn SQL GROUPBYs into Python function definitions
-  private String groupby_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
-    ParserRuleContext groupby_list = query.groupby().column_list();
-    ParserRuleContext agg_func     = query.groupby().agg_func();
+  private String groupby_def(PerfQueryParser.StreamQueryContext query, PerfQueryParser.StreamContext stream) {
+    ParserRuleContext groupby_list = query.groupby().columnList();
+    ParserRuleContext aggFunc     = query.groupby().aggFunc();
     String stream_name = text_with_spaces(stream);
     kv_stores_.add("state_dict" + stream_name);
     return (spg_query_signature(stream) +
@@ -174,15 +174,15 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
             generate_tuple_preamble(tuple_field_set_) + "\n" +
             "  key_for_dict = tuple(" + text_with_spaces(groupby_list) + ");\n\n" +
             "  tuple_state = state_dict" + stream_name + "[key_for_dict] if key_for_dict in state_dict" + stream_name + " else State();\n\n" +
-            "  return " + text_with_spaces(agg_func) + "(tuple_state, tuple_var);" + "\n" + "\n");
+            "  return " + text_with_spaces(aggFunc) + "(tuple_state, tuple_var);" + "\n" + "\n");
   }
 
-  @Override public void exitStream_stmt(perf_queryParser.Stream_stmtContext ctx) {
-    perf_queryParser.StreamContext stream = ctx.stream();
-    perf_queryParser.Stream_queryContext query = ctx.stream_query();
+  @Override public void exitStreamStmt(PerfQueryParser.StreamStmtContext ctx) {
+    PerfQueryParser.StreamContext stream = ctx.stream();
+    PerfQueryParser.StreamQueryContext query = ctx.streamQuery();
 
     last_assigned_ = text_with_spaces((ParserRuleContext)stream);
-    OperationType operation = Utility.getOperationType((perf_queryParser.Stream_queryContext)query);
+    OperationType operation = Utility.getOperationType((PerfQueryParser.StreamQueryContext)query);
     if (operation == OperationType.FILTER) {
       function_defs_  += filter_def(query, stream);
       function_calls_ += generate_spg_queries(query, stream);
@@ -201,19 +201,19 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Signature for Python function for select, project, and group by
-  private String spg_query_signature(perf_queryParser.StreamContext stream) {
+  private String spg_query_signature(PerfQueryParser.StreamContext stream) {
     String stream_name = text_with_spaces(stream);
     return "def func" + stream_name + "(tuple_var):\n";
   }
 
   /// Signature for Python functions for join
-  private String join_query_signature(perf_queryParser.StreamContext stream) {
+  private String join_query_signature(PerfQueryParser.StreamContext stream) {
     String stream_name = text_with_spaces(stream);
     return "def func" + stream_name + "(tuple1, tuple2):\n";
   }
 
   /// Generate Python function calls for select, project, and group by queries
-  private String generate_spg_queries(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
+  private String generate_spg_queries(PerfQueryParser.StreamQueryContext query, PerfQueryParser.StreamContext stream) {
     String stream_name = text_with_spaces(stream);
     // TODO: This is a total hack and very brittle to use getChild(foo, etc.)
     String arg_name    = text_with_spaces((ParserRuleContext)(query.getChild(0).getChild(2)));
@@ -221,7 +221,7 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   }
 
   /// Generate Python function call for join queries
-  private String generate_join_queries(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
+  private String generate_join_queries(PerfQueryParser.StreamQueryContext query, PerfQueryParser.StreamContext stream) {
     String stream_name = text_with_spaces(stream);
     String arg0   = text_with_spaces((ParserRuleContext)(query.zip().stream().get(0)));
     String arg1   = text_with_spaces((ParserRuleContext)(query.zip().stream().get(1)));

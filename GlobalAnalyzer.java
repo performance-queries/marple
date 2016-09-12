@@ -10,7 +10,7 @@ import java.lang.RuntimeException;
 /// Determine which queries run where, and (conceptually) which set of packets
 /// each instance of the query processes. This results in an annotated query
 /// expression tree.
-public class GlobalAnalyzer extends perf_queryBaseVisitor<LocatedExprTree> {
+public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     /// A reference to the set of switches globally in the network
     private HashSet<Integer> all_switches_;
 
@@ -52,7 +52,7 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<LocatedExprTree> {
     }
 
     /// Test methods to check out some basic functionalities
-    @Override public LocatedExprTree visitFilter(perf_queryParser.FilterContext ctx) {
+    @Override public LocatedExprTree visitFilter(PerfQueryParser.FilterContext ctx) {
 	HashSet<Integer> sw_set = new SwitchPredicateExtractor(all_switches_).visit(ctx.predicate());
 	LocatedExprTree let_input = RecurseDeps(ctx.stream().getText());
 	OpLocation opl_input = let_input.opl();
@@ -69,14 +69,14 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<LocatedExprTree> {
 	return new LocatedExprTree(OperationType.FILTER, opl_output, singletonList(let_input));
     }
 
-    @Override public LocatedExprTree visitMap(perf_queryParser.MapContext ctx) {
+    @Override public LocatedExprTree visitMap(PerfQueryParser.MapContext ctx) {
 	LocatedExprTree let_input = RecurseDeps(ctx.stream().getText());
 	OpLocation opl_output = let_input.opl();
 	return new LocatedExprTree(OperationType.PROJECT, opl_output, singletonList(let_input));
     }
 
     private LocatedExprTree foldHelper(String stream_name,
-				       perf_queryParser.Column_listContext ctx,
+				       PerfQueryParser.ColumnListContext ctx,
 				       String queryText,
 				       OperationType opcode) {
 	LocatedExprTree let_input = RecurseDeps(stream_name);
@@ -95,11 +95,11 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<LocatedExprTree> {
 	return new LocatedExprTree(opcode, opl_output, singletonList(let_input));
     }
 
-    @Override public LocatedExprTree visitGroupby(perf_queryParser.GroupbyContext ctx) {
-	return foldHelper(ctx.stream().getText(), ctx.column_list(), ctx.getText(), OperationType.GROUPBY);
+    @Override public LocatedExprTree visitGroupby(PerfQueryParser.GroupbyContext ctx) {
+	return foldHelper(ctx.stream().getText(), ctx.columnList(), ctx.getText(), OperationType.GROUPBY);
     }
 
-    @Override public LocatedExprTree visitZip(perf_queryParser.ZipContext ctx) {
+    @Override public LocatedExprTree visitZip(PerfQueryParser.ZipContext ctx) {
 	LocatedExprTree let_first  = RecurseDeps(ctx.stream(0).getText());
 	LocatedExprTree let_second = RecurseDeps(ctx.stream(1).getText());
 	OpLocation opl_first  = let_first.opl();
@@ -116,7 +116,7 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<LocatedExprTree> {
 				   children);
     }
 
-    @Override public LocatedExprTree visitProg(perf_queryParser.ProgContext ctx) {
+    @Override public LocatedExprTree visitProg(PerfQueryParser.ProgContext ctx) {
 	ParserRuleContext subquery = sym_tree_.get(last_assigned_id_);
 	assert (subquery != null);
 	return visit(subquery);

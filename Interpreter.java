@@ -8,7 +8,7 @@ public class Interpreter {
     ANTLRInputStream input = new ANTLRInputStream(System.in);
 
     // create a lexer that feeds off of input CharStream
-    perf_queryLexer lexer = new perf_queryLexer(input);
+    PerfQueryLexer lexer = new PerfQueryLexer(input);
 
     // Add an error listener
     lexer.removeErrorListeners();
@@ -18,7 +18,7 @@ public class Interpreter {
     CommonTokenStream tokens = new CommonTokenStream(lexer);
 
     // create a parser that feeds off the tokens buffer
-    perf_queryParser parser = new perf_queryParser(tokens);
+    PerfQueryParser parser = new PerfQueryParser(tokens);
 
     // Add an error listener
     parser.removeErrorListeners();

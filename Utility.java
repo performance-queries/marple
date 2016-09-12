@@ -43,19 +43,19 @@ class Utility {
 
   /// Get operation type for the given query
   public static OperationType getOperationType(ParserRuleContext query) {
-    assert(query instanceof perf_queryParser.Stream_queryContext);
+    assert(query instanceof PerfQueryParser.StreamQueryContext);
     assert(query.getChildCount() == 1);
     ParseTree op = query.getChild(0);
-    if (op instanceof perf_queryParser.FilterContext) {
+    if (op instanceof PerfQueryParser.FilterContext) {
       // SELECT * FROM stream, so stream is at location 3
       return OperationType.FILTER;
-    } else if (op instanceof perf_queryParser.GroupbyContext) {
-      // SELECT agg_func FROM stream SGROUPBY ...
+    } else if (op instanceof PerfQueryParser.GroupbyContext) {
+      // SELECT aggFunc FROM stream SGROUPBY ...
       return OperationType.GROUPBY;
-    } else if (op instanceof perf_queryParser.MapContext) {
+    } else if (op instanceof PerfQueryParser.MapContext) {
       // SELECT expr_list FROM stream
       return OperationType.PROJECT;
-    } else if (op instanceof perf_queryParser.ZipContext) {
+    } else if (op instanceof PerfQueryParser.ZipContext) {
       // stream JOIN stream
       return OperationType.JOIN;
     } else {

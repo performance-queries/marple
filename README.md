@@ -8,13 +8,13 @@ goal of finding needles in a haystack. It is pronounced "needle stack"
 QuickStart:
 
 1. . setup.sh (Don't execute setup.sh, source it)
-2. rm *.class
-3. antlr4 -visitor perf_query.g4 && javac *.java
+2. rm *.class rm PerfQuery*.java rm PerfQuery*.tokens
+3. antlr4 -visitor PerfQuery.g4 && javac *.java
 4. Generate parse tree using
-grun perf_query prog  example_queries/flowlet_hist.sql -gui
+grun PerfQuery prog  example_queries/flowlet_hist.sql -gui
 (should open up a window showing the parse tree)
 5. Run compiler using
-cat example_queries/flowlet_hist.sql | java -ea PerfQueryCompiler 2> /tmp/tree.dot
+cat example_queries/flowlet_hist.sql | java -ea Compiler 2> /tmp/tree.dot
 6. Run interpreter using
 cat example_queries/flowlet_hist.sql | java -ea Interpreter 2> /tmp/output.py
 7. Generate expression tree using

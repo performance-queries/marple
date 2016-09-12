@@ -7,30 +7,30 @@ import java.util.HashMap;
 import java.lang.RuntimeException;
 
 /// Class implementation to determine if an expression is a "value" expression
-public class ValueExprDetector extends perf_queryBaseVisitor<Boolean> {
+public class ValueExprDetector extends PerfQueryBaseVisitor<Boolean> {
     /// expr : column. A column is not a value expression
-    @Override public Boolean visitExprCol(perf_queryParser.ExprColContext ctx) {
+    @Override public Boolean visitExprCol(PerfQueryParser.ExprColContext ctx) {
 	return new Boolean("false");
     }
     /// expr : value. A value is a value!
-    @Override public Boolean visitExprVal(perf_queryParser.ExprValContext ctx) {
+    @Override public Boolean visitExprVal(PerfQueryParser.ExprValContext ctx) {
 	return new Boolean("true");
     }
 
     /// expr: infinity. Infinity is not a value for our purposes.
-    @Override public Boolean visitExprInf(perf_queryParser.ExprInfContext ctx) {
+    @Override public Boolean visitExprInf(PerfQueryParser.ExprInfContext ctx) {
 	return new Boolean("false");
     }
 
     /// expr : expr <combinator> expr. Only a value expression if both
     /// sub-expressions are value expressions.
-    @Override public Boolean visitExprComb(perf_queryParser.ExprCombContext ctx)
+    @Override public Boolean visitExprComb(PerfQueryParser.ExprCombContext ctx)
     {
 	return visit(ctx.expr(0)) && visit(ctx.expr(1));
     }
 
     /// expr: ( expr ). Value expression iff internal expr is also one.
-    @Override public Boolean visitExprParen(perf_queryParser.ExprParenContext ctx) {
+    @Override public Boolean visitExprParen(PerfQueryParser.ExprParenContext ctx) {
 	return visit(ctx.expr());
     }
 }
