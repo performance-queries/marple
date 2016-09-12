@@ -32,9 +32,11 @@ column   : ID;
 
 // Column list
 column_with_comma : ',' column;
-column_list : '[' column ']'
-	    | '[' ']'
-            | '[' column column_with_comma+ ']';
+column_list : '[' column ']'  # oneColsList
+	    | '[' ']'         # noColsList
+            | '[' column column_with_comma+ ']' # mulColsList
+	    ;
+
 
 // List of state variables
 state_with_comma : ',' state;
