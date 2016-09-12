@@ -1,9 +1,9 @@
 import java.util.ArrayList;
 class ExprTree {
-  private static int uid_count = 0;
-  private OperationType opcode;
+  protected static int uid_count = 0;
+  protected OperationType opcode;
   private ArrayList<ExprTree> operands;
-  private int uid;
+  protected int uid;
   public ExprTree(OperationType t_opcode) {
     opcode = t_opcode;
     operands = new ArrayList<ExprTree>();
