@@ -64,8 +64,29 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<OpLocation> {
 	return RecurseDeps(ctx.stream().getText());
     }
 
+    private OpLocation foldHelper(perf_queryParser.Column_listContext ctx,
+				  OpLocation opl_input,
+				  String queryText) {
+	Boolean per_switch_stream = new ColumnChecker(Fields.switch_hdr).visit(ctx);
+	Boolean per_packet_stream = new ColumnChecker(Fields.packet_uid).visit(ctx);
+	if (per_switch_stream) {
+	    return new OpLocation(opl_input.getSwitchSet(), StreamType.SINGLE_SWITCH_STREAM);
+	} else if (per_packet_stream) {
+	    return new OpLocation(opl_input.getSwitchSet(), opl_input.getStreamType());
+	} else {
+	    throw new RuntimeException("Cannot perform a fold over multiple switches and multiple"
+				       + " packets in query\n" + queryText);
+	}
+    }
+
     @Override public OpLocation visitRfold(perf_queryParser.RfoldContext ctx) {
-	return RecurseDeps(ctx.stream().getText());
+	OpLocation opl_input = RecurseDeps(ctx.stream().getText());
+	return foldHelper(ctx.column_list(), opl_input, ctx.getText());
+    }
+
+    @Override public OpLocation visitSfold(perf_queryParser.SfoldContext ctx) {
+	OpLocation opl_input = RecurseDeps(ctx.stream().getText());
+	return foldHelper(ctx.column_list(), opl_input, ctx.getText());
     }
 
     @Override public OpLocation visitJoin(perf_queryParser.JoinContext ctx) {
