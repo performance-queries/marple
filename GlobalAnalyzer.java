@@ -90,7 +90,13 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<OpLocation> {
     }
 
     @Override public OpLocation visitJoin(perf_queryParser.JoinContext ctx) {
-	return new OpLocation();
+	OpLocation opl_first  = RecurseDeps(ctx.stream(0).getText());
+	OpLocation opl_second = RecurseDeps(ctx.stream(1).getText());
+	HashSet<Integer> result_set = new HashSet<Integer>(opl_first.getSwitchSet());
+	result_set.retainAll(opl_second.getSwitchSet());
+	StreamType result_type = ((opl_first.getStreamType() == opl_second.getStreamType()) ?
+				  opl_first.getStreamType() : StreamType.SINGLE_SWITCH_STREAM);
+	return new OpLocation(result_set, result_type);
     }
 
     @Override public OpLocation visitProg(perf_queryParser.ProgContext ctx) {
