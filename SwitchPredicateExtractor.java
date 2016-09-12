@@ -96,16 +96,16 @@ public class SwitchPredicateExtractor extends
     /// When two predicates intersect, the final set of switches is the intersection of the switches
     /// which each predicate restricts the stream to.
     @Override public HashSet<Integer> visitPredAnd (perf_queryParser.PredAndContext ctx) {
-	HashSet<Integer> inter = new HashSet<Integer>(visit(ctx.pred(0)));
-	inter.retainAll(visit(ctx.pred(1)));
+	HashSet<Integer> inter = new HashSet<Integer>(visit(ctx.predicate(0)));
+	inter.retainAll(visit(ctx.predicate(1)));
 	return inter;
     }
 
     /// When two predicates union, the final set of switches is the union of the switches
     /// which each predicate restricts the stream to.
     @Override public HashSet<Integer> visitPredOr (perf_queryParser.PredOrContext ctx) {
-	HashSet<Integer> union = new HashSet<Integer>(visit(ctx.pred(0)));
-	union.addAll(visit(ctx.pred(1)));
+	HashSet<Integer> union = new HashSet<Integer>(visit(ctx.predicate(0)));
+	union.addAll(visit(ctx.predicate(1)));
 	return union;
     }
 
@@ -113,13 +113,13 @@ public class SwitchPredicateExtractor extends
     /// which the predicate restricts the stream to.
     @Override public HashSet<Integer> visitPredNot (perf_queryParser.PredNotContext ctx) {
 	HashSet<Integer> diff = new HashSet<Integer>(all_switches_);
-	diff.removeAll(visit(ctx.pred()));
+	diff.removeAll(visit(ctx.predicate()));
 	return diff;
     }
 
     /// Return the switch set of the inner predicate within the parentheses.
     @Override public HashSet<Integer> visitPredParen (perf_queryParser.PredParenContext ctx) {
-	return visit(ctx.pred());
+	return visit(ctx.predicate());
     }
 
     /// When a predicate is True, it is matched on all network switches.

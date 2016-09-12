@@ -53,7 +53,7 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<LocatedExprTree> {
 
     /// Test methods to check out some basic functionalities
     @Override public LocatedExprTree visitFilter(perf_queryParser.FilterContext ctx) {
-	HashSet<Integer> sw_set = new SwitchPredicateExtractor(all_switches_).visit(ctx.pred());
+	HashSet<Integer> sw_set = new SwitchPredicateExtractor(all_switches_).visit(ctx.predicate());
 	LocatedExprTree let_input = RecurseDeps(ctx.stream().getText());
 	OpLocation opl_input = let_input.opl();
 	/// Merge values from recursive call and current
@@ -69,7 +69,7 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<LocatedExprTree> {
 	return new LocatedExprTree(OperationType.FILTER, opl_output, singletonList(let_input));
     }
 
-    @Override public LocatedExprTree visitProject(perf_queryParser.ProjectContext ctx) {
+    @Override public LocatedExprTree visitMap(perf_queryParser.MapContext ctx) {
 	LocatedExprTree let_input = RecurseDeps(ctx.stream().getText());
 	OpLocation opl_output = let_input.opl();
 	return new LocatedExprTree(OperationType.PROJECT, opl_output, singletonList(let_input));
@@ -95,15 +95,11 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<LocatedExprTree> {
 	return new LocatedExprTree(opcode, opl_output, singletonList(let_input));
     }
 
-    @Override public LocatedExprTree visitRfold(perf_queryParser.RfoldContext ctx) {
-	return foldHelper(ctx.stream().getText(), ctx.column_list(), ctx.getText(), OperationType.RFOLD);
+    @Override public LocatedExprTree visitGroupby(perf_queryParser.GroupbyContext ctx) {
+	return foldHelper(ctx.stream().getText(), ctx.column_list(), ctx.getText(), OperationType.GROUPBY);
     }
 
-    @Override public LocatedExprTree visitSfold(perf_queryParser.SfoldContext ctx) {
-	return foldHelper(ctx.stream().getText(), ctx.column_list(), ctx.getText(), OperationType.SFOLD);
-    }
-
-    @Override public LocatedExprTree visitJoin(perf_queryParser.JoinContext ctx) {
+    @Override public LocatedExprTree visitZip(perf_queryParser.ZipContext ctx) {
 	LocatedExprTree let_first  = RecurseDeps(ctx.stream(0).getText());
 	LocatedExprTree let_second = RecurseDeps(ctx.stream(1).getText());
 	OpLocation opl_first  = let_first.opl();
