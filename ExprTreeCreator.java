@@ -52,7 +52,7 @@ public class ExprTreeCreator extends perf_queryBaseListener {
   @Override public void exitProg(perf_queryParser.ProgContext ctx) {
     System.out.println("dep_table_: " + dep_table_);
     System.out.println("expr_tree : " + build_expr_tree(last_assigned_id_));
-    System.err.println(build_expr_tree(last_assigned_id_).dot_output());
+    //System.err.println(build_expr_tree(last_assigned_id_).dot_output());
   }
 
   /// Get operands and operator that are required for the given query
