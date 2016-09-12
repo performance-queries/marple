@@ -46,7 +46,7 @@ public class PerfQueryCompiler {
     GlobalAnalyzer global_analyzer = new GlobalAnalyzer(new SwitchSet().getSwitches(),
 							expr_tree_creator.getSymTree(),
 							expr_tree_creator.getLastAssignedId());
-    OpLocation query_opl = global_analyzer.visit(tree);
-    System.out.println(query_opl.toString());
+    LocatedExprTree query_tree = global_analyzer.visit(tree);
+    System.err.println(query_tree.dot_output());
   }
 }
