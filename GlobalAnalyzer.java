@@ -34,15 +34,15 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<OpLocation> {
 	/// Recursively get OpLocation information for the operand streams.
 	/// But first, ensure that the input stream has been seen before. It's an assert instead of
 	/// exception because the previous pass should have caught the error.
-	OpLocation opl_inputs;
+	OpLocation opl_input;
 	if (! stream.equals("T")) {
 	    ParserRuleContext subquery = sym_tree_.get(stream);
 	    assert(subquery != null);
-	    opl_inputs = visit(subquery);
+	    opl_input = visit(subquery);
 	} else {
-	    opl_inputs = new OpLocation();
+	    opl_input = new OpLocation();
 	}
-	return opl_inputs;
+	return opl_input;
     }
 
     /// Test methods to check out some basic functionalities
@@ -50,8 +50,8 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<OpLocation> {
 	HashSet<Integer> sw_set = new SwitchPredicateExtractor(all_switches_).visit(ctx.pred());
 	OpLocation opl_input = RecurseDeps(ctx.stream().getText());
 	/// Merge values from recursive call and current
-	sw_set.retainAll(opl_inputs.getSwitchSet());
-	if (opl_inputs.getStreamType() == StreamType.SINGLE_SWITCH_STREAM) {
+	sw_set.retainAll(opl_input.getSwitchSet());
+	if (opl_input.getStreamType() == StreamType.SINGLE_SWITCH_STREAM) {
 	    return new OpLocation(sw_set, StreamType.SINGLE_SWITCH_STREAM);
 	} else if (sw_set.size() > 1) {
 	    return new OpLocation(sw_set, StreamType.MULTI_SWITCH_STREAM);
