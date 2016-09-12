@@ -8,39 +8,38 @@ import java.lang.RuntimeException;
 
 /// Class implementation to evaluate a value expression.
 public class ValueExprEvaluator extends PerfQueryBaseVisitor<Integer> {
-    /// expr : column. A column is not a value expression; just return -1.
-    @Override public Integer visitExprCol(PerfQueryParser.ExprColContext ctx) {
-	return -1;
-    }
-    /// expr : value. A value is a value, return it.
-    @Override public Integer visitExprVal(PerfQueryParser.ExprValContext ctx) {
-	return Integer.valueOf(ctx.getText());
-    }
+  /// expr : column. A column is not a value expression; just return -1.
+  @Override public Integer visitExprCol(PerfQueryParser.ExprColContext ctx) {
+    return -1;
+  }
+  /// expr : value. A value is a value, return it.
+  @Override public Integer visitExprVal(PerfQueryParser.ExprValContext ctx) {
+    return Integer.valueOf(ctx.getText());
+  }
 
-    /// expr: infinity. Infinity is not a value for our purposes.
-    @Override public Integer visitExprInf(PerfQueryParser.ExprInfContext ctx) {
-	return -1;
-    }
+  /// expr: infinity. Infinity is not a value for our purposes.
+  @Override public Integer visitExprInf(PerfQueryParser.ExprInfContext ctx) {
+    return -1;
+  }
 
-    /// expr : expr <combinator> expr. Result is valid only if both
-    /// sub-expressions are value expressions.
-    @Override public Integer visitExprComb(PerfQueryParser.ExprCombContext ctx)
-    {
-	Integer e1 = visit(ctx.expr(0));
-	Integer e2 = visit(ctx.expr(1));
-	Integer result;
-	switch (ctx.op.getText()) {
-	case "+": result = e1 + e2; break;
-	case "-": result = e1 - e2; break;
-	case "*": result = e1 * e2; break;
-	case "/": result = e1 / e2; break;
-	default: result = -1; assert(false);
-	}
-	return result;
+  /// expr : expr <combinator> expr. Result is valid only if both
+  /// sub-expressions are value expressions.
+  @Override public Integer visitExprComb(PerfQueryParser.ExprCombContext ctx) {
+    Integer e1 = visit(ctx.expr(0));
+    Integer e2 = visit(ctx.expr(1));
+    Integer result;
+    switch (ctx.op.getText()) {
+      case "+": result = e1 + e2; break;
+      case "-": result = e1 - e2; break;
+      case "*": result = e1 * e2; break;
+      case "/": result = e1 / e2; break;
+      default: result = -1; assert(false);
     }
+    return result;
+  }
 
-    /// expr: ( expr ). Value expression iff internal expr is also one.
-    @Override public Integer visitExprParen(PerfQueryParser.ExprParenContext ctx) {
-	return visit(ctx.expr());
-    }
+  /// expr: ( expr ). Value expression iff internal expr is also one.
+  @Override public Integer visitExprParen(PerfQueryParser.ExprParenContext ctx) {
+    return visit(ctx.expr());
+  }
 }
