@@ -14,9 +14,6 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<OpLocation> {
     /// A reference to the set of switches globally in the network
     private HashSet<Integer> all_switches_;
 
-    /// Internal "value expression" detection instance
-    private SwitchPredicateExtractor switch_extractor_;
-
     /// A reference to the symbol to query parse tree from previous passes.
     private HashMap<String, ParserRuleContext> sym_tree_;
 
@@ -28,7 +25,6 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<OpLocation> {
 			  HashMap<String, ParserRuleContext> sym_tree,
 			  String last_assigned_id) {
 	all_switches_ = all_switches;
-	switch_extractor_ = new SwitchPredicateExtractor(all_switches_);
 	sym_tree_ = sym_tree;
 	last_assigned_id_ = last_assigned_id;
     }
@@ -51,8 +47,8 @@ public class GlobalAnalyzer extends perf_queryBaseVisitor<OpLocation> {
 
     /// Test methods to check out some basic functionalities
     @Override public OpLocation visitFilter(perf_queryParser.FilterContext ctx) {
-	HashSet<Integer> sw_set = switch_extractor_.visit(ctx.pred());
-	OpLocation opl_inputs = RecurseDeps(ctx.stream().getText());
+	HashSet<Integer> sw_set = new SwitchPredicateExtractor(all_switches_).visit(ctx.pred());
+	OpLocation opl_input = RecurseDeps(ctx.stream().getText());
 	/// Merge values from recursive call and current
 	sw_set.retainAll(opl_inputs.getSwitchSet());
 	if (opl_inputs.getStreamType() == StreamType.SINGLE_SWITCH_STREAM) {
