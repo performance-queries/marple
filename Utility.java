@@ -52,10 +52,10 @@ class Utility {
     } else if (op instanceof perf_queryParser.GroupbyContext) {
       // SELECT agg_func FROM stream SGROUPBY ...
       return OperationType.GROUPBY;
-    } else if (op instanceof perf_queryParser.ProjectContext) {
+    } else if (op instanceof perf_queryParser.MapContext) {
       // SELECT expr_list FROM stream
       return OperationType.PROJECT;
-    } else if (op instanceof perf_queryParser.JoinContext) {
+    } else if (op instanceof perf_queryParser.ZipContext) {
       // stream JOIN stream
       return OperationType.JOIN;
     } else {

@@ -6,6 +6,6 @@ def e2esum([e2e_latency, last_switch], [tout, tin, switch_id]):
 def empty([], []):
   ;
 
-R1 = SELECT e2esum FROM T GROUPBY [uid];
-R3 = SELECT * FROM R1 WHERE e2e_latency > L and last_switch == egress_switch;
-R4 = SELECT empty FROM R3 GROUPBY [srcip, dstip, srcport, dstport, proto];
+R1 = groupby(T, [uid], e2esum);
+R3 = filter(R1, e2e_latency > L and last_switch == egress_switch);
+R4 = groupby(R3, [srcip, dstip, srcport, dstport, proto], empty);

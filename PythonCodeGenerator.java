@@ -146,8 +146,8 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
 
   /// Turn SQL projections into Python function definitions
   private String project_def(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
-    ParserRuleContext expr_list = query.project().expr_list();
-    ParserRuleContext col_list  = query.project().column_list();
+    ParserRuleContext expr_list = query.map().expr_list();
+    ParserRuleContext col_list  = query.map().column_list();
     return (spg_query_signature(stream) +
             generate_tuple_preamble(tuple_field_set_) + "\n" +
             "  " + text_with_spaces(col_list) + " = " + text_with_spaces(expr_list) + ";\n\n" +
@@ -215,16 +215,17 @@ public class PythonCodeGenerator extends perf_queryBaseListener {
   /// Generate Python function calls for select, project, and group by queries
   private String generate_spg_queries(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
     String stream_name = text_with_spaces(stream);
-    String arg_name    = text_with_spaces((ParserRuleContext)(query.getChild(0).getChild(3)));
+    // TODO: This is a total hack and very brittle to use getChild(foo, etc.)
+    String arg_name    = text_with_spaces((ParserRuleContext)(query.getChild(0).getChild(2)));
     return "  " + stream_name + " = func" + stream_name + "(" + arg_name + ")\n";
   }
 
   /// Generate Python function call for join queries
   private String generate_join_queries(perf_queryParser.Stream_queryContext query, perf_queryParser.StreamContext stream) {
     String stream_name = text_with_spaces(stream);
-    String arg1   = text_with_spaces((ParserRuleContext)(query.join().getChild(0)));
-    String arg2   = text_with_spaces((ParserRuleContext)(query.join().getChild(2)));
-    return "  " + stream_name + " = func" + stream_name + "(" + arg1 + ", " + arg2 + ")\n";
+    String arg0   = text_with_spaces((ParserRuleContext)(query.zip().stream().get(0)));
+    String arg1   = text_with_spaces((ParserRuleContext)(query.zip().stream().get(1)));
+    return "  " + stream_name + " = func" + stream_name + "(" + arg0 + ", " + arg1 + ")\n";
   }
 
   private String text_with_spaces(ParserRuleContext production) {

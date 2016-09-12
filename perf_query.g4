@@ -4,21 +4,19 @@ grammar perf_query;
 WS : [ \n\t\r]+ -> channel(HIDDEN);
 
 // Keywords
-SELECT : 'SELECT' | 'select' ;
-WHERE : 'WHERE' | 'where' ;
-FROM : 'FROM' | 'from' ;
-GROUPBY : 'GROUPBY' | 'groupby';
-JOIN   : 'JOIN' | 'join';
-AS     : 'AS' | 'as';
-IF     : 'IF' | 'if';
-THEN   : 'THEN' | 'then';
-ELSE   : 'ELSE' | 'else';
-DEF    : 'def';
-EMIT   : 'emit()';
-TRUE   : 'true'  | 'TRUE';
-FALSE  : 'false' | 'FALSE';
-AND    : 'and';
-OR     : 'or';
+FILTER   : 'filter';
+MAP      : 'map';
+GROUPBY  : 'groupby';
+ZIP      : 'zip';
+IF       : 'if';
+THEN     : 'then';
+ELSE     : 'else';
+DEF      : 'def';
+EMIT     : 'emit()';
+TRUE     : 'true';
+FALSE    : 'false';
+AND      : 'and';
+OR       : 'or';
 INFINITY : 'INFINITY' | 'infinity';
 
 // Identifiers
@@ -35,14 +33,12 @@ column   : ID;
 // Column list
 column_with_comma : ',' column;
 column_list : '[' column ']'
-            | '*'
 	    | '[' ']'
             | '[' column column_with_comma+ ']';
 
 // List of state variables
 state_with_comma : ',' state;
 state_list : '[' state ']'
-           | '*'
            | '[' ']'
            | '[' state state_with_comma+ ']';
 
@@ -83,15 +79,16 @@ stmt : primitive
 agg_fun : DEF agg_func '(' state_list ',' column_list ')' ':' stmt+;
 
 // The four operators
-filter    :  SELECT '*' FROM stream WHERE predicate;
-project   :  SELECT expr_list FROM stream AS column_list;
-groupby   :  SELECT agg_func FROM stream GROUPBY column_list;
-join      :  stream JOIN stream;
+filter    :  FILTER '(' stream ',' predicate ')';
+map       :  MAP '(' stream ',' column_list ',' expr_list ')';
+// TODO: Check that you can't interchange column_list and expr_list
+groupby   :  GROUPBY '(' stream ',' column_list ',' agg_func ')';
+zip       :  ZIP '(' stream ',' stream ')';
 // Note: The semantics of a GROUPBY are that we return all columns in the GROUPBY field
 // as well as all state maintained as part of the aggregation function.
 
 // The two types of queries
-stream_query : filter | project | groupby | join;
+stream_query : filter | map | groupby | zip;
 
 // Single statements in the language
 stream_stmt : stream '=' stream_query ';';

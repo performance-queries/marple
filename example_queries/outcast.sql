@@ -10,12 +10,11 @@ def maxfc ([maxportcount], [portpaircount]):
     if maxportcount == 0 or maxportcount < portpaircount { maxportcount = portpaircount; }
     emit()
 
-R1 = select [srcip, dstip, srcport, dstport, proto, tin/128, inport, outport]
-     from T as [srcip, dstip, srcport, dstport, proto, epoch, inp, outp];
-R2 = select new_flow from R1 GROUPBY [srcip, dstip, srcport, dstport, proto,
-     	    	     	     	          epoch, inp, outp];
-R3 = select flow_count from R2 GROUPBY [epoch, inp, outp];
-R4 = select maxfc from R3 GROUPBY [outp, epoch];
-R5 = R3 JOIN R4;
-R6 = R5 JOIN T;
-result = select * from R6 where maxportcount/portpaircount > 5 and qin > 100;
+R1 = map(T, [srcip, dstip, srcport, dstport, proto, epoch, inp, outp],
+         [srcip, dstip, srcport, dstport, proto, tin/128, inport, outport]);
+R2 = groupby(R1, [srcip, dstip, srcport, dstport, proto, epoch, inp, outp], new_flow);
+R3 = groupby(R2, [epoch, inp, outp], flow_count);
+R4 = groupby(R3, [outp, epoch], maxfc);
+R5 = zip(R3, R4);
+R6 = zip(R5, T);
+result = filter(R6, maxportcount/portpaircount > 5 and qin > 100);

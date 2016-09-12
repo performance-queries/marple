@@ -56,18 +56,19 @@ public class ExprTreeCreator extends perf_queryBaseListener {
     assert(query.getChildCount() == 1);
     ParseTree op = query.getChild(0);
     if (op instanceof perf_queryParser.FilterContext) {
-      // SELECT * FROM stream, so stream is at location 3
-      return new Operation(OperationType.FILTER, Utility.getAllTokens(op.getChild(3), id_ttype_));
+      perf_queryParser.FilterContext filter = (perf_queryParser.FilterContext)op;
+      return new Operation(OperationType.FILTER, Utility.getAllTokens(filter.stream(), id_ttype_));
     } else if (op instanceof perf_queryParser.GroupbyContext) {
-      // SELECT agg_func FROM stream SGROUPBY ...
-      return new Operation(OperationType.GROUPBY, Utility.getAllTokens(op.getChild(3), id_ttype_));
-    } else if (op instanceof perf_queryParser.ProjectContext) {
-      // SELECT expre_list FROM stream
-      return new Operation(OperationType.PROJECT, Utility.getAllTokens(op.getChild(3), id_ttype_));
-    } else if (op instanceof perf_queryParser.JoinContext) {
-      // stream JOIN stream
-      ArrayList<String> ret = Utility.getAllTokens(op.getChild(0), id_ttype_);
-      ret.addAll(Utility.getAllTokens(op.getChild(2), id_ttype_));
+      perf_queryParser.GroupbyContext groupby = (perf_queryParser.GroupbyContext)op;
+      return new Operation(OperationType.GROUPBY, Utility.getAllTokens(groupby.stream(), id_ttype_));
+    } else if (op instanceof perf_queryParser.MapContext) {
+      perf_queryParser.MapContext map = (perf_queryParser.MapContext)op;
+      return new Operation(OperationType.PROJECT, Utility.getAllTokens(map.stream(), id_ttype_));
+    } else if (op instanceof perf_queryParser.ZipContext) {
+      perf_queryParser.ZipContext zip = (perf_queryParser.ZipContext)op;
+      ArrayList<perf_queryParser.StreamContext> stream_list = new ArrayList<>(zip.stream());
+      ArrayList<String> ret = Utility.getAllTokens(stream_list.get(0), id_ttype_);
+      ret.addAll(Utility.getAllTokens(stream_list.get(1), id_ttype_));
       return new Operation(OperationType.JOIN, ret);
     } else {
       assert(false);

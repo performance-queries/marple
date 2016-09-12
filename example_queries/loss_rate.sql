@@ -6,9 +6,8 @@ def loss_counter([loss_count], [uid]):
   loss_count  = loss_count + 1
   emit()
 
-total_counts  = SELECT total_counter FROM T GROUPBY [srcip, dstip, srcport, dstport, proto];
-lost_pkts     = SELECT * FROM T WHERE tout == INFINITY;
-lost_counts   = SELECT loss_counter  FROM lost_pkts
-                GROUPBY [srcip, dstip, srcport, dstport, proto];
-joined_stream = total_counts JOIN lost_counts;
-result = SELECT [loss_count / total_count] FROM joined_stream AS [loss_rate];
+total_counts  = groupby(T, [srcip, dstip, srcport, dstport, proto], total_counter);
+lost_pkts     = filter(T, tout == INFINITY);
+lost_counts   = groupby(lost_pkts, [srcip, dstip, srcport, dstport, proto], loss_counter);
+joined_stream = zip(total_counts, lost_counts);
+result = map(joined_stream, [loss_rate], [loss_count / total_count]);

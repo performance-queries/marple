@@ -3,5 +3,5 @@ def perc([tot, high], [qin]):
   tot = tot + 1;
   emit();
 
-R1 = SELECT perc FROM T GROUPBY [qid];
-R2 = SELECT * FROM R1 WHERE (high * 100) / tot > 1;
+R1 = groupby(T, [qid], perc);
+R2 = filter(R1, (high * 100) / tot > 1);
