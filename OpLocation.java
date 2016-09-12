@@ -27,4 +27,8 @@ public class OpLocation {
     public String toString() {
 	return "Switch set:" + switch_set_.toString() + "\nStream type:" + stream_type_.toString();
     }
+
+    public String toConciseString() {
+	return switch_set_.size() + " switch(es); " + stream_type_.toString();
+    }
 }
