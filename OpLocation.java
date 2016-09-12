@@ -11,9 +11,6 @@ public class OpLocation {
 	stream_type_ = stream_type;
     }
 
-    /// TODO: The values in this default constructor don't make much sense. It should be removed
-    /// once all visitors that must output OpLocation instantiate it using the argumented
-    /// constructor.
     public OpLocation() {
 	switch_set_ = new SwitchSet().getSwitches();
 	stream_type_ = StreamType.MULTI_SWITCH_STREAM;
