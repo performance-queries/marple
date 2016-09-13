@@ -40,6 +40,12 @@ class LocatedExprTree extends ExprTree {
     return opl.toConciseString();
   }
 
+  public String dotOutput() {
+    return ("digraph tree { OUTPUT -> " + nodeLabel() +
+            " [label=\"" + edgeLabel() + "\"];\n" +
+            dotEdges() + "}");
+  }
+
   @Override public String dotEdges() {
     String ret = "";
     if (locOperands.size() != 0) {

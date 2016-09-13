@@ -29,6 +29,6 @@ public class OpLocation {
   }
 
   public String toConciseString() {
-    return switchSet.size() + " switch(es); " + streamType.toString();
+    return switchSet.size() + " switches; " + streamType.toString();
   }
 }
