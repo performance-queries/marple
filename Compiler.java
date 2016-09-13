@@ -34,19 +34,19 @@ public class Compiler {
 
     // Create symbol table
     System.out.println("Creating symbol table ...");
-    SymbolTableCreator symbol_table_creator = new SymbolTableCreator();
-    walker.walk(symbol_table_creator, tree);
+    SymbolTableCreator symbolTableCreator = new SymbolTableCreator();
+    walker.walk(symbolTableCreator, tree);
 
     // Expression tree creator
     System.out.println("Creating expression tree ...");
-    ExprTreeCreator expr_tree_creator = new ExprTreeCreator(PerfQueryParser.ID, symbol_table_creator.symbol_table());
-    walker.walk(expr_tree_creator, tree);
+    ExprTreeCreator exprTreeCreator = new ExprTreeCreator(PerfQueryParser.ID, symbolTableCreator.symbolTable());
+    walker.walk(exprTreeCreator, tree);
 
     System.out.println("Analyzing queries globally ...");
-    GlobalAnalyzer global_analyzer = new GlobalAnalyzer(new SwitchSet().getSwitches(),
-							expr_tree_creator.getSymTree(),
-							expr_tree_creator.getLastAssignedId());
-    LocatedExprTree query_tree = global_analyzer.visit(tree);
-    System.err.println(query_tree.dot_output());
+    GlobalAnalyzer globalAnalyzer = new GlobalAnalyzer(new SwitchSet().getSwitches(),
+							exprTreeCreator.getSymTree(),
+							exprTreeCreator.getLastAssignedId());
+    LocatedExprTree queryTree = globalAnalyzer.visit(tree);
+    System.err.println(queryTree.dotOutput());
   }
 }

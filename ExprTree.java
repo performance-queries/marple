@@ -1,21 +1,21 @@
 import java.util.ArrayList;
 class ExprTree {
-  protected static int uid_count = 0;
+  protected static int uidCount = 0;
   protected OperationType opcode;
   private ArrayList<ExprTree> operands;
   protected int uid;
-  public ExprTree(OperationType t_opcode) {
-    opcode = t_opcode;
+  public ExprTree(OperationType tOpcode) {
+    opcode = tOpcode;
     operands = new ArrayList<ExprTree>();
-    uid = uid_count;
-    uid_count++;
+    uid = uidCount;
+    uidCount++;
   }
 
-  public ExprTree(OperationType t_opcode, ArrayList<ExprTree> t_operands) {
-    opcode = t_opcode;
-    operands = t_operands;
-    uid = uid_count;
-    uid_count++;
+  public ExprTree(OperationType tOpcode, ArrayList<ExprTree> tOperands) {
+    opcode = tOpcode;
+    operands = tOperands;
+    uid = uidCount;
+    uidCount++;
   }
 
   public String toString() {
@@ -30,11 +30,11 @@ class ExprTree {
     return ret;
   }
 
-  public String dot_output() {
-    return "digraph tree {" + dot_edges() + "}";
+  public String dotOutput() {
+    return "digraph tree {" + dotEdges() + "}";
   }
 
-  public String dot_edges() {
+  public String dotEdges() {
     String ret = "";
     if (operands.size() != 0) {
       for (int i = 0; i < operands.size(); i++) {
@@ -42,7 +42,7 @@ class ExprTree {
                " -> " +
                operands.get(i).opcode + Integer.toString(operands.get(i).uid)
                + ";" +
-               operands.get(i).dot_edges();
+               operands.get(i).dotEdges();
       }
     }
     return ret;

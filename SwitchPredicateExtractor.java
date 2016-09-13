@@ -15,38 +15,38 @@ import java.lang.RuntimeException;
 public class SwitchPredicateExtractor extends PerfQueryBaseVisitor<HashSet<Integer>> {
   /// Visitor class instances for various recursive property evaluations
   /// Value expression detection
-  private ValueExprDetector value_detector_;
+  private ValueExprDetector valueDetector;
   
   /// Value expression evaluation
-  private ValueExprEvaluator value_evaluator_;
+  private ValueExprEvaluator valueEvaluator;
   
   /// The set of all network switches
-  private HashSet<Integer> all_switches_;
+  private HashSet<Integer> allSwitches;
   
   /// Constructor
-  public SwitchPredicateExtractor(HashSet<Integer> all_switches) {
-    value_detector_ = new ValueExprDetector();
-    value_evaluator_ = new ValueExprEvaluator();
-    all_switches_ = all_switches;
+  public SwitchPredicateExtractor(HashSet<Integer> allSwitches) {
+    valueDetector = new ValueExprDetector();
+    valueEvaluator = new ValueExprEvaluator();
+    allSwitches = allSwitches;
   }
   
   /// Return True when the expression is just the identifier corresponding to "switch".
   private Boolean isSwitchExpr(String text) {
-    return new Boolean(text.equals(Fields.switch_hdr));
+    return new Boolean(text.equals(Fields.switchHdr));
   }
   
   /// Return an (optional) integer from evaluating the two sides of a predicate, whenever one of
   /// them is a "switch" and the other is a "value expression."
   private Optional<Integer> getSwValue(PerfQueryParser.ExprContext expr1,
       				 PerfQueryParser.ExprContext expr2) {
-    Boolean right_single_switch = (isSwitchExpr(expr1.getText()) &&
-    			       value_detector_.visit(expr2));
-    Boolean left_single_switch  = (isSwitchExpr(expr2.getText()) &&
-    			       value_detector_.visit(expr1));
-    if (right_single_switch) {
-      return Optional.of(value_evaluator_.visit(expr2));
-    } else if (left_single_switch) {
-      return Optional.of(value_evaluator_.visit(expr1));
+    Boolean rightSingleSwitch = (isSwitchExpr(expr1.getText()) &&
+    			       valueDetector.visit(expr2));
+    Boolean leftSingleSwitch  = (isSwitchExpr(expr2.getText()) &&
+    			       valueDetector.visit(expr1));
+    if (rightSingleSwitch) {
+      return Optional.of(valueEvaluator.visit(expr2));
+    } else if (leftSingleSwitch) {
+      return Optional.of(valueEvaluator.visit(expr1));
     } else {
       return Optional.empty();
     }
@@ -64,29 +64,29 @@ public class SwitchPredicateExtractor extends PerfQueryBaseVisitor<HashSet<Integ
     if (switchEq.isPresent()) {
       result.add(switchEq.get());
     } else {
-      result = all_switches_;
+      result = allSwitches;
     }
     return result;
   }
   
   /// Currently, you can't order-compare switch identifiers to one another.
   @Override public HashSet<Integer> visitExprGt (PerfQueryParser.ExprGtContext ctx) {
-    return all_switches_;
+    return allSwitches;
   }
   
   /// Currently, you can't order-compare switch identifiers to one another.
   @Override public HashSet<Integer> visitExprLt (PerfQueryParser.ExprLtContext ctx) {
-    return all_switches_;
+    return allSwitches;
   }
   
   /// Detect expressions of the form sw != K, where K is a constant.
   @Override public HashSet<Integer> visitExprNe (PerfQueryParser.ExprNeContext ctx) {
     Optional<Integer> switchEq = getSwValue(ctx.expr(0), ctx.expr(1));
-    HashSet<Integer> result = all_switches_;
+    HashSet<Integer> result = allSwitches;
     if (switchEq.isPresent()) {
       result.remove(switchEq.get());
     } else {
-      result = all_switches_;
+      result = allSwitches;
     }
     return result;
   }
@@ -110,7 +110,7 @@ public class SwitchPredicateExtractor extends PerfQueryBaseVisitor<HashSet<Integ
   /// When a predicte is negated, the final set of switches is the complement of the switches
   /// which the predicate restricts the stream to.
   @Override public HashSet<Integer> visitPredNot (PerfQueryParser.PredNotContext ctx) {
-    HashSet<Integer> diff = new HashSet<Integer>(all_switches_);
+    HashSet<Integer> diff = new HashSet<Integer>(allSwitches);
     diff.removeAll(visit(ctx.predicate()));
     return diff;
   }
@@ -122,7 +122,7 @@ public class SwitchPredicateExtractor extends PerfQueryBaseVisitor<HashSet<Integ
   
   /// When a predicate is True, it is matched on all network switches.
   @Override public HashSet<Integer> visitTruePred (PerfQueryParser.TruePredContext ctx) {
-    return all_switches_;
+    return allSwitches;
   }
   
   /// When a predicate is False, it is matched on no network switches.

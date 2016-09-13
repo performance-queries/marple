@@ -53,7 +53,7 @@ class Utility {
       // SELECT aggFunc FROM stream SGROUPBY ...
       return OperationType.GROUPBY;
     } else if (op instanceof PerfQueryParser.MapContext) {
-      // SELECT expr_list FROM stream
+      // SELECT exprList FROM stream
       return OperationType.PROJECT;
     } else if (op instanceof PerfQueryParser.ZipContext) {
       // stream JOIN stream

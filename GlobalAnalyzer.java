@@ -12,21 +12,21 @@ import java.lang.RuntimeException;
 /// expression tree.
 public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
   /// A reference to the set of switches globally in the network
-  private HashSet<Integer> all_switches_;
+  private HashSet<Integer> allSwitches;
  
   /// A reference to the symbol to query parse tree from previous passes.
-  private HashMap<String, ParserRuleContext> sym_tree_;
+  private HashMap<String, ParserRuleContext> symTree;
   
   /// A reference to the last assigned ID in the query program.
-  private String last_assigned_id_;
+  private String lastAssignedId;
   
   /// Constructor
-  public GlobalAnalyzer(HashSet<Integer> all_switches,
-      		  HashMap<String, ParserRuleContext> sym_tree,
-      		  String last_assigned_id) {
-    all_switches_ = all_switches;
-    sym_tree_ = sym_tree;
-    last_assigned_id_ = last_assigned_id;
+  public GlobalAnalyzer(HashSet<Integer> allSwitches,
+      		  HashMap<String, ParserRuleContext> symTree,
+      		  String lastAssignedId) {
+    allSwitches = allSwitches;
+    symTree = symTree;
+    lastAssignedId = lastAssignedId;
   }
   
   /// Return OpLocation from underlying operators, which are inputs to the current operator.
@@ -34,15 +34,15 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     /// Recursively get OpLocation information for the operand streams.
     /// But first, ensure that the input stream has been seen before. It's an assert instead of
     /// exception because the previous pass should have caught the error.
-    LocatedExprTree let_input;
+    LocatedExprTree letInput;
     if (! stream.equals("T")) {
-      ParserRuleContext subquery = sym_tree_.get(stream);
+      ParserRuleContext subquery = symTree.get(stream);
       assert(subquery != null);
-      let_input = visit(subquery);
+      letInput = visit(subquery);
     } else {
-      let_input = new LocatedExprTree(OperationType.PKTLOG, new OpLocation());
+      letInput = new LocatedExprTree(OperationType.PKTLOG, new OpLocation());
     }
-    return let_input;
+    return letInput;
   }
   
   private ArrayList<LocatedExprTree> singletonList(LocatedExprTree t) {
@@ -53,46 +53,46 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
   
   /// Test methods to check out some basic functionalities
   @Override public LocatedExprTree visitFilter(PerfQueryParser.FilterContext ctx) {
-    HashSet<Integer> sw_set = new SwitchPredicateExtractor(all_switches_).visit(ctx.predicate());
-    LocatedExprTree let_input = RecurseDeps(ctx.stream().getText());
-    OpLocation opl_input = let_input.opl();
+    HashSet<Integer> swSet = new SwitchPredicateExtractor(allSwitches).visit(ctx.predicate());
+    LocatedExprTree letInput = RecurseDeps(ctx.stream().getText());
+    OpLocation oplInput = letInput.opl();
     /// Merge values from recursive call and current
-    sw_set.retainAll(opl_input.getSwitchSet());
-    OpLocation opl_output;
-    if (opl_input.getStreamType() == StreamType.SINGLE_SWITCH_STREAM) {
-      opl_output = new OpLocation(sw_set, StreamType.SINGLE_SWITCH_STREAM);
-    } else if (sw_set.size() > 1) {
-      opl_output = new OpLocation(sw_set, StreamType.MULTI_SWITCH_STREAM);
+    swSet.retainAll(oplInput.getSwitchSet());
+    OpLocation oplOutput;
+    if (oplInput.getStreamType() == StreamType.SINGLE_SWITCH_STREAM) {
+      oplOutput = new OpLocation(swSet, StreamType.SINGLE_SWITCH_STREAM);
+    } else if (swSet.size() > 1) {
+      oplOutput = new OpLocation(swSet, StreamType.MULTI_SWITCH_STREAM);
     } else {
-      opl_output = new OpLocation(sw_set, StreamType.SINGLE_SWITCH_STREAM);
+      oplOutput = new OpLocation(swSet, StreamType.SINGLE_SWITCH_STREAM);
     }
-    return new LocatedExprTree(OperationType.FILTER, opl_output, singletonList(let_input));
+    return new LocatedExprTree(OperationType.FILTER, oplOutput, singletonList(letInput));
   }
   
   @Override public LocatedExprTree visitMap(PerfQueryParser.MapContext ctx) {
-    LocatedExprTree let_input = RecurseDeps(ctx.stream().getText());
-    OpLocation opl_output = let_input.opl();
-    return new LocatedExprTree(OperationType.PROJECT, opl_output, singletonList(let_input));
+    LocatedExprTree letInput = RecurseDeps(ctx.stream().getText());
+    OpLocation oplOutput = letInput.opl();
+    return new LocatedExprTree(OperationType.PROJECT, oplOutput, singletonList(letInput));
   }
   
-  private LocatedExprTree foldHelper(String stream_name,
+  private LocatedExprTree foldHelper(String streamName,
       			       PerfQueryParser.ColumnListContext ctx,
       			       String queryText,
       			       OperationType opcode) {
-    LocatedExprTree let_input = RecurseDeps(stream_name);
-    OpLocation opl_input = let_input.opl();
-    Boolean per_switch_stream = new ColumnChecker(Fields.switch_hdr).visit(ctx);
-    Boolean per_packet_stream = new ColumnChecker(Fields.packet_uid).visit(ctx);
-    OpLocation opl_output;
-    if (per_switch_stream) {
-        opl_output = new OpLocation(opl_input.getSwitchSet(), StreamType.SINGLE_SWITCH_STREAM);
-    } else if (per_packet_stream) {
-        opl_output = new OpLocation(opl_input.getSwitchSet(), opl_input.getStreamType());
+    LocatedExprTree letInput = RecurseDeps(streamName);
+    OpLocation oplInput = letInput.opl();
+    Boolean perSwitchStream = new ColumnChecker(Fields.switchHdr).visit(ctx);
+    Boolean perPacketStream = new ColumnChecker(Fields.packetUid).visit(ctx);
+    OpLocation oplOutput;
+    if (perSwitchStream) {
+        oplOutput = new OpLocation(oplInput.getSwitchSet(), StreamType.SINGLE_SWITCH_STREAM);
+    } else if (perPacketStream) {
+        oplOutput = new OpLocation(oplInput.getSwitchSet(), oplInput.getStreamType());
     } else {
         throw new RuntimeException("Cannot perform a fold over multiple switches and multiple"
     			       + " packets in query\n" + queryText);
     }
-    return new LocatedExprTree(opcode, opl_output, singletonList(let_input));
+    return new LocatedExprTree(opcode, oplOutput, singletonList(letInput));
   }
   
   @Override public LocatedExprTree visitGroupby(PerfQueryParser.GroupbyContext ctx) {
@@ -100,24 +100,24 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
   }
   
   @Override public LocatedExprTree visitZip(PerfQueryParser.ZipContext ctx) {
-    LocatedExprTree let_first  = RecurseDeps(ctx.stream(0).getText());
-    LocatedExprTree let_second = RecurseDeps(ctx.stream(1).getText());
-    OpLocation opl_first  = let_first.opl();
-    OpLocation opl_second = let_second.opl();
-    HashSet<Integer> result_set = new HashSet<Integer>(opl_first.getSwitchSet());
-    result_set.retainAll(opl_second.getSwitchSet());
-    StreamType result_type = ((opl_first.getStreamType() == opl_second.getStreamType()) ?
-    			  opl_first.getStreamType() : StreamType.SINGLE_SWITCH_STREAM);
+    LocatedExprTree letFirst  = RecurseDeps(ctx.stream(0).getText());
+    LocatedExprTree letSecond = RecurseDeps(ctx.stream(1).getText());
+    OpLocation oplFirst  = letFirst.opl();
+    OpLocation oplSecond = letSecond.opl();
+    HashSet<Integer> resultSet = new HashSet<Integer>(oplFirst.getSwitchSet());
+    resultSet.retainAll(oplSecond.getSwitchSet());
+    StreamType resultType = ((oplFirst.getStreamType() == oplSecond.getStreamType()) ?
+    			  oplFirst.getStreamType() : StreamType.SINGLE_SWITCH_STREAM);
     ArrayList<LocatedExprTree> children = new ArrayList<LocatedExprTree>();
-    children.add(let_first);
-    children.add(let_second);
+    children.add(letFirst);
+    children.add(letSecond);
     return new LocatedExprTree(OperationType.JOIN,
-    			   new OpLocation(result_set, result_type),
+    			   new OpLocation(resultSet, resultType),
     			   children);
   }
   
   @Override public LocatedExprTree visitProg(PerfQueryParser.ProgContext ctx) {
-    ParserRuleContext subquery = sym_tree_.get(last_assigned_id_);
+    ParserRuleContext subquery = symTree.get(lastAssignedId);
     assert (subquery != null);
     return visit(subquery);
   }

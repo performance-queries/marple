@@ -6,14 +6,14 @@ import java.util.Iterator;
 
 /// Check if the columns used in groupby operators contain a specified field.
 public class ColumnChecker extends PerfQueryBaseVisitor<Boolean> {
-  private String field_;
+  private String field;
   
-  public ColumnChecker (String field) {
-    field_ = field;
+  public ColumnChecker (String tField) {
+    field = tField;
   }
   
   @Override public Boolean visitColumn (PerfQueryParser.ColumnContext ctx) {
-    return ctx.getText().equals(field_);
+    return ctx.getText().equals(field);
   }
   
   @Override public Boolean visitOneColsList (PerfQueryParser.OneColsListContext ctx) {
@@ -25,11 +25,11 @@ public class ColumnChecker extends PerfQueryBaseVisitor<Boolean> {
   }
   
   @Override public Boolean visitMulColsList (PerfQueryParser.MulColsListContext ctx) {
-    PerfQueryParser.ColumnContext first_col = ctx.column();
-    Boolean found = visit(first_col);
-    List<PerfQueryParser.ColumnWithCommaContext> other_cols = ctx.columnWithComma();
-    for (PerfQueryParser.ColumnWithCommaContext new_col_with_comma : other_cols) {
-      found = found || visit(new_col_with_comma.column());
+    PerfQueryParser.ColumnContext firstCol = ctx.column();
+    Boolean found = visit(firstCol);
+    List<PerfQueryParser.ColumnWithCommaContext> otherCols = ctx.columnWithComma();
+    for (PerfQueryParser.ColumnWithCommaContext newColWithComma : otherCols) {
+      found = found || visit(newColWithComma.column());
     }
     return found;
   }

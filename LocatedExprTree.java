@@ -1,52 +1,52 @@
 import java.util.ArrayList;
 
 class LocatedExprTree extends ExprTree {
-  private OpLocation opl_;
-  private ArrayList<LocatedExprTree> loc_operands;
+  private OpLocation opl;
+  private ArrayList<LocatedExprTree> locOperands;
 
-  public LocatedExprTree(OperationType t_opcode, OpLocation opl,
-      		   ArrayList<LocatedExprTree> t_operands) {
-    super(t_opcode);
-    opl_ = opl;
-    loc_operands = t_operands;
+  public LocatedExprTree(OperationType tOpcode, OpLocation tOpl,
+      		   ArrayList<LocatedExprTree> tOperands) {
+    super(tOpcode);
+    opl = tOpl;
+    locOperands = tOperands;
   }
 
-  public LocatedExprTree(OperationType t_opcode, OpLocation opl) {
-      super(t_opcode);
-    opl_ = opl;
-    loc_operands = new ArrayList<LocatedExprTree>();
+  public LocatedExprTree(OperationType tOpcode, OpLocation tOpl) {
+      super(tOpcode);
+    opl = tOpl;
+    locOperands = new ArrayList<LocatedExprTree>();
   }
 
   public OpLocation opl() {
-    return opl_;
+    return opl;
   }
 
   @Override public String toString() {
-    if (loc_operands.size() == 0) return opcode.toString();
+    if (locOperands.size() == 0) return opcode.toString();
 
     String ret = opcode + "(";
-    for (int i = 0; i < loc_operands.size(); i++) {
-      ret += loc_operands.get(i).toString() + ",";
+    for (int i = 0; i < locOperands.size(); i++) {
+      ret += locOperands.get(i).toString() + ",";
     }
     ret = ret.substring(0, ret.length() - 1) + ")";
     return ret;
   }
 
-  public String node_label() {
+  public String nodeLabel() {
     return opcode + Integer.toString(uid) + " ";
   }
 
-  public String edge_label() {
-    return opl_.toConciseString();
+  public String edgeLabel() {
+    return opl.toConciseString();
   }
 
-  @Override public String dot_edges() {
+  @Override public String dotEdges() {
     String ret = "";
-    if (loc_operands.size() != 0) {
-      for (int i = 0; i < loc_operands.size(); i++) {
-      ret += node_label() + " -> " + loc_operands.get(i).node_label()
-          + " [label=\"" + loc_operands.get(i).edge_label() + "\"];\n"
-          + loc_operands.get(i).dot_edges();
+    if (locOperands.size() != 0) {
+      for (int i = 0; i < locOperands.size(); i++) {
+      ret += nodeLabel() + " -> " + locOperands.get(i).nodeLabel()
+          + " [label=\"" + locOperands.get(i).edgeLabel() + "\"];\n"
+          + locOperands.get(i).dotEdges();
       }
     }
     return ret;

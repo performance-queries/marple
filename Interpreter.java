@@ -32,12 +32,12 @@ public class Interpreter {
 
     // Create symbol table
     System.out.println("Creating symbol table ...");
-    SymbolTableCreator symbol_table_creator = new SymbolTableCreator();
-    walker.walk(symbol_table_creator, tree);
+    SymbolTableCreator symbolTableCreator = new SymbolTableCreator();
+    walker.walk(symbolTableCreator, tree);
 
     // Python code generator
     System.out.println("Running Python code gen ...");
-    PythonCodeGenerator python_code_gen = new PythonCodeGenerator(parser, symbol_table_creator.symbol_table());
-    walker.walk(python_code_gen, tree);
+    PythonCodeGenerator pythonCodeGen = new PythonCodeGenerator(parser, symbolTableCreator.symbolTable());
+    walker.walk(pythonCodeGen, tree);
   }
 }

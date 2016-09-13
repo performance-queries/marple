@@ -1,4 +1,4 @@
 public class Fields {
-  public static String switch_hdr = "switch";
-  public static String packet_uid  = "uid";
+  public static String switchHdr = "switch";
+  public static String packetUid  = "uid";
 }

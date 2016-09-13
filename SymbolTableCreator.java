@@ -10,50 +10,50 @@ import java.util.stream.Stream;
 public class SymbolTableCreator extends PerfQueryBaseListener {
   /// Hash table for storing identifiers with their type
   /// Maybe add other attributes as required
-  private HashMap<String, IdentifierType> identifiers_ = new HashMap<>();
+  private HashMap<String, IdentifierType> identifiers = new HashMap<>();
 
   /// Return symbol table once this compiler pass is over
-  public HashMap<String, IdentifierType> symbol_table() { return identifiers_; }
+  public HashMap<String, IdentifierType> symbolTable() { return identifiers; }
 
   /// Maintain mapping from name of aggregation function to
   /// the type of GROUPBY it is used for (streaming or relational)
   /// The heuristic is simple: anything with an emit is a streaming groupby
-  private HashMap<String, GroupbyType> agg_fun_map_ = new HashMap<>();
+  private HashMap<String, GroupbyType> aggFunMap = new HashMap<>();
   
   /// Listener for stream productions
   @Override public void exitStream(PerfQueryParser.StreamContext ctx) {
-    add_to_symbol_table(ctx.getText(), IdentifierType.STREAM);
+    addToSymbolTable(ctx.getText(), IdentifierType.STREAM);
   }
 
   /// Listern for state productions
   @Override public void exitState(PerfQueryParser.StateContext ctx) {
-    add_to_symbol_table(ctx.getText(), IdentifierType.STATE);
+    addToSymbolTable(ctx.getText(), IdentifierType.STATE);
   }
 
   /// Listener for column productions
   @Override public void exitColumn(PerfQueryParser.ColumnContext ctx) {
-    add_to_symbol_table(ctx.getText(), IdentifierType.COLUMN);
+    addToSymbolTable(ctx.getText(), IdentifierType.COLUMN);
   }
 
   /// Listener for "name of aggregation function" productions
   @Override public void exitAggFunc(PerfQueryParser.AggFuncContext ctx) {
-    add_to_symbol_table(ctx.getText(), IdentifierType.AGG_FUNC);
+    addToSymbolTable(ctx.getText(), IdentifierType.AGG_FUNC);
   }
 
   /// Listener for "body of aggregation function" productions
   @Override public void exitAggFun(PerfQueryParser.AggFunContext ctx) {
-    ArrayList<String> all_tokens = Utility.getAllTokens(ctx);
-    assert(! all_tokens.isEmpty());
-    Boolean has_emit = all_tokens.stream().anyMatch(token -> token.equals("emit()"));
-    if (has_emit) {
+    ArrayList<String> allTokens = Utility.getAllTokens(ctx);
+    assert(! allTokens.isEmpty());
+    Boolean hasEmit = allTokens.stream().anyMatch(token -> token.equals("emit()"));
+    if (hasEmit) {
       // An emit makes all state accessible as columns
       Utility.getAllTokens(ctx.stateList(), PerfQueryParser.ID)
-             .forEach(state -> add_to_symbol_table(state, IdentifierType.COLUMN));
+             .forEach(state -> addToSymbolTable(state, IdentifierType.COLUMN));
 
       // It also makes this aggregation function a streaming group by
-      agg_fun_map_.put(ctx.aggFunc().getText(), GroupbyType.STREAMING);
+      aggFunMap.put(ctx.aggFunc().getText(), GroupbyType.STREAMING);
     } else {
-      agg_fun_map_.put(ctx.aggFunc().getText(), GroupbyType.RELATIONAL);
+      aggFunMap.put(ctx.aggFunc().getText(), GroupbyType.RELATIONAL);
     }
   }
 
@@ -67,10 +67,10 @@ public class SymbolTableCreator extends PerfQueryBaseListener {
 
     if (operation == OperationType.GROUPBY) {
       PerfQueryParser.GroupbyContext groupby = (PerfQueryParser.GroupbyContext) query.getChild(0);
-      if (agg_fun_map_.get(groupby.aggFunc().getText()) == GroupbyType.RELATIONAL) {
-        add_to_symbol_table(stream.getText(), IdentifierType.RELATION);
+      if (aggFunMap.get(groupby.aggFunc().getText()) == GroupbyType.RELATIONAL) {
+        addToSymbolTable(stream.getText(), IdentifierType.RELATION);
       } else {
-        add_to_symbol_table(stream.getText(), IdentifierType.STREAM);
+        addToSymbolTable(stream.getText(), IdentifierType.STREAM);
       }
     }
   }
@@ -78,46 +78,46 @@ public class SymbolTableCreator extends PerfQueryBaseListener {
   /// Listener for the top-level, i.e., prog productions
   /// Prints out prepopulated symbol table
   @Override public void exitProg(PerfQueryParser.ProgContext ctx) {
-    System.out.println("identifiers_: " + identifiers_);
+    System.out.println("identifiers: " + identifiers);
   }
 
   /// Add a new identifier name to the symbol table
-  private void add_to_symbol_table(String id_name, IdentifierType new_type) {
+  private void addToSymbolTable(String idName, IdentifierType newType) {
     /// Check if the type changed?
-    Boolean type_changed = check_for_type_change(id_name, new_type);
+    Boolean typeChanged = checkForTypeChange(idName, newType);
 
     /// Now, check old and new types
     /// TODO: The part below is the equivalent of our type inference algorithm.
     /// Although it's a poor apology for one. Maybe we should think about implementing
     /// type inference in a more principled manner below.
     /// The good thing is this rather unhygienic coding style is localized.
-    if (type_changed) {
-      IdentifierType old_type = identifiers_.get(id_name);
+    if (typeChanged) {
+      IdentifierType oldType = identifiers.get(idName);
       // Make an exception for some type changes alone
-      if ((old_type == IdentifierType.STATE) && (new_type == IdentifierType.COLUMN)) {
+      if ((oldType == IdentifierType.STATE) && (newType == IdentifierType.COLUMN)) {
         // STATE can go to COLUMN because we implicitly type cast when we see an emit()
-        new_type = IdentifierType.STATE_OR_COLUMN;
-      } else if ((old_type == IdentifierType.STATE_OR_COLUMN) && (new_type == IdentifierType.COLUMN)) {
+        newType = IdentifierType.STATE_OR_COLUMN;
+      } else if ((oldType == IdentifierType.STATE_OR_COLUMN) && (newType == IdentifierType.COLUMN)) {
         // Something that became a STATE_OR_COLUMN can be further used as a COLUMN
-        new_type = IdentifierType.STATE_OR_COLUMN;
-      } else if ((old_type == IdentifierType.STREAM) && (new_type == IdentifierType.RELATION)) {
+        newType = IdentifierType.STATE_OR_COLUMN;
+      } else if ((oldType == IdentifierType.STREAM) && (newType == IdentifierType.RELATION)) {
         // Stream to relation changes are allowed, as in RELATIONAL GROUPBYs
-        new_type = IdentifierType.RELATION;
+        newType = IdentifierType.RELATION;
       } else {
         // Everything else is a type error including going from STATE_OR_COLUMN back to STATE.
         throw new RuntimeException("Trying to change type of " +
-                                   id_name +
-                                   " from " + old_type +
-                                   " to " + new_type);
+                                   idName +
+                                   " from " + oldType +
+                                   " to " + newType);
       }
     }
 
     /// Add it to the symbol table
-    identifiers_.put(id_name, new_type);
+    identifiers.put(idName, newType);
   }
 
-  /// Does id_name exist in symbol table? and is its old type different from new_type?
-  private Boolean check_for_type_change(String id_name, IdentifierType new_type) {
-    return ((identifiers_.get(id_name) != null) && (identifiers_.get(id_name) != new_type));
+  /// Does idName exist in symbol table? and is its old type different from newType?
+  private Boolean checkForTypeChange(String idName, IdentifierType newType) {
+    return ((identifiers.get(idName) != null) && (identifiers.get(idName) != newType));
   }
 }
