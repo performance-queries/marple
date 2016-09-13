@@ -17,6 +17,7 @@ TRUE     : 'true';
 FALSE    : 'false';
 AND      : 'and';
 OR       : 'or';
+ASSOC    : 'assoc';
 
 // Values
 VALUE : [0-9]+ | 'infinity';
@@ -77,7 +78,7 @@ ifConstruct    : IF predicate '{' ifPrimitive+ '}' (ELSE '{' elsePrimitive+ '}')
 stmt : primitive
      | ifConstruct;
 
-aggFun : DEF aggFunc '(' stateList ',' columnList ')' ':' stmt+;
+aggFun : DEF ASSOC? aggFunc '(' stateList ',' columnList ')' ':' stmt+;
 
 // The four operators
 filter    :  FILTER '(' stream ',' predicate ')';
