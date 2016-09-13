@@ -69,7 +69,7 @@ public class SymbolTableCreator extends PerfQueryBaseListener {
 
     PerfQueryParser.StreamQueryContext query = ctx.streamQuery();
 
-    OperationType operation = Utility.getOperationType((PerfQueryParser.StreamQueryContext)query);
+    OperationType operation = Utility.getOperationType(query);
 
     if (operation == OperationType.GROUPBY) {
       PerfQueryParser.GroupbyContext groupby = (PerfQueryParser.GroupbyContext) query.getChild(0);

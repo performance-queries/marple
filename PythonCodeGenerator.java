@@ -182,7 +182,7 @@ public class PythonCodeGenerator extends PerfQueryBaseListener {
     PerfQueryParser.StreamQueryContext query = ctx.streamQuery();
 
     lastAssigned = textWithSpaces((ParserRuleContext)stream);
-    OperationType operation = Utility.getOperationType((PerfQueryParser.StreamQueryContext)query);
+    OperationType operation = Utility.getOperationType(query);
     if (operation == OperationType.FILTER) {
       functionDefs  += filterDef(query, stream);
       functionCalls += generateSpgQueries(query, stream);

@@ -4,6 +4,6 @@ shopt -s expand_aliases
 set -e
 rm -rf *.class PerfQuery*.java PerfQuery*.tokens
 antlr4 -visitor PerfQuery.g4
-javac *.java
+javac -Werror -Xlint:all *.java
 ./test_everything.sh Compiler
 ./test_everything.sh Interpreter
