@@ -17,11 +17,12 @@ TRUE     : 'true';
 FALSE    : 'false';
 AND      : 'and';
 OR       : 'or';
-INFINITY : 'INFINITY' | 'infinity';
+
+// Values
+VALUE : [0-9]+ | 'infinity';
 
 // Identifiers
 ID : ('a'..'z' | 'A'..'Z' |  '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')*;
-VALUE : [0-9]+;
 
 // alias ID to stream, column, aggFunc and relations
 // reuses the parser for type checking as well
@@ -46,7 +47,6 @@ stateList : '[' state ']'
 // Expressions
 expr : ID       # exprCol
      | VALUE    # exprVal
-     | INFINITY # exprInf
      | expr op=('+'|'-'|'*'|'/') expr # exprComb
      | '(' expr ')' # exprParen
      ;

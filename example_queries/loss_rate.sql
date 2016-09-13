@@ -7,7 +7,7 @@ def loss_counter([loss_count], [uid]):
   emit()
 
 total_counts  = groupby(T, [srcip, dstip, srcport, dstport, proto], total_counter);
-lost_pkts     = filter(T, tout == INFINITY);
+lost_pkts     = filter(T, tout == infinity);
 lost_counts   = groupby(lost_pkts, [srcip, dstip, srcport, dstport, proto], loss_counter);
 joined_stream = zip(total_counts, lost_counts);
 result = map(joined_stream, [loss_rate], [loss_count / total_count]);

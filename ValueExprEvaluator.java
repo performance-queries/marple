@@ -14,12 +14,7 @@ public class ValueExprEvaluator extends PerfQueryBaseVisitor<Integer> {
   }
   /// expr : value. A value is a value, return it.
   @Override public Integer visitExprVal(PerfQueryParser.ExprValContext ctx) {
-    return Integer.valueOf(ctx.getText());
-  }
-
-  /// expr: infinity. Infinity is not a value for our purposes.
-  @Override public Integer visitExprInf(PerfQueryParser.ExprInfContext ctx) {
-    return -1;
+    return ctx.getText().equals("infinity") ? -1 : Integer.valueOf(ctx.getText());
   }
 
   /// expr : expr <combinator> expr. Result is valid only if both

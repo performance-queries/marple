@@ -1,8 +1,0 @@
-1. fix the expr -> infinity production. why is value -> infinity and expr ->
-   value not working?
-2. The e2e latency query and tail latency query seem a little confusing.
-3. How does ANTLR deal with multiple alternatives for the same parser rule?
-4. Need to use java -ea to enable assertions. Is there a cleaner option?
-5. Linting.
-6. A reasonable build system.
-7. Run type checker on all example_queries.

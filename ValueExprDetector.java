@@ -14,12 +14,7 @@ public class ValueExprDetector extends PerfQueryBaseVisitor<Boolean> {
   }
   /// expr : value. A value is a value!
   @Override public Boolean visitExprVal(PerfQueryParser.ExprValContext ctx) {
-    return new Boolean("true");
-  }
-
-  /// expr: infinity. Infinity is not a value for our purposes.
-  @Override public Boolean visitExprInf(PerfQueryParser.ExprInfContext ctx) {
-    return new Boolean("false");
+    return ctx.getText().equals("infinity") ? new Boolean("false") : new Boolean("true");
   }
 
   /// expr : expr <combinator> expr. Only a value expression if both
