@@ -98,10 +98,13 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     Boolean perSwitchStream = new ColumnChecker(Fields.switchHdr).visit(ctx);
     Boolean perPacketStream = new ColumnChecker(Fields.packetUid).visit(ctx);
     OpLocation oplOutput;
+    // Ensure that metadata for the aggregation function has been recorded earlier.
+    // This would have been caught in the symbol table generation pass, so asserting away.
+    assert (aggFunAssocMap.get(aggFunc) != null);
     if (perSwitchStream) {
-        oplOutput = new OpLocation(oplInput.getSwitchSet(), StreamType.SINGLE_SWITCH_STREAM);
-    } else if (perPacketStream) {
-        oplOutput = new OpLocation(oplInput.getSwitchSet(), oplInput.getStreamType());
+      oplOutput = new OpLocation(oplInput.getSwitchSet(), StreamType.SINGLE_SWITCH_STREAM);
+    } else if (perPacketStream || (aggFunAssocMap.get(aggFunc) && isGroupTopLevel)) {
+      oplOutput = new OpLocation(oplInput.getSwitchSet(), oplInput.getStreamType());
     } else {
         throw new RuntimeException("Cannot perform a fold over multiple switches and multiple"
     			       + " packets in query\n" + queryText);
@@ -110,7 +113,8 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
   }
   
   @Override public LocatedExprTree visitGroupby(PerfQueryParser.GroupbyContext ctx) {
-    return foldHelper(ctx.stream().getText(), ctx.columnList(), ctx.getText(), OperationType.GROUPBY);
+    return foldHelper(ctx.stream().getText(), ctx.columnList(), ctx.getText(),
+                      OperationType.GROUPBY, ctx.aggFunc().getText());
   }
   
   @Override public LocatedExprTree visitZip(PerfQueryParser.ZipContext ctx) {
