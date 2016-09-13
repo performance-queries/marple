@@ -62,6 +62,7 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
   
   /// Test methods to check out some basic functionalities
   @Override public LocatedExprTree visitFilter(PerfQueryParser.FilterContext ctx) {
+    unsetTopLevel();
     HashSet<Integer> swSet = new SwitchPredicateExtractor(allSwitches).visit(ctx.predicate());
     LocatedExprTree letInput = RecurseDeps(ctx.stream().getText());
     OpLocation oplInput = letInput.opl();
@@ -77,17 +78,21 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     }
     return new LocatedExprTree(OperationType.FILTER, oplOutput, singletonList(letInput));
   }
-  
+
   @Override public LocatedExprTree visitMap(PerfQueryParser.MapContext ctx) {
+    unsetTopLevel();
     LocatedExprTree letInput = RecurseDeps(ctx.stream().getText());
     OpLocation oplOutput = letInput.opl();
     return new LocatedExprTree(OperationType.PROJECT, oplOutput, singletonList(letInput));
   }
   
   private LocatedExprTree foldHelper(String streamName,
-      			       PerfQueryParser.ColumnListContext ctx,
-      			       String queryText,
-      			       OperationType opcode) {
+                                     PerfQueryParser.ColumnListContext ctx,
+                                     String queryText,
+                                     OperationType opcode,
+                                     String aggFunc) {
+    boolean isGroupTopLevel = isTopLevel;
+    unsetTopLevel();
     LocatedExprTree letInput = RecurseDeps(streamName);
     OpLocation oplInput = letInput.opl();
     Boolean perSwitchStream = new ColumnChecker(Fields.switchHdr).visit(ctx);
@@ -109,6 +114,7 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
   }
   
   @Override public LocatedExprTree visitZip(PerfQueryParser.ZipContext ctx) {
+    unsetTopLevel();
     LocatedExprTree letFirst  = RecurseDeps(ctx.stream(0).getText());
     LocatedExprTree letSecond = RecurseDeps(ctx.stream(1).getText());
     OpLocation oplFirst  = letFirst.opl();
