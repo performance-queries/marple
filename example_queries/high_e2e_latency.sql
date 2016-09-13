@@ -3,7 +3,7 @@ def e2esum([e2e_latency, last_switch], [tout, tin, switch_id]):
   last_switch = switch_id;
   emit();
 
-def empty([], []):
+def assoc empty([], []):
   ;
 
 R1 = groupby(T, [uid], e2esum);

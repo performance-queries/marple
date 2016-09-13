@@ -4,5 +4,5 @@ def outofseq([lastseq, oos_count], [tcpseq]):
 
 tcp_pkts = filter(T, proto == TCP);
 oos_query = groupby(tcp_pkts,
-                    [srcip, dstip, srcport, dstport, proto],
+                    [srcip, switch, dstip, srcport, dstport, proto],
                     outofseq);

@@ -7,5 +7,5 @@ def fl_detect ([last_time, size], [tin]):
 def flsum ([sum], [size]):
     sum = sum + size
 
-R1 = groupby(T, [srcip, dstip, srcport, dstport, proto], fl_detect);
+R1 = groupby(T, [switch, srcip, dstip, srcport, dstport, proto], fl_detect);
 result = groupby(R1, [], flsum);

@@ -12,7 +12,7 @@ def maxfc ([maxportcount], [portpaircount]):
 
 R1 = map(T, [srcip, dstip, srcport, dstport, proto, epoch, inp, outp],
          [srcip, dstip, srcport, dstport, proto, tin/128, inport, outport]);
-R2 = groupby(R1, [srcip, dstip, srcport, dstport, proto, epoch, inp, outp], new_flow);
+R2 = groupby(R1, [srcip, dstip, srcport, dstport, proto, epoch, inp, outp, switch], new_flow);
 R3 = groupby(R2, [epoch, inp, outp], flow_count);
 R4 = groupby(R3, [outp, epoch], maxfc);
 R5 = zip(R3, R4);
