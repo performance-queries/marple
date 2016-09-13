@@ -101,7 +101,7 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     // Ensure that metadata for the aggregation function has been recorded earlier.
     // This would have been caught in the symbol table generation pass, so asserting away.
     assert (aggFunAssocMap.get(aggFunc) != null);
-    if (perSwitchStream) {
+    if (perSwitchStream || oplInput.getStreamType() == StreamType.SINGLE_SWITCH_STREAM) {
       oplOutput = new OpLocation(oplInput.getSwitchSet(), StreamType.SINGLE_SWITCH_STREAM);
     } else if (perPacketStream || (aggFunAssocMap.get(aggFunc) && isGroupTopLevel)) {
       oplOutput = new OpLocation(oplInput.getSwitchSet(), oplInput.getStreamType());
