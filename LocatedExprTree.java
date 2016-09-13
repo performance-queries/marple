@@ -41,7 +41,7 @@ class LocatedExprTree extends ExprTree {
   }
 
   public String dotOutput() {
-    return ("digraph tree { OUTPUT -> " + nodeLabel() +
+    return ("digraph tree { " + nodeLabel() + " -> OUTPUT " +
             " [label=\"" + edgeLabel() + "\"];\n" +
             dotEdges() + "}");
   }
@@ -50,7 +50,7 @@ class LocatedExprTree extends ExprTree {
     String ret = "";
     if (locOperands.size() != 0) {
       for (int i = 0; i < locOperands.size(); i++) {
-      ret += nodeLabel() + " -> " + locOperands.get(i).nodeLabel()
+      ret += locOperands.get(i).nodeLabel() + " -> " + nodeLabel()
           + " [label=\"" + locOperands.get(i).edgeLabel() + "\"];\n"
           + locOperands.get(i).dotEdges();
       }
