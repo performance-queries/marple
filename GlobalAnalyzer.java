@@ -19,14 +19,23 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
   
   /// A reference to the last assigned ID in the query program.
   private String lastAssignedId;
+
+  /// A reference to associativity information for aggregation functions
+  private HashMap<String, Boolean> aggFunAssocMap;
+
+  /// State variable denoting we are at the top level of the parse
+  private boolean isTopLevel = true;
+  private void unsetTopLevel() { isTopLevel = false; }
   
   /// Constructor
   public GlobalAnalyzer(HashSet<Integer> allSwitches,
-      		  HashMap<String, ParserRuleContext> symTree,
-      		  String lastAssignedId) {
-    allSwitches = allSwitches;
-    symTree = symTree;
-    lastAssignedId = lastAssignedId;
+                        HashMap<String, ParserRuleContext> symTree,
+                        String lastAssignedId,
+                        HashMap<String, Boolean> aggFunAssocMap) {
+    this.allSwitches = allSwitches;
+    this.symTree = symTree;
+    this.lastAssignedId = lastAssignedId;
+    this.aggFunAssocMap = aggFunAssocMap;
   }
   
   /// Return OpLocation from underlying operators, which are inputs to the current operator.

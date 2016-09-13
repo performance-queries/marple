@@ -7,13 +7,13 @@ public class OpLocation {
   public StreamType streamType;
 
   public OpLocation(HashSet<Integer> switchSet, StreamType streamType) {
-    switchSet = switchSet;
-    streamType = streamType;
+    this.switchSet = switchSet;
+    this.streamType = streamType;
   }
 
   public OpLocation() {
-    switchSet = new SwitchSet().getSwitches();
-    streamType = StreamType.MULTI_SWITCH_STREAM;
+    this.switchSet = new SwitchSet().getSwitches();
+    this.streamType = StreamType.MULTI_SWITCH_STREAM;
   }
 
   public HashSet<Integer> getSwitchSet() {

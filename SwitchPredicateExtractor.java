@@ -27,7 +27,7 @@ public class SwitchPredicateExtractor extends PerfQueryBaseVisitor<HashSet<Integ
   public SwitchPredicateExtractor(HashSet<Integer> allSwitches) {
     valueDetector = new ValueExprDetector();
     valueEvaluator = new ValueExprEvaluator();
-    allSwitches = allSwitches;
+    this.allSwitches = allSwitches;
   }
   
   /// Return True when the expression is just the identifier corresponding to "switch".

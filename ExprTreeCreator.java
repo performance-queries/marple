@@ -32,7 +32,7 @@ public class ExprTreeCreator extends PerfQueryBaseListener {
   /// Constructor
   public ExprTreeCreator(int identifierTtype, HashMap<String, IdentifierType> symbolTable) {
     idTtype = identifierTtype;
-    symbolTable = symbolTable;
+    this.symbolTable = symbolTable;
   }
 
   @Override public void exitStreamStmt(PerfQueryParser.StreamStmtContext ctx) {
