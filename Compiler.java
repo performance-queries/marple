@@ -44,8 +44,9 @@ public class Compiler {
 
     System.out.println("Analyzing queries globally ...");
     GlobalAnalyzer globalAnalyzer = new GlobalAnalyzer(new SwitchSet().getSwitches(),
-							exprTreeCreator.getSymTree(),
-							exprTreeCreator.getLastAssignedId());
+                                                       exprTreeCreator.getSymTree(),
+                                                       exprTreeCreator.getLastAssignedId(),
+                                                       symbolTableCreator.getAggFunAssocMap());
     LocatedExprTree queryTree = globalAnalyzer.visit(tree);
     System.err.println(queryTree.dotOutput());
   }
