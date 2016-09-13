@@ -19,6 +19,10 @@ public class SymbolTableCreator extends PerfQueryBaseListener {
   /// the type of GROUPBY it is used for (streaming or relational)
   /// The heuristic is simple: anything with an emit is a streaming groupby
   private HashMap<String, GroupbyType> aggFunMap = new HashMap<>();
+  /// Maintain mapping from name of aggregation function to whether it is
+  /// annotated to be associative. This is part of the function definition.
+  private HashMap<String, Boolean> aggFunAssocMap  = new HashMap<>();
+  public HashMap<String, Boolean> getAggFunAssocMap() { return aggFunAssocMap; }
   
   /// Listener for stream productions
   @Override public void exitStream(PerfQueryParser.StreamContext ctx) {
@@ -55,6 +59,8 @@ public class SymbolTableCreator extends PerfQueryBaseListener {
     } else {
       aggFunMap.put(ctx.aggFunc().getText(), GroupbyType.RELATIONAL);
     }
+    // Also recognize if the function is annotated associative
+    aggFunAssocMap.put(ctx.aggFunc().getText(), ctx.ASSOC() != null);
   }
 
   /// Listener for groupby operations/queries
