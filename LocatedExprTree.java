@@ -5,7 +5,7 @@ class LocatedExprTree extends ExprTree {
   private ArrayList<LocatedExprTree> locOperands;
 
   public LocatedExprTree(OperationType tOpcode, OpLocation tOpl,
-      		   ArrayList<LocatedExprTree> tOperands) {
+                         ArrayList<LocatedExprTree> tOperands) {
     super(tOpcode);
     opl = tOpl;
     locOperands = tOperands;
