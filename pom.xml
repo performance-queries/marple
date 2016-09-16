@@ -24,47 +24,47 @@
       </plugin>
 
       <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-               <!-- This plugin assembles dependencies along with the main project into one jar. Similar to static libs. -->
-              <configuration>
-                 <appendAssemblyId>true</appendAssemblyId>
-                 <descriptorRefs>
-                         <descriptorRef>jar-with-dependencies</descriptorRef>
-                 </descriptorRefs>
-              </configuration>
+        <artifactId>maven-assembly-plugin</artifactId>
+         <!-- This plugin assembles project+dependencies into one jar, like static linking. -->
+        <configuration>
+          <appendAssemblyId>true</appendAssemblyId>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
 
-              <executions>
-                      <execution>
-                              <id>Compiler</id> <!-- used for inheritance merges -->
-                              <phase>package</phase> <!-- bind to the packaging phase -->
-                              <goals>
-                                      <goal>single</goal>
-                              </goals>
-                              <configuration>
-                                 <finalName>Compiler</finalName> <!-- file name for assembly -->
-                                 <archive>
-                                         <manifest>
-                                              <mainClass>edu.mit.needlstk.Compiler</mainClass>
-                                         </manifest>
-                                 </archive>
-                              </configuration>
-                      </execution>
-                      <execution>
-                              <id>Interpreter</id> <!-- used for inheritance merges -->
-                              <phase>package</phase> <!-- bind to the packaging phase -->
-                              <goals>
-                                      <goal>single</goal>
-                              </goals>
-                              <configuration>
-                                 <finalName>Interpreter</finalName>
-                                 <archive>
-                                         <manifest>
-                                            <mainClass>edu.mit.needlstk.Interpreter</mainClass>
-                                         </manifest>
-                                 </archive>
-                              </configuration>
-                      </execution>
-              </executions>
+        <executions>
+          <execution>
+            <id>Compiler</id>
+            <phase>package</phase> <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>Compiler</finalName> <!-- file name for assembly -->
+              <archive>
+                <manifest>
+                  <mainClass>edu.mit.needlstk.Compiler</mainClass>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+          <execution>
+            <id>Interpreter</id> <!-- each execution creates a new jar -->
+            <phase>package</phase> <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>Interpreter</finalName>
+              <archive>
+                <manifest>
+                  <mainClass>edu.mit.needlstk.Interpreter</mainClass>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -83,7 +83,7 @@
     </plugins>
   </build>
   <properties>
-   <antlr4.visitor>true</antlr4.visitor>
+    <antlr4.visitor>true</antlr4.visitor>
   </properties>
   <dependencies> <!-- other dependencies, fetched automatically from maven's web repos -->
     <dependency>
