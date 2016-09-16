@@ -2,4 +2,5 @@ language: java
 jdk:
   - oraclejdk8
 script:
+  - mvn install
   - ./smoke_test.sh

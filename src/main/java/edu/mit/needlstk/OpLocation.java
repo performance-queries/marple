@@ -1,3 +1,4 @@
+package edu.mit.needlstk;
 import java.util.HashSet;
 
 /// A class to annotate operators with (i) the switches where they look at their streaming inputs;

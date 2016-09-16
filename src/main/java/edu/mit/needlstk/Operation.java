@@ -1,3 +1,4 @@
+package edu.mit.needlstk;
 import java.util.ArrayList;
 public class Operation {
   public OperationType opcode = OperationType.UNDEFINED;

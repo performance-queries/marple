@@ -1,0 +1,104 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.mit.needlstk</groupId>
+  <artifactId>needlstk</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>needlstk</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <build>
+    <plugins>
+      <plugin> <!-- maven's plugins are similar to Puppet's providers, I think -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId> <!-- anything related to javac -->
+        <version>3.1</version>
+        <configuration>
+          <source>1.8</source> <!-- Java source version (Java 8)-->
+          <target>1.8</target> <!-- JVM target version (Java 8 again, I think) -->
+          <compilerArguments>  <!-- Add any compiler flags here. --> 
+            <Werror />
+            <Xlint:all />
+          </compilerArguments>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+         <!-- This plugin assembles project+dependencies into one jar, like static linking. -->
+        <configuration>
+          <appendAssemblyId>true</appendAssemblyId>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>Compiler</id>
+            <phase>package</phase> <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>Compiler</finalName> <!-- file name for assembly -->
+              <archive>
+                <manifest>
+                  <mainClass>edu.mit.needlstk.Compiler</mainClass>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+          <execution>
+            <id>Interpreter</id> <!-- each execution creates a new jar -->
+            <phase>package</phase> <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>Interpreter</finalName>
+              <archive>
+                <manifest>
+                  <mainClass>edu.mit.needlstk.Interpreter</mainClass>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.antlr</groupId> <!-- plugin to auto-generate java from ANTLR4 grammars -->
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>4.5.3</version>
+        <configuration>
+          <visitor>true</visitor>
+        </configuration>
+        <executions>
+          <execution>
+            <id>antlr</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies> <!-- other dependencies, fetched automatically from maven's web repos -->
+    <dependency>
+      <groupId>org.antlr</groupId> <!-- ANTLR run time -->
+      <artifactId>antlr4-runtime</artifactId>
+      <version>4.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId> <!-- Java's unit testing framework -->
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
