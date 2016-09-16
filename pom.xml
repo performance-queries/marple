@@ -71,6 +71,9 @@
         <groupId>org.antlr</groupId> <!-- plugin to auto-generate java from ANTLR4 grammars -->
         <artifactId>antlr4-maven-plugin</artifactId>
         <version>4.5.3</version>
+        <configuration>
+          <visitor>true</visitor>
+        </configuration>
         <executions>
           <execution>
             <id>antlr</id>
@@ -82,9 +85,6 @@
       </plugin>
     </plugins>
   </build>
-  <properties>
-    <antlr4.visitor>true</antlr4.visitor>
-  </properties>
   <dependencies> <!-- other dependencies, fetched automatically from maven's web repos -->
     <dependency>
       <groupId>org.antlr</groupId> <!-- ANTLR run time -->
