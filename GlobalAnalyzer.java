@@ -28,11 +28,6 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
   private boolean isTopLevel = true;
   private void unsetTopLevel() { isTopLevel = false; }
 
-  /// Helper function to turn a single LocatedExprTree into a list 
-  private ArrayList<LocatedExprTree> singletonList(LocatedExprTree t) {
-    return new ArrayList<>(Collections.singletonList(t));
-  }
- 
   /// Constructor
   public GlobalAnalyzer(HashSet<Integer> allSwitches,
                         HashMap<String, ParserRuleContext> symTree,
@@ -82,7 +77,7 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     }
     return new LocatedExprTree(OperationType.FILTER,
                                oplOutput,
-                               singletonList(letInput));
+                               new ArrayList<>(Collections.singletonList(letInput)));
   }
 
   /// visit maps, i.e., r = map(s, column_list, expression_list)
@@ -92,7 +87,7 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     OpLocation oplOutput = letInput.opl();
     return new LocatedExprTree(OperationType.PROJECT,
                                oplOutput, 
-                               singletonList(letInput));
+                               new ArrayList<>(Collections.singletonList(letInput)));
   }
 
   /// Helper function for folds, TODO: Document what it does. 
@@ -121,7 +116,7 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     }
     return new LocatedExprTree(opcode,
                                oplOutput,
-                               singletonList(letInput));
+                               new ArrayList<>(Collections.singletonList(letInput)));
   }
 
   /// visit groupbys, i.e., r = groupby(s, field_list, aggregation function) 
