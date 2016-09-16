@@ -1,3 +1,4 @@
+package edu.mit.needlstk;
 public enum OperationType {
   GROUPBY,
   JOIN,

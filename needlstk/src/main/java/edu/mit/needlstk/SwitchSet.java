@@ -1,3 +1,4 @@
+package edu.mit.needlstk;
 import java.util.HashSet;
 
 /// Create a set representing the set of switch identifiers in the network.
