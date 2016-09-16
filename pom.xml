@@ -33,6 +33,7 @@
                                       <goal>single</goal>
                               </goals>
                               <configuration>
+                                 <finalName>Compiler</finalName>
                                  <appendAssemblyId>true</appendAssemblyId>
                                  <archive>
                                          <manifest>
@@ -51,6 +52,7 @@
                                       <goal>single</goal>
                               </goals>
                               <configuration>
+                                 <finalName>Interpreter</finalName>
                                  <appendAssemblyId>true</appendAssemblyId>
                                  <archive>
                                          <manifest>
