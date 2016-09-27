@@ -7,7 +7,7 @@ goal of finding needles in a haystack. It is pronounced "needle stack"
 
 QuickStart (requires maven)
 
-0. mvn package
+0. mvn install
 Packages sources into one assembly JAR for
 the compiler and the interpreter
 
@@ -18,9 +18,7 @@ but if you get an exception for any one, it
 probably means there's a bug.
 
 2. Generate parse tree using
-java -cp /usr/local/lib/antlr-4.5.3-complete.jar:target/classes/ org.antlr.v4.gui.TestRig edu.mit.needlstk.PerfQuery prog example\_queries/flowlet\_hist.sql -gui
-
-(replace /usr/local/lib/antlr-4.5.3-complete.jar with wherever it's installed in your system)
+mvn exec:java -Dexec.mainClass="org.antlr.v4.gui.TestRig" -Dexec.args="edu.mit.needlstk.PerfQuery prog -gui example\_queries/flowlet\_hist.sql"
 (should open up a window showing the parse tree)
 
 3. Run compiler using
