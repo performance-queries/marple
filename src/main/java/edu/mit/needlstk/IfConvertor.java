@@ -55,6 +55,17 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     return code;
   }
 
+  /// ANTLR visitor for aggFun
+  public ThreeOpCode visitAggFun(PerfQueryParser.AggFunContext ctx) {
+    List<StmtContext> stmts = ctx.stmt();
+    ThreeOpCode toc = new ThreeOpCode();
+    for (stmt: stmts) {
+      toc = toc.orderedMerge(visit(stmt));
+    }
+    toc.print();
+    return toc;
+  }
+
   /// Helper to handle one part of an IF ... ELSE statement: either the IF or ELSE. The logic is
   /// very similar for the two, so they can be handled through the same function.
   private ThreeOpCode handleIfOrElse(List<PerfQueryParser.ParserRuleContext> ctxList,

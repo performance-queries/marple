@@ -13,6 +13,12 @@ public class ThreeOpCode {
     this.stmts = stmts;
   }
 
+  /// Default constructor
+  public ThreeOpCode() {
+    this.decls = new ArrayList<ThreeOpDecl>();
+    this.stmts = new ArrayList<ThreeOpStmt>();
+  }
+
   /// Merge the argument TOC with the current TOC, and return a new TOC.
   public ThreeOpCode orderedMerge(ThreeOpCode other) {
     return new ThreeOpCode(decls.addAll(other.decls), stmts.addAll(other.stmts));
