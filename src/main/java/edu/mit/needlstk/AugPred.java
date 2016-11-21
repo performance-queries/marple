@@ -47,25 +47,29 @@ public class AugPred extends PerfQueryBaseVisitor<> {
       this.type = PRED_FALSE;
     } else if(PerfQueryParser.ExprEqContext.isInstance(ctx)) {
       this.type = PRED_EQ;
-      this.childExprs = MakeExprChildren(AugExpr(ctx.expr(0)), AugExpr(ctx.expr(1)));
+      this.childExprs = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
     } else if(PerfQueryParser.ExprGtContext.isInstance(ctx)) {
       this.type = PRED_GT;
-      this.childExprs = MakeExprChildren(AugExpr(ctx.expr(0)), AugExpr(ctx.expr(1)));
+      this.childExprs = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
     } else if(PerfQueryParser.ExprLtContext.isInstance(ctx)) {
       this.type = PRED_LT;
-      this.childExprs = MakeExprChildren(AugExpr(ctx.expr(0)), AugExpr(ctx.expr(1)));
+      this.childExprs = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
     } else if(PerfQueryParser.ExprNeContext.isInstance(ctx)) {
       this.type = PRED_NE;
-      this.childExprs = MakeExprChildren(AugExpr(ctx.expr(0)), AugExpr(ctx.expr(1)));
+      this.childExprs = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
     } else if(PerfQueryParser.PredAndContext.isInstance(ctx)) {
       this.type = PRED_AND;
-      this.childPreds = MakePredChildren(AugPred(ctx.predicate(0)), AugPred(ctx.predicate(1)));
+      this.childPreds = MakePredChildren(new AugPred(ctx.predicate(0)), new AugPred(ctx.predicate(1)));
     } else if(PerfQueryParser.PredOrContext.isInstance(ctx)) {
       this.type = PRED_OR;
-      this.childPreds = MakePredChildren(AugPred(ctx.predicate(0)), AugPred(ctx.predicate(1)));
+      this.childPreds = MakePredChildren(new AugPred(ctx.predicate(0)), new AugPred(ctx.predicate(1)));
     } else if(PerfQueryParser.PredNotContext.isInstance(ctx)) {
       this.type = PRED_NOT;
-      this.childPreds = new ArrayList<>(Arrays.asList(AugPred(ctx.predicate())));
+      this.childPreds = new ArrayList<>(Arrays.asList(new AugPred(ctx.predicate())));
+    } else if(PerfQueryParser.PredParenContext.isInstance(ctx)) {
+      /// TODO: Ideally, this could use something like a factory method. But using something like a
+      /// copy constructor for now.
+      copy(new AugPred(ctx.predicate()));
     } else {
       assert(false); // Logic error. Expecting a different kind of predicate?
     }
@@ -77,6 +81,13 @@ public class AugPred extends PerfQueryBaseVisitor<> {
            || type == AugPredType.PRED_NOT);
     this.type = type;
     this.childPreds = childPreds;
+  }
+
+  /// Something like a copy constructor
+  private copy(AugPred copySrc) {
+    this.type = copySrc.type;
+    this.childPreds = copySrc.childPreds;
+    this.childExprs = copySrc.childExprs;
   }
 
   public AugPred(AugPredType type, List<AugExpr> childExprs) {
@@ -92,15 +103,15 @@ public class AugPred extends PerfQueryBaseVisitor<> {
 
   /// Predicate combinators on existing AugPreds, resulting in new AugPreds.
   public AugPred and(AugPred other) {
-    return AugPred(AugPredType.PRED_AND, MakePredChildren(this, other));
+    return new AugPred(AugPredType.PRED_AND, MakePredChildren(this, other));
   }
 
   public AugPred or(AugPred other) {
-    return AugPred(AugPredType.PRED_OR, MakePredChildren(this, other));
+    return new AugPred(AugPredType.PRED_OR, MakePredChildren(this, other));
   }
 
   public AugPred not() {
-    return AugPred(AugPredType.PRED_NOT, new ArrayList<>(Arrays.asList(this)));
+    return new AugPred(AugPredType.PRED_NOT, new ArrayList<>(Arrays.asList(this)));
   }
 
   /// Helper for constructing lists of child predicates from two inputs
