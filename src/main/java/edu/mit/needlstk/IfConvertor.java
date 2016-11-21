@@ -72,7 +72,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     assert(outerPredIdMap.containsKey(ctx));
     assert(outerPredTreeMap.containsKey(ctx));
     AugPred outerPred = outerPredTreeMap.get(ctx);
-    AugPred currPred = new AugPred.augPredFromPredicateContext(ctx.predicate());
+    AugPred currPred = new AugPred(ctx.predicate());
     ThreeOpCode code = handleIfOrElse(ctx.ifPrimitive(), currPred, outerPred, true);
     if(ctx.elsePrimitive().size() > 0) {
       code = code.orderedMerge(handleIfOrElse(ctx.elsePrimitive(), currPred, outerPred, false));
