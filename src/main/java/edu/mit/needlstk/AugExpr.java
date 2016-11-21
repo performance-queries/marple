@@ -75,6 +75,22 @@ public class AugExpr {
     }
   }
 
+  /// Helper to get printing text from binary operator type
+  private String textFromBinop(Binop binop) {
+    switch(binop) {
+      case Binop.BINOP_ADD:
+        return "+";
+      case Binop.BINOP_SUB:
+        return "-";
+      case Binop.BINOP_MUL:
+        return "*";
+      case Binop.BINOP_DIV:
+        return "/";
+      default:
+        assert (false); // Expecting a different expression combinator?
+    }
+  }  
+
   private void copy(AugExpr copySrc) {
     this.type = copySrc.type;
     this.ident = copySrc.ident;
@@ -89,5 +105,20 @@ public class AugExpr {
     children.add(childLeft);
     children.add(childRight);
     return children;
+  }
+
+  /// Printing for inspection on console
+  public String print() {
+    if(type == AugExprType.EXPR_ID) {
+      return ident;
+    } else if(type == AugExprType.EXPR_VAL) {
+      return String.valueOf(value);
+    } else if(type == AugExprType.EXPR_COMB) {
+      return ("(" + children.get(0).print() + ")" +
+              textFromBinop(binop) +
+              "(" + children.get(1).print() + ")");
+    } else {
+      assert (false); // Logic error. Must be one of predetermined expr types
+    }
   }
 }

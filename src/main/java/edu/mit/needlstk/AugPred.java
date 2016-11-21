@@ -129,4 +129,39 @@ public class AugPred {
     childList.add(childRight);
     return childList;
   }
+
+  /// Helper to extract expression for expression child i
+  private String getExprStr(int i) {
+    return childExprs.get(i).print();
+  }
+
+  /// Helper to extract expression for predicate child i
+  private String getPredStr(int i) {
+    return childPreds.get(i).print();
+  }
+
+  /// Printing for inspection on console
+  public String print() {
+    if(type == AugPredType.PRED_TRUE) {
+      return "true";
+    } else if(type == AugPredType.PRED_FALSE) {
+      return "false";
+    } else if(type == AugPredType.PRED_EQ) {
+      return "(" + getExprStr(0) + ") == (" + getExprStr(1) + ")";
+    } else if(type == AugPredType.PRED_NE) {
+      return "(" + getExprStr(0) + ") != (" + getExprStr(1) + ")";
+    } else if(type == AugPredType.PRED_GT) {
+      return "(" + getExprStr(0) + ") > (" + getExprStr(1) + ")";
+    } else if(type == AugPredType.PRED_LT) {
+      return "(" + getExprStr(0) + ") < (" + getExprStr(1) + ")";
+    } else if(type == AugPredType.PRED_AND) {
+      return "(" + getPredStr(0) + ") && (" + getPredStr(1) + ")";
+    } else if(type == AugPredType.PRED_OR) {
+      return "(" + getPredStr(0) + ") || (" + getPredStr(1) + ")";
+    } else if(type == AugPredType.PRED_NOT) {
+      return "! (" + getPredStr(0) + ")";
+    } else {
+      assert (false); // Logic error. Must be one of predetermined pred types
+    }
+  }
 }

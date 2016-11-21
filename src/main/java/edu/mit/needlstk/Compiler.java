@@ -50,5 +50,8 @@ public class Compiler {
                                                        symbolTableCreator.getAggFunAssocMap());
     LocatedExprTree queryTree = globalAnalyzer.visit(tree);
     System.err.println(queryTree.dotOutput());
+
+    IfConvertor ifc = new IfConvertor();
+    ifc.visit(tree);
   }
 }

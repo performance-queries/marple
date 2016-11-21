@@ -23,4 +23,18 @@ public class ThreeOpCode {
   public ThreeOpCode orderedMerge(ThreeOpCode other) {
     return new ThreeOpCode(decls.addAll(other.decls), stmts.addAll(other.stmts));
   }
+
+  public String print() {
+    String res = "Declarations:\n";
+    for (decl: decls) {
+      res += decl.print();
+      res += "\n";
+    }
+    res += "Statements:\n";
+    for (stmt: stmts) {
+      res += stmt.print();
+      res += "\n";
+    }
+    return res;
+  }
 }

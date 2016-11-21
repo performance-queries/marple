@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 /// These are statements of the form:
 /// result = pred ? expr_if : expr_else
 public class ThreeOpStmt {
+  private boolean isTernary;
   public String result;
   public String predVar;
   public AugPred pred;
@@ -17,6 +18,7 @@ public class ThreeOpStmt {
                      String predVar,
                      AugExpr exprIf,
                      AugExpr exprElse) {
+    this.isTernary = true;
     this.result = result;
     this.predVar = predVar;
     this.exprIf = exprIf;
@@ -26,9 +28,21 @@ public class ThreeOpStmt {
   /// Constructor that defines a predicate condition
   public ThreeOpStmt(String result,
                      AugPred pred) {
+    this.isTernary = false;
     this.result = result;
     this.pred = pred;
   }
 
-  /// TODO: printing ThreeOpStmt in various forms
+  /// Printing for visual inspection on console
+  public String print() {
+    String res;
+    if(isTernary) {
+      res = (result + " = " + predVar + " ? ("
+             + exprIf.print() + ") : ("
+             + exprElse.print() + ");");
+    } else {
+      res = result + " = " + pred.print() + ";";
+    }
+    return res;
+  }
 }
