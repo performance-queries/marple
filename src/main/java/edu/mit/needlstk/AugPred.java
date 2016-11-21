@@ -2,6 +2,8 @@ package edu.mit.needlstk;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /// A class for augmentable predicates, which predicates are mostly constructed from predicates
 /// within aggregation function bodies. The class structure mirrors the structure of predicates in
