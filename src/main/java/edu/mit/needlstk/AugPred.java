@@ -14,7 +14,7 @@ import java.util.Arrays;
 /// consider usecases where ASTs are constructed and augmented in the code itself. There are other
 /// custom mechanisms, like context-independent rewriting (using the => within the .g4 grammar
 /// file), but this seems to tie the grammar to specific manipulations in the compiler application.
-public class AugPred extends PerfQueryBaseVisitor<> {
+public class AugPred {
   /// Enum that defines types of predicates available
   public enum AugPredType {
     PRED_TRUE,
