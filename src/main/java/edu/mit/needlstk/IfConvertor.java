@@ -1,7 +1,8 @@
 package edu.mit.needlstk;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
-import java.util.HashMap;
+import org.antlr.v4.runtime.Token;
+import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Collections;
 import java.util.Arrays;
@@ -14,15 +15,15 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   /// Unique integer instance
   private Integer incr = 0;
   /// HashMap that maintains an "outer" predicate for each statement
-  private HashMap<PerfQueryParser.ParserRuleContext, String> outerPredIdMap;
-  private HashMap<PerfQueryParser.ParserRuleContext, AugPred> outerPredTreeMap;
+  private Map<ParserRuleContext, String> outerPredIdMap;
+  private Map<ParserRuleContext, AugPred> outerPredTreeMap;
   /// Default integer bitwidth used for declarations in emitted code.
   private Integer INT_WIDTH = 32;
 
   /// Constructor
   public IfConvertor() {
-    this.outerPredIdMap = new IdentityHashMap<PerfQueryParser.ParserRuleContext, String>();
-    this.outerPredTreeMap = new IdentityHashMap<PerfQueryParser.ParserRuleContext, AugPred>();
+    this.outerPredIdMap = new IdentityHashMap<ParserRuleContext, String>();
+    this.outerPredTreeMap = new IdentityHashMap<ParserRuleContext, AugPred>();
   }
 
   /// Get unique integers across all instances of this class. NOT thread-safe.
@@ -37,7 +38,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     ThreeOpStmt stmt = new ThreeOpStmt(ctx.ID().getText(),
                                        outerPredIdMap.get(ctx),
                                        new AugExpr(ctx.expr()),
-                                       new AugExpr(ctx.ID()));
+                                       new AugExpr(ctx.ID().getText()));
     return new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                            new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
   }
@@ -57,25 +58,26 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
 
   /// ANTLR visitor for aggFun
   public ThreeOpCode visitAggFun(PerfQueryParser.AggFunContext ctx) {
-    List<StmtContext> stmts = ctx.stmt();
+    List<PerfQueryParser.StmtContext> stmts = ctx.stmt();
     ThreeOpCode toc = new ThreeOpCode();
-    for (StmtContext stmt: stmts) {
+    for (PerfQueryParser.StmtContext stmt: stmts) {
       toc = toc.orderedMerge(visit(stmt));
     }
     toc.print();
     return toc;
   }
+                               
 
   /// Helper to handle one part of an IF ... ELSE statement: either the IF or ELSE. The logic is
   /// very similar for the two, so they can be handled through the same function.
-  private ThreeOpCode handleIfOrElse(List<PerfQueryParser.ParserRuleContext> ctxList,
-                                     AugPred currPred,
-                                     AugPred outerPred,
-                                     bool ifPred) {
+  private <T> ThreeOpCode handleIfOrElse(List<T> ctxList,
+                                         AugPred currPred,
+                                         AugPred outerPred,
+                                         boolean ifPred) {
     /// step 1. Get a new predicate corresponding to this case.
     /// 1.1 Declare a new predicate variable
     String predVarId = "pred_" + getUid();
-    ThreeOpDecl predVarDecl = new ThreeOpDecl(INT_WIDTH, uid);
+    ThreeOpDecl predVarDecl = new ThreeOpDecl(INT_WIDTH, predVarId);
     /// 1.2 Assign new predicate variable to clausePred
     AugPred clausePred = outerPred.and(ifPred ? currPred : currPred.not());
     ThreeOpStmt predVarStmt = new ThreeOpStmt(predVarId, clausePred);
@@ -83,10 +85,10 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     ThreeOpCode toc = new ThreeOpCode(
         new ArrayList<>(Arrays.asList(predVarDecl)),
         new ArrayList<>(Arrays.asList(predVarStmt)));
-    for (PerfQueryParser.ParserRuleContext ctx : ctxList) {
-      outerPredIdMap.put(ctx, predVarId);
-      outerPredTreeMap.put(ctx, clausePred);
-      toc = toc.orderedMerge(visit(ctx));
+    for (T ctx : ctxList) {
+      outerPredIdMap.put((ParserRuleContext)ctx, predVarId);
+      outerPredTreeMap.put((ParserRuleContext)ctx, clausePred);
+      toc = toc.orderedMerge(visit((ParseTree)ctx));
     }
     return toc;
   }

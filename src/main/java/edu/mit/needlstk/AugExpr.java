@@ -35,19 +35,23 @@ public class AugExpr {
 
   /// Constructor from expression in ANTLR (ExprContext)
   public AugExpr(PerfQueryParser.ExprContext ctx) {
-    if (PerfQueryParser.ExprColContext.isInstance(ctx)) {
-      this.type = EXPR_ID;
-      this.ident = ctx.ID().getText();
-    } else if (PerfQueryParser.ExprValContext.isInstance(ctx)) {
-      this.type = EXPR_VAL;
-      String valText = ctx.VALUE().getText();
+    if (ctx instanceof PerfQueryParser.ExprColContext) {
+      this.type = AugExprType.EXPR_ID;
+      PerfQueryParser.ExprColContext newCtx = (PerfQueryParser.ExprColContext)ctx;
+      this.ident = newCtx.ID().getText();
+    } else if (ctx instanceof PerfQueryParser.ExprValContext) {
+      this.type = AugExprType.EXPR_VAL;
+      PerfQueryParser.ExprValContext newCtx = (PerfQueryParser.ExprValContext)ctx;
+      String valText = newCtx.VALUE().getText();
       this.value = (valText.equals("infinity")) ? -1 : Integer.valueOf(valText);
-    } else if (PerfQueryParser.ExprCombContext.isInstance(ctx)) {
-      this.type = EXPR_COMB;
-      this.children = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
-      this.binop = binopFromText(ctx.op.getText());
-    } else if (PerfQueryParser.ExprParenContext.isInstance(ctx)) {
-      copy(new AugExpr(ctx.expr()));
+    } else if (ctx instanceof PerfQueryParser.ExprCombContext) {
+      this.type = AugExprType.EXPR_COMB;
+      PerfQueryParser.ExprCombContext newCtx = (PerfQueryParser.ExprCombContext)ctx;
+      this.children = makeExprChildren(new AugExpr(newCtx.expr(0)), new AugExpr(newCtx.expr(1)));
+      this.binop = binopFromText(newCtx.op.getText());
+    } else if (ctx instanceof PerfQueryParser.ExprParenContext) {
+      PerfQueryParser.ExprParenContext newCtx = (PerfQueryParser.ExprParenContext)ctx;
+      copy(new AugExpr(newCtx.expr()));
     } else {
       assert(false); // Logic error. Expecting a different kind of expression?
     }
@@ -55,7 +59,7 @@ public class AugExpr {
 
   /// Constructor for specific case of expression with a supplied identifier
   public AugExpr(String id) {
-    this.type = EXPR_ID;
+    this.type = AugExprType.EXPR_ID;
     this.ident = id;
   }
 
@@ -78,13 +82,13 @@ public class AugExpr {
   /// Helper to get printing text from binary operator type
   private String textFromBinop(Binop binop) {
     switch(binop) {
-      case Binop.BINOP_ADD:
+      case BINOP_ADD:
         return "+";
-      case Binop.BINOP_SUB:
+      case BINOP_SUB:
         return "-";
-      case Binop.BINOP_MUL:
+      case BINOP_MUL:
         return "*";
-      case Binop.BINOP_DIV:
+      case BINOP_DIV:
         return "/";
       default:
         assert (false); // Expecting a different expression combinator?
@@ -100,7 +104,7 @@ public class AugExpr {
   }
 
   /// Helper to construct children list of AugExprs from two input arguments
-  private List<AugExpr> MakeExprChildren(AugExpr childLeft, AugExpr childRight) {
+  private List<AugExpr> makeExprChildren(AugExpr childLeft, AugExpr childRight) {
     List<AugExpr> children = new ArrayList<AugExpr>();
     children.add(childLeft);
     children.add(childRight);

@@ -41,35 +41,43 @@ public class AugPred {
 
   /// Default constructor with an input PredicateContext ctx
   public AugPred(PerfQueryParser.PredicateContext ctx) {
-    if(PerfQueryParser.TruePredContext.isInstance(ctx)) {
-      this.type = PRED_TRUE;
-    } else if(PerfQueryParser.FalsePredContext.isInstance(ctx)) {
-      this.type = PRED_FALSE;
-    } else if(PerfQueryParser.ExprEqContext.isInstance(ctx)) {
-      this.type = PRED_EQ;
-      this.childExprs = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
-    } else if(PerfQueryParser.ExprGtContext.isInstance(ctx)) {
-      this.type = PRED_GT;
-      this.childExprs = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
-    } else if(PerfQueryParser.ExprLtContext.isInstance(ctx)) {
-      this.type = PRED_LT;
-      this.childExprs = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
-    } else if(PerfQueryParser.ExprNeContext.isInstance(ctx)) {
-      this.type = PRED_NE;
-      this.childExprs = MakeExprChildren(new AugExpr(ctx.expr(0)), new AugExpr(ctx.expr(1)));
-    } else if(PerfQueryParser.PredAndContext.isInstance(ctx)) {
-      this.type = PRED_AND;
-      this.childPreds = MakePredChildren(new AugPred(ctx.predicate(0)), new AugPred(ctx.predicate(1)));
-    } else if(PerfQueryParser.PredOrContext.isInstance(ctx)) {
-      this.type = PRED_OR;
-      this.childPreds = MakePredChildren(new AugPred(ctx.predicate(0)), new AugPred(ctx.predicate(1)));
-    } else if(PerfQueryParser.PredNotContext.isInstance(ctx)) {
-      this.type = PRED_NOT;
-      this.childPreds = new ArrayList<>(Arrays.asList(new AugPred(ctx.predicate())));
-    } else if(PerfQueryParser.PredParenContext.isInstance(ctx)) {
+    if(ctx instanceof PerfQueryParser.TruePredContext) {
+      this.type = AugPredType.PRED_TRUE;
+    } else if(ctx instanceof PerfQueryParser.FalsePredContext) {
+      this.type = AugPredType.PRED_FALSE;
+    } else if(ctx instanceof PerfQueryParser.ExprEqContext) {
+      this.type = AugPredType.PRED_EQ;
+      PerfQueryParser.ExprEqContext newCtx = (PerfQueryParser.ExprEqContext)ctx;
+      this.childExprs = makeExprChildren(new AugExpr(newCtx.expr(0)), new AugExpr(newCtx.expr(1)));
+    } else if(ctx instanceof PerfQueryParser.ExprGtContext) {
+      this.type = AugPredType.PRED_GT;
+      PerfQueryParser.ExprGtContext newCtx = (PerfQueryParser.ExprGtContext)ctx;
+      this.childExprs = makeExprChildren(new AugExpr(newCtx.expr(0)), new AugExpr(newCtx.expr(1)));
+    } else if(ctx instanceof PerfQueryParser.ExprLtContext) {
+      this.type = AugPredType.PRED_LT;
+      PerfQueryParser.ExprLtContext newCtx = (PerfQueryParser.ExprLtContext)ctx;
+      this.childExprs = makeExprChildren(new AugExpr(newCtx.expr(0)), new AugExpr(newCtx.expr(1)));
+    } else if(ctx instanceof PerfQueryParser.ExprNeContext) {
+      this.type = AugPredType.PRED_NE;
+      PerfQueryParser.ExprNeContext newCtx = (PerfQueryParser.ExprNeContext)ctx;
+      this.childExprs = makeExprChildren(new AugExpr(newCtx.expr(0)), new AugExpr(newCtx.expr(1)));
+    } else if(ctx instanceof PerfQueryParser.PredAndContext) {
+      this.type = AugPredType.PRED_AND;
+      PerfQueryParser.PredAndContext newCtx = (PerfQueryParser.PredAndContext)ctx;
+      this.childPreds = makePredChildren(new AugPred(newCtx.predicate(0)), new AugPred(newCtx.predicate(1)));
+    } else if(ctx instanceof PerfQueryParser.PredOrContext) {
+      this.type = AugPredType.PRED_OR;
+      PerfQueryParser.PredAndContext newCtx = (PerfQueryParser.PredAndContext)ctx;
+      this.childPreds = makePredChildren(new AugPred(newCtx.predicate(0)), new AugPred(newCtx.predicate(1)));
+    } else if(ctx instanceof PerfQueryParser.PredNotContext) {
+      this.type = AugPredType.PRED_NOT;
+      PerfQueryParser.PredNotContext newCtx = (PerfQueryParser.PredNotContext)ctx;
+      this.childPreds = new ArrayList<>(Arrays.asList(new AugPred(newCtx.predicate())));
+    } else if(ctx instanceof PerfQueryParser.PredParenContext) {
       /// TODO: Ideally, this could use something like a factory method. But using something like a
       /// copy constructor for now.
-      copy(new AugPred(ctx.predicate()));
+      PerfQueryParser.PredParenContext newCtx = (PerfQueryParser.PredParenContext)ctx;
+      copy(new AugPred(newCtx.predicate()));
     } else {
       assert(false); // Logic error. Expecting a different kind of predicate?
     }
@@ -103,11 +111,11 @@ public class AugPred {
 
   /// Predicate combinators on existing AugPreds, resulting in new AugPreds.
   public AugPred and(AugPred other) {
-    return new AugPred(AugPredType.PRED_AND, MakePredChildren(this, other));
+    return new AugPred(AugPredType.PRED_AND, makePredChildren(this, other));
   }
 
   public AugPred or(AugPred other) {
-    return new AugPred(AugPredType.PRED_OR, MakePredChildren(this, other));
+    return new AugPred(AugPredType.PRED_OR, makePredChildren(this, other));
   }
 
   public AugPred not() {

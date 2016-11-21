@@ -8,7 +8,7 @@ public class ThreeOpCode {
   List<ThreeOpStmt> stmts;
 
   /// Constructor
-  public ThreeOpCode(ArrayList<ThreeOpDecl> decls, ArrayList<ThreeOpStmt> stmts) {
+  public ThreeOpCode(List<ThreeOpDecl> decls, List<ThreeOpStmt> stmts) {
     this.decls = decls;
     this.stmts = stmts;
   }
@@ -21,7 +21,11 @@ public class ThreeOpCode {
 
   /// Merge the argument TOC with the current TOC, and return a new TOC.
   public ThreeOpCode orderedMerge(ThreeOpCode other) {
-    return new ThreeOpCode(decls.addAll(other.decls), stmts.addAll(other.stmts));
+    List<ThreeOpDecl> newDecls = new ArrayList<ThreeOpDecl>(decls);
+    newDecls.addAll(other.decls);
+    List<ThreeOpStmt> newStmts = new ArrayList<ThreeOpStmt>(stmts);
+    newStmts.addAll(other.stmts);
+    return new ThreeOpCode(newDecls, newStmts);
   }
 
   public String print() {
