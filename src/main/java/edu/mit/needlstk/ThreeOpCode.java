@@ -26,12 +26,12 @@ public class ThreeOpCode {
 
   public String print() {
     String res = "Declarations:\n";
-    for (decl: decls) {
+    for (ThreeOpDecl decl: decls) {
       res += decl.print();
       res += "\n";
     }
     res += "Statements:\n";
-    for (stmt: stmts) {
+    for (ThreeOpStmt stmt: stmts) {
       res += stmt.print();
       res += "\n";
     }

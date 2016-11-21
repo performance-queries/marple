@@ -59,7 +59,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   public ThreeOpCode visitAggFun(PerfQueryParser.AggFunContext ctx) {
     List<StmtContext> stmts = ctx.stmt();
     ThreeOpCode toc = new ThreeOpCode();
-    for (stmt: stmts) {
+    for (StmtContext stmt: stmts) {
       toc = toc.orderedMerge(visit(stmt));
     }
     toc.print();
@@ -83,7 +83,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     ThreeOpCode toc = new ThreeOpCode(
         new ArrayList<>(Arrays.asList(predVarDecl)),
         new ArrayList<>(Arrays.asList(predVarStmt)));
-    for (ctx : ctxList) {
+    for (PerfQueryParser.ParserRuleContext ctx : ctxList) {
       outerPredIdMap.put(ctx, predVarId);
       outerPredTreeMap.put(ctx, clausePred);
       toc = toc.orderedMerge(visit(ctx));
