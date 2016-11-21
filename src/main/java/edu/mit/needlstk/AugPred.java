@@ -26,9 +26,9 @@ public class AugPred {
     PRED_AND,
     PRED_OR,
     PRED_NOT
-  }
+  };
 
-  /// Type enum denoting the structure of the tree
+  /// Type enum identifying the structure of the tree
   public AugPredType type;
 
   /// If this is a compound predicate (predAnd, etc.), this contains the child predicates. According
@@ -84,7 +84,7 @@ public class AugPred {
   }
 
   /// Something like a copy constructor
-  private copy(AugPred copySrc) {
+  private void copy(AugPred copySrc) {
     this.type = copySrc.type;
     this.childPreds = copySrc.childPreds;
     this.childExprs = copySrc.childExprs;
