@@ -84,11 +84,23 @@ public class AugPred {
   }
 
   /// Constructors to get AugPreds from existing AugPreds, enabling trees of AugPreds.
-  public AugPred(AugPredType type, List<AugPred> childPreds) {
-    assert(type == AugPredType.PRED_AND || type == AugPredType.PRED_OR
-           || type == AugPredType.PRED_NOT);
+  public <T> AugPred(AugPredType type, List<T> children) {
+    if(type == AugPredType.PRED_AND || type == AugPredType.PRED_OR
+       || type == AugPredType.PRED_NOT) {
+      this.childPreds = new ArrayList<AugPred>();
+      for (T child: children) {
+        this.childPreds.add((AugPred)child);
+      }
+    } else if(type == AugPredType.PRED_EQ || type == AugPredType.PRED_NE
+              || type == AugPredType.PRED_GT || type == AugPredType.PRED_LT) {
+      this.childExprs = new ArrayList<AugExpr>();
+      for (T child: children) {
+        this.childExprs.add((AugExpr)child);
+      }
+    } else {
+      assert(false); // Logic error. Not expecting other types here.
+    }
     this.type = type;
-    this.childPreds = childPreds;
   }
 
   /// Something like a copy constructor
@@ -96,13 +108,6 @@ public class AugPred {
     this.type = copySrc.type;
     this.childPreds = copySrc.childPreds;
     this.childExprs = copySrc.childExprs;
-  }
-
-  public AugPred(AugPredType type, List<AugExpr> childExprs) {
-    assert (type == AugPredType.PRED_EQ || type == AugPredType.PRED_NE
-            || type == AugPredType.PRED_GT || type == AugPredType.PRED_LT);
-    this.type = type;
-    this.childExprs = childExprs;
   }
 
   public AugPred(boolean isTrue) {
@@ -170,6 +175,7 @@ public class AugPred {
       return "! (" + getPredStr(0) + ")";
     } else {
       assert (false); // Logic error. Must be one of predetermined pred types
+      return null;
     }
   }
 }

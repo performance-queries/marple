@@ -76,6 +76,7 @@ public class AugExpr {
         return Binop.BINOP_DIV;
       default:
         assert (false); // Expecting a different expression combinator?
+        return null;
     }
   }
 
@@ -92,6 +93,7 @@ public class AugExpr {
         return "/";
       default:
         assert (false); // Expecting a different expression combinator?
+        return null;
     }
   }  
 
@@ -123,6 +125,7 @@ public class AugExpr {
               "(" + children.get(1).print() + ")");
     } else {
       assert (false); // Logic error. Must be one of predetermined expr types
+      return null;
     }
   }
 }

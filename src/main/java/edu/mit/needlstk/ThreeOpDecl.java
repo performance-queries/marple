@@ -12,6 +12,6 @@ public class ThreeOpDecl {
   }
 
   public String print() {
-    String res = "int" + String.valueOf(bitWidth) + " " + ident + ";";
+    return "int" + String.valueOf(bitWidth) + " " + ident + ";";
   }
 }
