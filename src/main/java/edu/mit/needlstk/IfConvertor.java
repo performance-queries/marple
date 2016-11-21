@@ -32,7 +32,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   }
 
   /// ANTLR visitor for primitives
-  private ThreeOpCode visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
+  public ThreeOpCode visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
     assert(outerPredIdMap.containsKey(ctx));
     ThreeOpStmt stmt = new ThreeOpStmt(ctx.ID().getText(),
                                        outerPredIdMap.get(ctx),
@@ -42,33 +42,8 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
                            new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
   }
 
-  /// Helper to handle one part of an IF ... ELSE statement: either the IF or ELSE. The logic is
-  /// very similar for the two, so they can be handled through the same function.
-  private ThreeOpCode handleIfOrElse(List<PerfQueryParser.ParserRuleContext> ctxList,
-                                     AugPred currPred,
-                                     AugPred outerPred,
-                                     bool ifPred) {
-    /// step 1. Get a new predicate corresponding to this case.
-    /// 1.1 Declare a new predicate variable
-    String uid = "pred_" + getUid();
-    ThreeOpDecl predVar = new ThreeOpDecl(INT_WIDTH, uid);
-    /// 1.2 Assign new predicate variable to clausePred
-    AugPred clausePred = outerPred.and(ifPred ? currPred : currPred.not());    
-    ThreeOpStmt predStmt = new ThreeOpStmt(predVar, clausePred);
-    /// step 2. Merge three operand codes from each internal statement
-    ThreeOpCode toc = new ThreeOpCode(
-        new ArrayList<>(Arrays.asList(ThreeOpDecl)),
-        new ArrayList<>(Arrays.asList(predStmt)));
-    for (ctx : ctxList) {
-      outerPredIdMap.put(ctx, uid);
-      outerPredTreeMap.put(ctx, clausePred);
-      toc = toc.orderedMerge(visit(ctx));
-    }
-    return toc;
-  }
-
   /// ANTLR visitor for ifConstruct
-  private ThreeOpCode visitIfConstruct(PerfQueryParser.IfConstructContext ctx) {
+  public ThreeOpCode visitIfConstruct(PerfQueryParser.IfConstructContext ctx) {
     assert(outerPredIdMap.containsKey(ctx));
     assert(outerPredTreeMap.containsKey(ctx));
     AugPred outerPred = outerPredTreeMap.get(ctx);
@@ -80,8 +55,28 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     return code;
   }
 
-  /// TODO: need ifPrimitive and elsePrimitive visitors somewhere. These are the ones which will
-  /// call the corresponding primitive (or in future, stmt) visitors.
-  /// e.g., ifPrimitive : primitive | stmt
-  /// and ifConstruct : IF predicate { ifPrimitive+ } (ELSE { elsePrimitive+ })?
+  /// Helper to handle one part of an IF ... ELSE statement: either the IF or ELSE. The logic is
+  /// very similar for the two, so they can be handled through the same function.
+  private ThreeOpCode handleIfOrElse(List<PerfQueryParser.ParserRuleContext> ctxList,
+                                     AugPred currPred,
+                                     AugPred outerPred,
+                                     bool ifPred) {
+    /// step 1. Get a new predicate corresponding to this case.
+    /// 1.1 Declare a new predicate variable
+    String predVarId = "pred_" + getUid();
+    ThreeOpDecl predVarDecl = new ThreeOpDecl(INT_WIDTH, uid);
+    /// 1.2 Assign new predicate variable to clausePred
+    AugPred clausePred = outerPred.and(ifPred ? currPred : currPred.not());
+    ThreeOpStmt predVarStmt = new ThreeOpStmt(predVarId, clausePred);
+    /// step 2. Merge three operand codes from each internal statement
+    ThreeOpCode toc = new ThreeOpCode(
+        new ArrayList<>(Arrays.asList(predVarDecl)),
+        new ArrayList<>(Arrays.asList(predVarStmt)));
+    for (ctx : ctxList) {
+      outerPredIdMap.put(ctx, predVarId);
+      outerPredTreeMap.put(ctx, clausePred);
+      toc = toc.orderedMerge(visit(ctx));
+    }
+    return toc;
+  }
 }
