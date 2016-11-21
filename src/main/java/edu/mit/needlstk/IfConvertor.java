@@ -84,12 +84,4 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   /// call the corresponding primitive (or in future, stmt) visitors.
   /// e.g., ifPrimitive : primitive | stmt
   /// and ifConstruct : IF predicate { ifPrimitive+ } (ELSE { elsePrimitive+ })?
-
-  /// TODOS
-  /// Implement an AugExpr class which contains expressions that we can produce from identiiers.
-  /// Implement an AugPred class with predicates that can be suitably augmented.
-  /// That class needs a predFromPredicateContext method which does what it says
-  /// Also and and not methods.
-
-  /// Augmented expression AugExpr class with ctx.ID() and ctx.expr() contexts
 }
