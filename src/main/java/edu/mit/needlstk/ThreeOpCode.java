@@ -14,7 +14,7 @@ public class ThreeOpCode {
   }
 
   /// Merge the argument TOC with the current TOC, and return a new TOC.
-  public orderedMerge(ThreeOpCode other) {
+  public ThreeOpCode orderedMerge(ThreeOpCode other) {
     return new ThreeOpCode(decls.addAll(other.decls), stmts.addAll(other.stmts));
   }
 }
