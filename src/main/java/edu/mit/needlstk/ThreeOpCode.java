@@ -41,4 +41,13 @@ public class ThreeOpCode {
     }
     return res;
   }
+
+  /// Return the identifier of the first declaration in the code. Useful for things like setting up
+  /// a "true" predicate at the outermost scope, and reusing that identifier everywhere.
+  public String peekIdFirstDecl() {
+    if(this.decls.size() > 0) {
+      return this.decls.get(0).ident;
+    }
+    return null;
+  }
 }
