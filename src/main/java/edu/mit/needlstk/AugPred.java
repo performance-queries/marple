@@ -67,7 +67,7 @@ public class AugPred {
       this.childPreds = makePredChildren(new AugPred(newCtx.predicate(0)), new AugPred(newCtx.predicate(1)));
     } else if(ctx instanceof PerfQueryParser.PredOrContext) {
       this.type = AugPredType.PRED_OR;
-      PerfQueryParser.PredAndContext newCtx = (PerfQueryParser.PredAndContext)ctx;
+      PerfQueryParser.PredOrContext newCtx = (PerfQueryParser.PredOrContext)ctx;
       this.childPreds = makePredChildren(new AugPred(newCtx.predicate(0)), new AugPred(newCtx.predicate(1)));
     } else if(ctx instanceof PerfQueryParser.PredNotContext) {
       this.type = AugPredType.PRED_NOT;

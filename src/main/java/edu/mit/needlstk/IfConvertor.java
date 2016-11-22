@@ -35,8 +35,6 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
 
   /// ANTLR visitor for primitives
   public ThreeOpCode visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
-    System.out.println("Visiting primitive\n" + ctx.getText());
-    System.out.println(outerPredIdMap.toString());
     assert(outerPredIdMap.containsKey(ctx));
     // Check whether this is an assignment. Only some primitives are assignments!
     if (ctx.ID() != null) {
@@ -54,8 +52,6 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
 
   /// ANTLR visitor for ifConstruct
   public ThreeOpCode visitIfConstruct(PerfQueryParser.IfConstructContext ctx) {
-    System.out.println("Visiting ifConstruct\n" + ctx.getText());
-    System.out.println(outerPredIdMap.toString());
     assert(outerPredIdMap.containsKey(ctx));
     assert(outerPredTreeMap.containsKey(ctx));
     AugPred outerPred = outerPredTreeMap.get(ctx);
@@ -79,6 +75,8 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
       toc = toc.orderedMerge(visit(stmt));
     }
     /// Testing: print the final three operand code
+    System.out.println("\n");
+    System.out.println("Printing function " + ctx.aggFunc().getText() + "()");
     System.out.println(toc.print());
     return toc;
   }
@@ -139,8 +137,6 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
                                                                    AugPred currPred,
                                                                    AugPred outerPred,
                                                                    boolean ifPred) {
-    System.out.println("outer::\n" + outerPred.print());
-    System.out.println("curr::\n" + currPred.print());
     AugPred clausePred = outerPred.and(ifPred ? currPred : currPred.not());
     ThreeOpCode toc = setupPred(clausePred);
     /// Now merge three operand codes from each internal statement    
