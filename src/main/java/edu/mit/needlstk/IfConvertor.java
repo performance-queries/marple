@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /// Convert aggregation function into three-operand code for processing both by the P4 as well as
 /// domino compiler.
@@ -20,11 +21,14 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   private Map<ParserRuleContext, AugPred> outerPredTreeMap;
   /// Default integer bitwidth used for declarations in emitted code.
   private Integer INT_WIDTH = 32;
+  /// Map aggregation function names to threeopcode function body
+  private HashMap<String, ThreeOpCode> aggFunCode;
 
   /// Constructor
   public IfConvertor() {
     this.outerPredIdMap = new IdentityHashMap<ParserRuleContext, String>();
     this.outerPredTreeMap = new IdentityHashMap<ParserRuleContext, AugPred>();
+    this.aggFunCode = new HashMap<String, ThreeOpCode>();
   }
 
   /// Get unique integers across all instances of this class. NOT thread-safe.
@@ -78,6 +82,8 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     System.out.println("\n");
     System.out.println("Printing function " + ctx.aggFunc().getText() + "()");
     System.out.println(toc.print());
+    /// Add generated code for aggregation function
+    aggFunCode.put(ctx.aggFunc().getText(), toc);
     return toc;
   }
 
@@ -146,5 +152,9 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
       toc = toc.orderedMerge(visit(ctx));
     }
     return toc;
+  }
+
+  public HashMap<String, ThreeOpCode> getAggFunCode() {
+    return this.aggFunCode;
   }
 }

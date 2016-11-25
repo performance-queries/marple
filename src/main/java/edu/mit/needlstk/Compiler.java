@@ -43,6 +43,7 @@ public class Compiler {
     ExprTreeCreator exprTreeCreator = new ExprTreeCreator(PerfQueryParser.ID, symbolTableCreator.symbolTable());
     walker.walk(exprTreeCreator, tree);
 
+    /// Global analysis to extract locations to install queries
     System.out.println("Analyzing queries globally ...");
     GlobalAnalyzer globalAnalyzer = new GlobalAnalyzer(new SwitchSet().getSwitches(),
                                                        exprTreeCreator.getSymTree(),
@@ -51,7 +52,20 @@ public class Compiler {
     LocatedExprTree queryTree = globalAnalyzer.visit(tree);
     System.err.println(queryTree.dotOutput());
 
+    /// Produce state updates for fold queries
+    System.out.println("Generating code for aggregation functions...");
     IfConvertor ifc = new IfConvertor();
     ifc.visit(tree);
+    HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
+
+    /// Get state and field variables for each aggregation function
+    AggFunParamExtractor afpe = new AggFunParamExtractor();
+    afpe.visit(tree);
+
+    /// Construct a symbol table with use-before-define error checks
+    DefineBeforeUse codeChecker = new DefineBeforeUse(aggFunCode,
+                                                      afpe.getStateVars(),
+                                                      afpe.getFieldVars());
+    codeChecker.check();
   }
 }
