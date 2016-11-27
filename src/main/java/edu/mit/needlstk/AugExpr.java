@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class AugExpr {
   public enum AugExprType {
@@ -111,6 +112,22 @@ public class AugExpr {
     children.add(childLeft);
     children.add(childRight);
     return children;
+  }
+
+  public HashSet<String> getUsedVars() {
+    switch(type) {
+      case EXPR_ID:
+        return new HashSet<>(Arrays.asList(ident));
+      case EXPR_VAL:
+        return new HashSet<>();
+      case EXPR_COMB:
+        HashSet<String> usedVars = children.get(0).getUsedVars();
+        usedVars.addAll(children.get(1).getUsedVars());
+        return usedVars;
+      default:
+        assert(false);
+        return null;
+    }
   }
 
   /// Printing for inspection on console

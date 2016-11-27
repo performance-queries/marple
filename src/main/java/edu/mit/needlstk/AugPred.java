@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 /// A class for augmentable predicates, which predicates are mostly constructed from predicates
 /// within aggregation function bodies. The class structure mirrors the structure of predicates in
@@ -151,6 +152,32 @@ public class AugPred {
   /// Helper to extract expression for predicate child i
   private String getPredStr(int i) {
     return childPreds.get(i).print();
+  }
+
+  public HashSet<String> getUsedVars() {
+    HashSet<String> usedVars;
+    switch(type) {
+      case PRED_TRUE:
+      case PRED_FALSE:
+        return new HashSet<>();
+      case PRED_EQ:
+      case PRED_NE:
+      case PRED_GT:
+      case PRED_LT:
+        usedVars = childExprs.get(0).getUsedVars();
+        usedVars.addAll(childExprs.get(1).getUsedVars());
+        return usedVars;
+      case PRED_AND:
+      case PRED_OR:
+        usedVars = childPreds.get(0).getUsedVars();
+        usedVars.addAll(childPreds.get(1).getUsedVars());
+        return usedVars;
+      case PRED_NOT:
+        return childPreds.get(0).getUsedVars();
+      default:
+        assert(false); // Logic error. Expecting a new predicate type?
+        return null;
+    }
   }
 
   /// Printing for inspection on console
