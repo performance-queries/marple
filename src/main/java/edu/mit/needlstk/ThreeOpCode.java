@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 /// Code consists of declarations and statements.
 public class ThreeOpCode {
-  List<ThreeOpDecl> decls;
-  List<ThreeOpStmt> stmts;
+  public List<ThreeOpDecl> decls;
+  public List<ThreeOpStmt> stmts;
 
   /// Constructor
   public ThreeOpCode(List<ThreeOpDecl> decls, List<ThreeOpStmt> stmts) {
