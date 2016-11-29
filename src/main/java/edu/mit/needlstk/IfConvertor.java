@@ -48,8 +48,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
                                          new AugExpr(ctx.ID().getText()));
       return new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                              new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
-    }
-    else {
+    } else {
       return new ThreeOpCode();
     }
   }
