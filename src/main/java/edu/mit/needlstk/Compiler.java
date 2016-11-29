@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.List;
 
 public class Compiler {
   public static void main(String[] args) throws Exception {
@@ -52,20 +53,26 @@ public class Compiler {
     LocatedExprTree queryTree = globalAnalyzer.visit(tree);
     System.err.println(queryTree.dotOutput());
 
-    /// Produce state updates for fold queries
+    /// Produce code for aggregation functions
     System.out.println("Generating code for aggregation functions...");
     IfConvertor ifc = new IfConvertor();
     ifc.visit(tree);
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
 
-    /// Get state and field variables for each aggregation function
+    /// Check for use-before-define errors in fold function code
     AggFunParamExtractor afpe = new AggFunParamExtractor();
     afpe.visit(tree);
-
-    /// Construct a symbol table with use-before-define error checks
+    HashMap<String, List<String>> stateVars = afpe.getStateVars();
+    HashMap<String, List<String>> fieldVars = afpe.getFieldVars();
     DefineBeforeUse codeChecker = new DefineBeforeUse(aggFunCode,
-                                                      afpe.getStateVars(),
-                                                      afpe.getFieldVars());
+                                                      stateVars,
+                                                      fieldVars);
     codeChecker.check();
+
+    /// Produce code for all operators
+    System.out.println("Generating code for all query operators...");
+    CodeGen cg = new CodeGen(aggFunCode, stateVars, fieldVars);
+    cg.visit(tree);
+    System.out.println(cg.toString());
   }
 }

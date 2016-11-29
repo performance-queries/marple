@@ -108,4 +108,8 @@ public class ExprTreeCreator extends PerfQueryBaseListener {
   public String getLastAssignedId() {
     return lastAssignedId;
   }
+
+  public HashMap<String, Operation> getDepTable() {
+    return depTable;
+  }
 }
