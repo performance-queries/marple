@@ -6,7 +6,9 @@ import java.util.ArrayList;
 public class ZipConfigInfo implements PipeConfigInfo {
   private List<ThreeOpStmt> code;
 
-  public ZipConfigInfo() { }
+  public ZipConfigInfo() {
+    code = new ArrayList<>();
+  }
 
   public String getP4() {
     String res = "";

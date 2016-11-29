@@ -17,7 +17,7 @@ public class FilterConfigInfo implements PipeConfigInfo {
   }
 
   public String getP4() {
-    return code.get(0).print();
+    return code.get(0).print() + "\n";
   }
 
   public List<ThreeOpStmt> getCode() {

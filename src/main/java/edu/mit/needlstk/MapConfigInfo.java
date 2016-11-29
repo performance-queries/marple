@@ -9,6 +9,7 @@ public class MapConfigInfo implements PipeConfigInfo {
 
   public MapConfigInfo(PerfQueryParser.ColumnListContext colList,
                        PerfQueryParser.ExprListContext exprList) {
+    code = new ArrayList<>();
     List<String> cols = ColumnExtractor.getColumns(colList);
     List<PerfQueryParser.ExprContext> exprs = ExprExtractor.getExprs(exprList);
     if (cols.size() != exprs.size()) {
@@ -17,6 +18,7 @@ public class MapConfigInfo implements PipeConfigInfo {
     }
     for (int i=0; i<cols.size(); i++) {
       ThreeOpStmt stmt = new ThreeOpStmt(cols.get(i), new AugExpr(exprs.get(i)));
+      code.add(stmt);
     }
     numExprs = exprs.size();
   }

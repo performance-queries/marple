@@ -11,8 +11,9 @@ public class PipeStage {
 
   @Override public String toString() {
     String res = this.op.toString();
-    res += " ";
+    res += "\n";
     res += configInfo.getP4();
+    res += "\n";
     return res;
   }
 }
