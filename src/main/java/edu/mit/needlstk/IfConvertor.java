@@ -77,10 +77,6 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
       outerPredTreeMap.put(stmt, truePred);
       toc = toc.orderedMerge(visit(stmt));
     }
-    /// Testing: print the final three operand code
-    System.out.println("\n");
-    System.out.println("Printing function " + ctx.aggFunc().getText() + "()");
-    System.out.println(toc.print());
     /// Add generated code for aggregation function
     aggFunCode.put(ctx.aggFunc().getText(), toc);
     return toc;

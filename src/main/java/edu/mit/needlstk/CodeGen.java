@@ -57,4 +57,8 @@ public class CodeGen extends PerfQueryBaseVisitor<PipeStage> {
   @Override public String toString() {
     return queryToPipe.toString();
   }
+
+  public HashMap<String, PipeStage> getQueryToPipe() {
+    return queryToPipe;
+  }
 }

@@ -73,6 +73,11 @@ public class Compiler {
     System.out.println("Generating code for all query operators...");
     CodeGen cg = new CodeGen(aggFunCode, stateVars, fieldVars);
     cg.visit(tree);
-    System.out.println(cg.toString());
+
+    /// Pipeline the stages
+    PipeConstructor pc = new PipeConstructor(cg.getQueryToPipe(),
+                                             exprTreeCreator.getDepTable(),
+                                             exprTreeCreator.getLastAssignedId());
+    System.out.println(pc.stitchPipe().toString());
   }
 }
