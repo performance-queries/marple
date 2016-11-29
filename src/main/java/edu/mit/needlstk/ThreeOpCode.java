@@ -49,4 +49,8 @@ public class ThreeOpCode {
     }
     return null;
   }
+
+  public List<ThreeOpStmt> getStmts() {
+    return stmts;
+  }
 }
