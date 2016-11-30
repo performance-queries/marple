@@ -35,4 +35,8 @@ public class MapConfigInfo implements PipeConfigInfo {
   public List<ThreeOpStmt> getCode() {
     return code;
   }
+
+  public void addValidStmt(String queryId, String operandQueryId) {
+    /// TODO: Add validity checks to the map.
+  }
 }

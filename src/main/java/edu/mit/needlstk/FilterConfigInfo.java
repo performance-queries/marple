@@ -23,4 +23,10 @@ public class FilterConfigInfo implements PipeConfigInfo {
   public List<ThreeOpStmt> getCode() {
     return code;
   }
+
+  public void addValidStmt(String queryId, AugPred outerPred) {
+    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, outerPred.and(pred));
+    this.code = new ArrayList<>(Arrays.asList(validStmt));
+    return validStmt;
+  }
 }

@@ -31,8 +31,33 @@ public class PipeConstructor {
       if(! operand.equals(pktLogStr)) {
         stageList.addAll(getPipes(operand));
       }
+      addValidStmt(queryId, operandQueryId, op.opcode, stages.get(queryId));
       stageList.add(stages.get(queryId));
     }
     return stageList;
+  }
+
+  private String transformQueryId(String queryId) {
+    return "0_" + queryId;
+  }
+
+  /// Given a stage of a specific type, add a "validity" statement at the end of it.
+  private void addValidStmt(String queryId,
+                            String operandQueryId,
+                            OperationType opcode,
+                            PipeStage ps) {
+    outerPred = new AugPred();
+    switch(opcode) {
+      case FILTER:
+        ps.configInfo.addValidStmt(queryId, operandQueryId);
+        break;
+      case PROJECT:
+        ps.configInfo.addValidStmt(queryId, operandQueryId);
+      case JOIN:
+      case GROUPBY:
+      default:
+        assert(false);
+        break;
+    }
   }
 }
