@@ -37,6 +37,12 @@ public class MapConfigInfo implements PipeConfigInfo {
   }
 
   public void addValidStmt(String queryId, String operandQueryId) {
-    /// TODO: Add validity checks to the map.
+    /// Set validity of the map result to the validity of the operand.
+    /// TODO: this creates dead code if the operand is invalid,
+    /// since we wouldn't need to evaluate any of the map expressions.
+    AugPred operandValid = new AugPred(operandQueryId);
+    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid);
+    code.add(validStmt);
+    return validStmt;
   }
 }

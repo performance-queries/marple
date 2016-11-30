@@ -49,11 +49,10 @@ public class PipeConstructor {
     outerPred = new AugPred();
     switch(opcode) {
       case FILTER:
+      case PROJECT:
+      case JOIN:
         ps.configInfo.addValidStmt(queryId, operandQueryId);
         break;
-      case PROJECT:
-        ps.configInfo.addValidStmt(queryId, operandQueryId);
-      case JOIN:
       case GROUPBY:
       default:
         assert(false);
