@@ -18,15 +18,16 @@ import java.util.HashSet;
 public class AugPred {
   /// Enum that defines types of predicates available
   public enum AugPredType {
-    PRED_TRUE,
-    PRED_FALSE,
-    PRED_EQ,
-    PRED_NE,
-    PRED_GT,
-    PRED_LT,
-    PRED_AND,
-    PRED_OR,
-    PRED_NOT
+    PRED_TRUE,  // True
+    PRED_FALSE, // False
+    PRED_ID,     // `identifier`, which is a pre-assigned predicate.
+    PRED_EQ,    // expr == expr
+    PRED_NE,    // expr != expr
+    PRED_GT,    // expr >  expr
+    PRED_LT,    // expr <  expr
+    PRED_AND,   // pred && pred
+    PRED_OR,    // pred || pred
+    PRED_NOT   // ! pred
   };
 
   /// Type enum identifying the structure of the tree
@@ -39,6 +40,9 @@ public class AugPred {
 
   /// If this is a simple predicate (exprEq, etc.), this contains the child expressions.
   public List<AugExpr> childExprs;
+
+  /// If this is an "identifier" predicate, store the identifier.
+  public String predId;
 
   /// Default constructor with an input PredicateContext ctx
   public AugPred(PerfQueryParser.PredicateContext ctx) {
@@ -104,11 +108,18 @@ public class AugPred {
     this.type = type;
   }
 
+  /// Constructor to get AugPred from an identifier
+  public AugPred(String preAssignedId) {
+    this.type = AugPredType.PRED_ID;
+    this.predId = preAssignedId;
+  }
+
   /// Something like a copy constructor
   private void copy(AugPred copySrc) {
     this.type = copySrc.type;
     this.childPreds = copySrc.childPreds;
     this.childExprs = copySrc.childExprs;
+    this.predId = copySrc.predId;
   }
 
   public AugPred(boolean isTrue) {
@@ -160,6 +171,8 @@ public class AugPred {
       case PRED_TRUE:
       case PRED_FALSE:
         return new HashSet<>();
+      case PRED_ID:
+        return new HashSet<>(Arrays.asList(predID));
       case PRED_EQ:
       case PRED_NE:
       case PRED_GT:
@@ -186,6 +199,8 @@ public class AugPred {
       return "true";
     } else if(type == AugPredType.PRED_FALSE) {
       return "false";
+    } else if(type == AugPredType.PRED_ID) {
+      return predId;      
     } else if(type == AugPredType.PRED_EQ) {
       return "(" + getExprStr(0) + ") == (" + getExprStr(1) + ")";
     } else if(type == AugPredType.PRED_NE) {
