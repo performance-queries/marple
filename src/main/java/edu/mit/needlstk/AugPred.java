@@ -172,7 +172,7 @@ public class AugPred {
       case PRED_FALSE:
         return new HashSet<>();
       case PRED_ID:
-        return new HashSet<>(Arrays.asList(predID));
+        return new HashSet<>(Arrays.asList(predId));
       case PRED_EQ:
       case PRED_NE:
       case PRED_GT:

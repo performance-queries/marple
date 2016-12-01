@@ -1,6 +1,7 @@
 package edu.mit.needlstk;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class PipeConstructor {
   private HashMap<String, Operation> depTable;

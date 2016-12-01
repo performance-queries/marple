@@ -43,6 +43,5 @@ public class MapConfigInfo implements PipeConfigInfo {
     AugPred operandValid = new AugPred(operandQueryId);
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid);
     code.add(validStmt);
-    return validStmt;
   }
 }

@@ -2,6 +2,7 @@ package edu.mit.needlstk;
 import org.antlr.v4.runtime.ParserRuleContext;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ZipConfigInfo implements PipeConfigInfo {
   private List<ThreeOpStmt> code;
@@ -25,11 +26,10 @@ public class ZipConfigInfo implements PipeConfigInfo {
     return code;
   }
 
-  public ThreeOpStmt addValidStmt(String queryId, String operandQueryId) {
+  public void addValidStmt(String queryId, String operandQueryId) {
     /// Each operand coming in must be valid for the zip to be valid.
     validPred = validPred.and(new AugPred(operandQueryId));
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, validPred);
     this.code = new ArrayList<>(Arrays.asList(validStmt));
-    return validStmt;
   }
 }
