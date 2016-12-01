@@ -36,8 +36,20 @@ public class FoldConfigInfo implements PipeConfigInfo {
   }
 
   public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
-    /// TODO: dummy validity statement for testing purposes
-    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, new AugPred(operandQueryId));
-    code.add(validStmt);
+    /// TODO: The code in the aggregation function will execute regardless of the validity of the
+    /// operand, resulting in dead code. This needs to be cleaned up.
+    ArrayList<ThreeOpStmt> newCode = new ArrayList<ThreeOpStmt>();
+    newCode.add(new ThreeOpStmt(queryId, new AugPred(false)));
+    for (ThreeOpStmt line: code) {
+      if (line.isEmit()) {
+        // The result from this stage is valid if two conditions are met.
+        // (1) The predicate corresponding to the emit is true;
+        // (2) the operand is valid.
+        newCode.add(new ThreeOpStmt(queryId, new
+                                    AugPred(line.getEmitPred()).and(new AugPred(operandQueryId))));
+      }
+      newCode.add(line);
+    }
+    code = newCode;
   }
 }

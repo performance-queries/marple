@@ -54,9 +54,9 @@ public class ThreeOpStmt {
   }
 
   /// Constructor that emits internal state when a predicate is true.
-  public ThreeOpStmt(AugPred pred) {
+  public ThreeOpStmt(String predVar) {
     this.type = StmtType.EMIT;
-    this.pred = pred;
+    this.predVar = predVar;
   }
 
   /// Get list of identifiers used in this statement
@@ -101,7 +101,7 @@ public class ThreeOpStmt {
     } else if(type == StmtType.EXPR_ASSIGN) {
       res = result + " = " + expr.print() + ";";
     } else if(type == StmtType.EMIT) {
-      res = result + " if (" + pred.print() + ") emit;";
+      res = "if (" + predVar + ") emit;";
     } else {
       assert(false); // Logic error. Expecting a new statement type?
       res = "";
@@ -111,5 +111,14 @@ public class ThreeOpStmt {
 
   @Override public String toString() {
     return print();
+  }
+
+  public boolean isEmit() {
+    return (type == StmtType.EMIT);
+  }
+
+  public String getEmitPred() {
+    assert (type == StmtType.EMIT);
+    return predVar;
   }
 }

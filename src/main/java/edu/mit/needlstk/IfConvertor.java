@@ -50,7 +50,9 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
                              new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
     } else if (ctx.EMIT() != null) {
       // TODO: Emit statements are special kinds of `ThreeOpStmt`s.
-      return new ThreeOpCode();
+      ThreeOpStmt stmt = new ThreeOpStmt(outerPredIdMap.get(ctx));
+      return new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
+                             new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
     } else {
       return new ThreeOpCode();
     }
