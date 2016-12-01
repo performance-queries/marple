@@ -56,7 +56,8 @@ public class PipeConstructor {
       case JOIN:
       case GROUPBY:
         ps.getConfigInfo().addValidStmt(transformQueryId(queryId),
-                                        transformQueryId(operandQueryId));
+                                        transformQueryId(operandQueryId),
+                                        operandQueryId.equals(pktLogStr));
         break;
       default:
         assert(false);

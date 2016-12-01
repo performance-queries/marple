@@ -26,9 +26,15 @@ public class ZipConfigInfo implements PipeConfigInfo {
     return code;
   }
 
-  public void addValidStmt(String queryId, String operandQueryId) {
+  public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
     /// Each operand coming in must be valid for the zip to be valid.
-    validPred = validPred.and(new AugPred(operandQueryId));
+    AugPred operandValid;
+    if (! isOperandPktLog) {
+      operandValid = new AugPred(operandQueryId);
+    } else {
+      operandValid = new AugPred(true);
+    }
+    validPred = validPred.and(operandValid);
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, validPred);
     this.code = new ArrayList<>(Arrays.asList(validStmt));
   }

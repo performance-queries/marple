@@ -35,9 +35,9 @@ public class FoldConfigInfo implements PipeConfigInfo {
     return code;
   }
 
-  public void addValidStmt(String queryId, String operandQueryId) {
+  public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
     /// TODO: dummy validity statement for testing purposes
-    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, new AugPred(true));
+    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, new AugPred(operandQueryId));
     code.add(validStmt);
   }
 }

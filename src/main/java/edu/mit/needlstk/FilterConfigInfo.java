@@ -24,8 +24,13 @@ public class FilterConfigInfo implements PipeConfigInfo {
     return code;
   }
 
-  public void addValidStmt(String queryId, String operandQueryId) {
-    AugPred operandValid = new AugPred(operandQueryId);
+  public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
+    AugPred operandValid;
+    if (! isOperandPktLog) {
+      operandValid = new AugPred(operandQueryId);
+    } else {
+      operandValid = new AugPred(true);
+    }
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid.and(pred));
     this.code = new ArrayList<>(Arrays.asList(validStmt));
   }

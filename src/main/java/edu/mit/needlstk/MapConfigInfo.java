@@ -36,11 +36,16 @@ public class MapConfigInfo implements PipeConfigInfo {
     return code;
   }
 
-  public void addValidStmt(String queryId, String operandQueryId) {
+  public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
     /// Set validity of the map result to the validity of the operand.
     /// TODO: this creates dead code if the operand is invalid,
     /// since we wouldn't need to evaluate any of the map expressions.
-    AugPred operandValid = new AugPred(operandQueryId);
+    AugPred operandValid;
+    if (! isOperandPktLog) {
+      operandValid = new AugPred(operandQueryId);
+    } else {
+      operandValid = new AugPred(true);
+    }
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid);
     code.add(validStmt);
   }
