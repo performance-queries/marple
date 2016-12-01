@@ -34,4 +34,10 @@ public class FoldConfigInfo implements PipeConfigInfo {
   public List<ThreeOpStmt> getCode() {
     return code;
   }
+
+  public void addValidStmt(String queryId, String operandQueryId) {
+    /// TODO: dummy validity statement for testing purposes
+    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, new AugPred(true));
+    code.add(validStmt);
+  }
 }
