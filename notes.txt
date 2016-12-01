@@ -2,6 +2,7 @@ TODOS
 
 simplifying code
 * merge define-before-use with if-conversion pass
+* simplify ternary threeopstmts. e.g., z = true ? x : y ==> z = x
 * change code generated for map to 'functional' semantics?
 * make predicates "smart", e.g., AugPred(true).and(X) == X
 * current map & fold validity statements create dead code if operand is invalid

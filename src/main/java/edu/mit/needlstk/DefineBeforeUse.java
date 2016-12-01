@@ -53,7 +53,8 @@ public class DefineBeforeUse {
         if(! symTable.get(aggFun).containsKey(usedVar)) {
           /// TODO: Error condition. Flag the error to user.
           throw new RuntimeException("Using variable " + usedVar + " in function " +
-                                     aggFun + " without prior definition");
+                                     aggFun + " without prior definition\n" +
+                                     stmt.print());
         }
       }
       String definedVar = stmt.getDefinedVar();
