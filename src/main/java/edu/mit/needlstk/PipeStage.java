@@ -16,4 +16,8 @@ public class PipeStage {
     res += "\n";
     return res;
   }
+
+  public PipeConfigInfo getConfigInfo() {
+    return configInfo;
+  }
 }

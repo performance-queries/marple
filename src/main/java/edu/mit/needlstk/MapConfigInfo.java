@@ -25,8 +25,8 @@ public class MapConfigInfo implements PipeConfigInfo {
 
   public String getP4() {
     String res = "";
-    for (int i=0; i<numExprs; i++) {
-      res += code.get(i).print();
+    for (ThreeOpStmt frag: code) {
+      res += frag.print();
       res += "\n";
     }
     return res;

@@ -9,6 +9,7 @@ public class PipeConstructor {
   private String lastAssignedId;
   private ArrayList<PipeStage> pipe;
   private String pktLogStr = "T"; /// Operand denoting the packet log
+  private HashSet<String> visited;
   
   public PipeConstructor(HashMap<String, PipeStage> stages,
                          HashMap<String, Operation> depTable,
@@ -16,6 +17,7 @@ public class PipeConstructor {
     this.depTable = depTable;
     this.stages = stages;
     this.lastAssignedId = lastAssignedId;
+    this.visited = new HashSet<>();
   }
 
   public ArrayList<PipeStage> stitchPipe() {
@@ -29,17 +31,18 @@ public class PipeConstructor {
     Operation op = depTable.get(queryId);
     ArrayList<PipeStage> stageList = new ArrayList<>();
     for (String operand: op.operands) {
-      if(! operand.equals(pktLogStr)) {
+      if((! operand.equals(pktLogStr)) && (! visited.contains(operand))) {
         stageList.addAll(getPipes(operand));
       }
-      addValidStmt(queryId, operandQueryId, op.opcode, stages.get(queryId));
-      stageList.add(stages.get(queryId));
+      addValidStmt(queryId, operand, op.opcode, stages.get(queryId));
     }
+    stageList.add(stages.get(queryId));
+    visited.add(queryId);
     return stageList;
   }
 
   private String transformQueryId(String queryId) {
-    return "0_" + queryId;
+    return "_" + queryId + "_valid";
   }
 
   /// Given a stage of a specific type, add a "validity" statement at the end of it.
@@ -47,14 +50,14 @@ public class PipeConstructor {
                             String operandQueryId,
                             OperationType opcode,
                             PipeStage ps) {
-    outerPred = new AugPred();
     switch(opcode) {
       case FILTER:
       case PROJECT:
       case JOIN:
-        ps.configInfo.addValidStmt(queryId, operandQueryId);
-        break;
       case GROUPBY:
+        ps.getConfigInfo().addValidStmt(transformQueryId(queryId),
+                                        transformQueryId(operandQueryId));
+        break;
       default:
         assert(false);
         break;

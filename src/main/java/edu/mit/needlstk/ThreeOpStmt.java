@@ -90,4 +90,8 @@ public class ThreeOpStmt {
     }
     return res;
   }
+
+  @Override public String toString() {
+    return print();
+  }
 }
