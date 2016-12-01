@@ -57,12 +57,14 @@ public class DefineBeforeUse {
         }
       }
       String definedVar = stmt.getDefinedVar();
-      /// TODO: Add to symbol table if not a field var already in the symbol table
-      if(symTable.get(aggFun).containsKey(definedVar) &&
+      /// Add to symbol table if not a field var already in the symbol table
+      if(definedVar != null &&
+         symTable.get(aggFun).containsKey(definedVar) &&
          symTable.get(aggFun).get(definedVar) == AggFunVarType.FIELD) {
         throw new RuntimeException("Can't set a packet field" + definedVar
                                    + " directly in function " + aggFun);
-      } else if(! symTable.get(aggFun).containsKey(definedVar)) {
+      } else if(definedVar != null &&
+                ! symTable.get(aggFun).containsKey(definedVar)) {
         symTable.get(aggFun).put(definedVar, AggFunVarType.FN_VAR);
       }
     }

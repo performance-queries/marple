@@ -11,7 +11,8 @@ public class ThreeOpStmt {
   private enum StmtType {
     TERNARY,
     PRED_ASSIGN,
-    EXPR_ASSIGN
+    EXPR_ASSIGN,
+    EMIT
   };
   private StmtType type;
   private String result;
@@ -52,6 +53,12 @@ public class ThreeOpStmt {
     this.expr = expr;
   }
 
+  /// Constructor that emits internal state when a predicate is true.
+  public ThreeOpStmt(AugPred pred) {
+    this.type = StmtType.EMIT;
+    this.pred = pred;
+  }
+
   /// Get list of identifiers used in this statement
   public HashSet<String> getUsedVars() {
     if(type == StmtType.TERNARY) {
@@ -63,6 +70,8 @@ public class ThreeOpStmt {
       return pred.getUsedVars();
     } else if(type == StmtType.EXPR_ASSIGN) {
       return expr.getUsedVars();
+    } else if(type == StmtType.EMIT) {
+      return new HashSet<>();
     } else {
       assert(false); // Expecting a new statement type?
       return null;
@@ -70,7 +79,14 @@ public class ThreeOpStmt {
   }
 
   public String getDefinedVar() {
-    return result;
+    if (type == StmtType.TERNARY || type == StmtType.PRED_ASSIGN || type == StmtType.EXPR_ASSIGN) {
+      return result;
+    } else if (type == StmtType.EMIT) {
+      return null;
+    } else {
+      assert(false); // Expecting a new statement type?
+      return null;
+    }
   }
 
   /// Printing for visual inspection on console
@@ -84,6 +100,8 @@ public class ThreeOpStmt {
       res = result + " = " + pred.print() + ";";
     } else if(type == StmtType.EXPR_ASSIGN) {
       res = result + " = " + expr.print() + ";";
+    } else if(type == StmtType.EMIT) {
+      res = result + " if (" + pred.print() + ") emit;";
     } else {
       assert(false); // Logic error. Expecting a new statement type?
       res = "";

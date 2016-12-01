@@ -40,14 +40,17 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   /// ANTLR visitor for primitives
   public ThreeOpCode visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
     assert(outerPredIdMap.containsKey(ctx));
-    // Check whether this is an assignment. Only some primitives are assignments!
     if (ctx.ID() != null) {
+      // Check whether this is an assignment. Only some primitives are assignments!
       ThreeOpStmt stmt = new ThreeOpStmt(ctx.ID().getText(),
                                          outerPredIdMap.get(ctx),
                                          new AugExpr(ctx.expr()),
                                          new AugExpr(ctx.ID().getText()));
       return new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                              new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
+    } else if (ctx.EMIT() != null) {
+      // TODO: Emit statements are special kinds of `ThreeOpStmt`s.
+      return new ThreeOpCode();
     } else {
       return new ThreeOpCode();
     }
