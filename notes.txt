@@ -1,0 +1,35 @@
+TODOS
+
+simplifying code
+* merge define-before-use with if-conversion pass
+* change code generated for map to 'functional' semantics?
+* make predicates "smart", e.g., AugPred(true).and(X) == X
+* current map & fold validity statements create dead code if operand is invalid
+* bug in compiler define-before-use pass: delta=5 unconditionally throws error!
+  - when there is a new variable, it may be defined & followed up with 
+* remove `_` at beginning of identifiers; make compiler-defined variables start
+  with `_` instead
+* cleanup code: add @Override annotation to new antlr visitor passes!
+
+additional compiler passes
+* pass: ensure fold, map and filter arguments make sense from stage to stage
+  - each toplevel query has unique field names --> overwrite if reused
+* pass: combine with located expr tree to only install on specific switches
+* pass: rules needed to generate outputs for query. By default, assume each
+  stage is some intermediate stage; generate output code only for toplevel.
+
+printing p4 code from IRs
+* emitting three operand code in p4: variables prefixed by types (e.g.,
+  "metadata", "packet", "register", etc.)
+* emits should load state on to packets
+
+possible error handling for aggregate functions
+* warn if no code path changes the state variables
+* warn if predicates are used
+* print code line numbers in errors. e.g., see define before use error msgs
+* better formatting for error messages
+
+cleaning up the template
+* set defaultValue for aggfun through a template parameter
+  - what's the language construct?
+* multiple stages with specific code to insert
