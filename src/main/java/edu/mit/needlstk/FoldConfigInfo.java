@@ -11,6 +11,7 @@ public class FoldConfigInfo implements PipeConfigInfo {
   private List<String> fieldArgs;
   private List<ThreeOpStmt> code;
   private HashSet<String> setFields;
+  private HashSet<String> usedFields;
   
   public FoldConfigInfo(PerfQueryParser.ColumnListContext colList,
                         String aggFunc,
@@ -23,6 +24,8 @@ public class FoldConfigInfo implements PipeConfigInfo {
     this.fnName = aggFunc;
     this.code = code.getStmts();
     this.setFields = new HashSet<String>(stateArgs);
+    this.usedFields = new HashSet<String>(fieldArgs);
+    this.usedFields.addAll(this.keyFields);
   }
 
   public String getP4() {
@@ -59,5 +62,9 @@ public class FoldConfigInfo implements PipeConfigInfo {
 
   public HashSet<String> getSetFields() {
     return setFields;
+  }
+
+  public HashSet<String> getUsedFields() {
+    return usedFields;
   }
 }

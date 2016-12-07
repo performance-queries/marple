@@ -10,9 +10,11 @@ public class FilterConfigInfo implements PipeConfigInfo {
   private AugPred pred;
   private List<ThreeOpStmt> code;
   private Integer incr; // It doesn't matter what the value of this is.
+  private HashSet<String> usedFields;
 
   public FilterConfigInfo(PerfQueryParser.PredicateContext ctx) {
     this.pred = new AugPred(ctx);
+    this.usedFields = this.pred.getUsedVars();
     String predVar = "0_pred_test"; /// Name local to stage; no need to generate unique names.
     this.code = new ArrayList<>(Arrays.asList(new ThreeOpStmt(predVar, pred)));
   }
@@ -38,5 +40,9 @@ public class FilterConfigInfo implements PipeConfigInfo {
 
   public HashSet<String> getSetFields() {
     return new HashSet<>();
+  }
+
+  public HashSet<String> getUsedFields() {
+    return usedFields;
   }
 }

@@ -43,4 +43,8 @@ public class ZipConfigInfo implements PipeConfigInfo {
   public HashSet<String> getSetFields() {
     return new HashSet<>();
   }
+
+  public HashSet<String> getUsedFields() {
+    return new HashSet<>();
+  }
 }

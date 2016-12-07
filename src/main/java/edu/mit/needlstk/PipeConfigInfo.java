@@ -7,4 +7,5 @@ public interface PipeConfigInfo {
   public List<ThreeOpStmt> getCode();
   public void addValidStmt(String q, String oq, boolean opT);
   public HashSet<String> getSetFields();
+  public HashSet<String> getUsedFields();
 }

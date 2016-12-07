@@ -7,11 +7,13 @@ import java.util.HashSet;
 public class MapConfigInfo implements PipeConfigInfo {
   private List<ThreeOpStmt> code;
   private HashSet<String> setFields;
+  private HashSet<String> usedFields;
   private Integer numExprs;
 
   public MapConfigInfo(PerfQueryParser.ColumnListContext colList,
                        PerfQueryParser.ExprListContext exprList) {
     code = new ArrayList<>();
+    usedFields = new HashSet<String>();
     List<String> cols = ColumnExtractor.getColumns(colList);
     List<PerfQueryParser.ExprContext> exprs = ExprExtractor.getExprs(exprList);
     if (cols.size() != exprs.size()) {
@@ -19,7 +21,9 @@ public class MapConfigInfo implements PipeConfigInfo {
                                  + " in map query!");
     }
     for (int i=0; i<cols.size(); i++) {
-      ThreeOpStmt stmt = new ThreeOpStmt(cols.get(i), new AugExpr(exprs.get(i)));
+      AugExpr expr = new AugExpr(exprs.get(i));
+      usedFields.addAll(expr.getUsedVars());
+      ThreeOpStmt stmt = new ThreeOpStmt(cols.get(i), expr);
       code.add(stmt);
     }
     this.setFields = new HashSet<String>(cols);
@@ -55,5 +59,9 @@ public class MapConfigInfo implements PipeConfigInfo {
 
   public HashSet<String> getSetFields() {
     return setFields;
+  }
+
+  public HashSet<String> getUsedFields() {
+    return usedFields;
   }
 }
