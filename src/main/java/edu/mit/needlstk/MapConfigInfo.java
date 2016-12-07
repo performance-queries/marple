@@ -2,9 +2,11 @@ package edu.mit.needlstk;
 import org.antlr.v4.runtime.ParserRuleContext;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class MapConfigInfo implements PipeConfigInfo {
   private List<ThreeOpStmt> code;
+  private HashSet<String> setFields;
   private Integer numExprs;
 
   public MapConfigInfo(PerfQueryParser.ColumnListContext colList,
@@ -20,6 +22,7 @@ public class MapConfigInfo implements PipeConfigInfo {
       ThreeOpStmt stmt = new ThreeOpStmt(cols.get(i), new AugExpr(exprs.get(i)));
       code.add(stmt);
     }
+    this.setFields = new HashSet<String>(cols);
     numExprs = exprs.size();
   }
 
@@ -48,5 +51,9 @@ public class MapConfigInfo implements PipeConfigInfo {
     }
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid);
     code.add(validStmt);
+  }
+
+  public HashSet<String> getSetFields() {
+    return setFields;
   }
 }

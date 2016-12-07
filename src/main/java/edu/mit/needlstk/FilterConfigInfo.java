@@ -3,6 +3,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 /// Generate code for filters in a pipeline stage
 public class FilterConfigInfo implements PipeConfigInfo {
@@ -33,5 +34,9 @@ public class FilterConfigInfo implements PipeConfigInfo {
     }
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid.and(pred));
     this.code = new ArrayList<>(Arrays.asList(validStmt));
+  }
+
+  public HashSet<String> getSetFields() {
+    return new HashSet<>();
   }
 }

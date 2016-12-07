@@ -3,6 +3,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class ZipConfigInfo implements PipeConfigInfo {
   private List<ThreeOpStmt> code;
@@ -37,5 +38,9 @@ public class ZipConfigInfo implements PipeConfigInfo {
     validPred = validPred.and(operandValid);
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, validPred);
     this.code = new ArrayList<>(Arrays.asList(validStmt));
+  }
+
+  public HashSet<String> getSetFields() {
+    return new HashSet<>();
   }
 }

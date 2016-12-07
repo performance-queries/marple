@@ -2,6 +2,7 @@ package edu.mit.needlstk;
 import org.antlr.v4.runtime.ParserRuleContext;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class FoldConfigInfo implements PipeConfigInfo {
   private String fnName;
@@ -9,6 +10,7 @@ public class FoldConfigInfo implements PipeConfigInfo {
   private List<String> stateArgs;
   private List<String> fieldArgs;
   private List<ThreeOpStmt> code;
+  private HashSet<String> setFields;
   
   public FoldConfigInfo(PerfQueryParser.ColumnListContext colList,
                         String aggFunc,
@@ -20,6 +22,7 @@ public class FoldConfigInfo implements PipeConfigInfo {
     this.fieldArgs = fieldArgs;
     this.fnName = aggFunc;
     this.code = code.getStmts();
+    this.setFields = new HashSet<String>(stateArgs);
   }
 
   public String getP4() {
@@ -51,5 +54,9 @@ public class FoldConfigInfo implements PipeConfigInfo {
       newCode.add(line);
     }
     code = newCode;
+  }
+
+  public HashSet<String> getSetFields() {
+    return setFields;
   }
 }
