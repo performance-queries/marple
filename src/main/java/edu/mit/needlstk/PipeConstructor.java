@@ -29,14 +29,15 @@ public class PipeConstructor {
     assert (depTable.containsKey(queryId)); // queryId should be in the depTable.
     assert (stages.containsKey(queryId));   // queryId should be one of the stages.
     Operation op = depTable.get(queryId);
+    PipeStage stage = stages.get(queryId);
     ArrayList<PipeStage> stageList = new ArrayList<>();
     for (String operand: op.operands) {
       if((! operand.equals(pktLogStr)) && (! visited.contains(operand))) {
         stageList.addAll(getPipes(operand));
       }
-      addValidStmt(queryId, operand, op.opcode, stages.get(queryId));
+      addValidStmt(queryId, operand, op.opcode, stage);
     }
-    stageList.add(stages.get(queryId));
+    stageList.add(stage);
     visited.add(queryId);
     return stageList;
   }
