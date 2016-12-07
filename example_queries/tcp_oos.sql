@@ -1,4 +1,4 @@
-def outofseq([lastseq, oos_count], [tcpseq]):
+def outofseq([lastseq, oos_count], [tcpseq, payload_len]):
   if lastseq + 1 != tcpseq { oos_count = oos_count + 1; }
   lastseq = tcpseq + payload_len;
 
