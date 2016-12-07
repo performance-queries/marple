@@ -102,7 +102,7 @@ public class GlobalAnalyzer extends PerfQueryBaseVisitor<LocatedExprTree> {
     LocatedExprTree letInput = recurseDeps(streamName);
     OpLocation oplInput = letInput.opl();
     Boolean perSwitchStream = new ColumnChecker(Fields.switchHdr).visit(ctx);
-    Boolean perPacketStream = new ColumnChecker(Fields.packetUid).visit(ctx);
+    Boolean perPacketStream = new ColumnChecker(Fields.uidHdr).visit(ctx);
     OpLocation oplOutput;
     // Ensure that metadata for the aggregation function has been recorded earlier.
     // This would have been caught in the symbol table generation pass, so asserting away.

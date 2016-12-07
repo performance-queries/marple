@@ -1,4 +1,4 @@
-def assoc count ([counter], [pkt_len]):
-  counter = counter + pkt_len
+def assoc count ([counter], [pktlen]):
+  counter = counter + pktlen
 
 result = groupby(T, [srcip, dstip, srcport, dstport, proto], count);
