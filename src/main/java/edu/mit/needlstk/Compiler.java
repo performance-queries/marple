@@ -53,21 +53,25 @@ public class Compiler {
     LocatedExprTree queryTree = globalAnalyzer.visit(tree);
     System.err.println(queryTree.dotOutput());
 
+    /// Check for use-before-define errors in fold function code
+    AggFunParamExtractor afpe = new AggFunParamExtractor();
+    afpe.visit(tree);
+    HashMap<String, List<String>> stateVars = afpe.getStateVars();
+    HashMap<String, List<String>> fieldVars = afpe.getFieldVars();
+    LexicalSymbolTable lst = new LexicalSymbolTable(stateVars, fieldVars);
+    lst.visit(tree);
+
     /// Produce code for aggregation functions
     System.out.println("Generating code for aggregation functions...");
     IfConvertor ifc = new IfConvertor();
     ifc.visit(tree);
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
 
-    /// Check for use-before-define errors in fold function code
-    AggFunParamExtractor afpe = new AggFunParamExtractor();
-    afpe.visit(tree);
-    HashMap<String, List<String>> stateVars = afpe.getStateVars();
-    HashMap<String, List<String>> fieldVars = afpe.getFieldVars();
-    DefineBeforeUse codeChecker = new DefineBeforeUse(aggFunCode,
-                                                      stateVars,
-                                                      fieldVars);
-    codeChecker.check();
+    /// Checking define-before-use in generated code retained for sanity checking later
+    // DefineBeforeUse codeChecker = new DefineBeforeUse(aggFunCode,
+    //                                                   stateVars,
+    //                                                   fieldVars);
+    // codeChecker.check();
 
     /// Produce code for all operators
     System.out.println("Generating code for all query operators...");

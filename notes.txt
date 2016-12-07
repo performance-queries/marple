@@ -1,13 +1,10 @@
 TODOS
 
 simplifying code
-* merge define-before-use with if-conversion pass
 * simplify ternary threeopstmts. e.g., z = true ? x : y ==> z = x
 * change code generated for map to 'functional' semantics?
 * make predicates "smart", e.g., AugPred(true).and(X) == X
 * current map & fold validity statements create dead code if operand is invalid
-* bug in compiler define-before-use pass: delta=5 unconditionally throws error!
-  - when there is a new variable, it may be defined & followed up with 
 * remove `_` at beginning of identifiers; make compiler-defined variables start
   with `_` instead
 * cleanup code: add @Override annotation to new antlr visitor passes!
