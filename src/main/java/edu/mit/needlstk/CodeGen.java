@@ -24,7 +24,9 @@ public class CodeGen extends PerfQueryBaseVisitor<PipeStage> {
 
   @Override public PipeStage visitStreamStmt(PerfQueryParser.StreamStmtContext ctx) {
     PipeStage result = visit(ctx.streamQuery());
-    queryToPipe.put(ctx.stream().getText(), result);
+    String query = ctx.stream().getText();
+    result.setPipeName(query);
+    queryToPipe.put(query, result);
     return result;
   }
   
