@@ -10,6 +10,7 @@ simplifying code
 * cleanup code: add @Override annotation to new antlr visitor passes!
 
 additional compiler passes
+* pass: handling groupby code generation correctly with `uid` in aggregation
 * pass: ensure fold, map and filter arguments make sense from stage to stage
   - each toplevel query has unique field names --> overwrite if reused
 * pass: combine with located expr tree to only install on specific switches
