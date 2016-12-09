@@ -10,11 +10,11 @@ def maxfc ([maxportcount], [portpaircount]):
     if maxportcount == 0 or maxportcount < portpaircount { maxportcount = portpaircount; }
     emit()
 
-R1 = map(T, [srcip, dstip, srcport, dstport, proto, epoch, inp, outp],
-         [srcip, dstip, srcport, dstport, proto, tin/128, inport, outport]);
+R1 = map(T, [srcip, dstip, srcport, dstport, proto, epoch, inp, outp, switch],
+         [srcip, dstip, srcport, dstport, proto, tin/128, inport, outport, switch]);
 R2 = groupby(R1, [srcip, dstip, srcport, dstport, proto, epoch, inp, outp, switch], new_flow);
 R3 = groupby(R2, [epoch, inp, outp], flow_count);
 R4 = groupby(R3, [outp, epoch], maxfc);
 R5 = zip(R3, R4);
 R6 = zip(R5, T);
-result = filter(R6, maxportcount/portpaircount > 5 and qin > 100);
+result = filter(R6, maxportcount/portpaircount > 5 and qlen > 100);
