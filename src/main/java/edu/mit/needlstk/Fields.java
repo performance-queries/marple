@@ -10,15 +10,17 @@ public class Fields {
   public static String dstipHdr = "dstip";
   public static String srcportHdr = "srcport";
   public static String dstportHdr = "dstport";
+  public static String tcpseqHdr = "tcpseq";
   public static String protoHdr = "proto";
   public static String inportHdr = "inport";
   public static String outportHdr = "outport";
-  public static String payloadlenHdr = "len";
-  public static String pktlenHdr = "len";
+  public static String payloadlenHdr = "payloadlen";
+  public static String pktlenHdr = "pktlen";
   public static String qidHdr = "qid";
   public static String tinHdr = "tin";
   public static String toutHdr = "tout";
   public static String pktpathHdr = "pktpath";
+  public static String qlenHdr = "qlen";
 
   public static ArrayList<String> fields = new ArrayList<>(Arrays.asList(
       switchHdr,
@@ -27,6 +29,7 @@ public class Fields {
       dstipHdr,
       srcportHdr,
       dstportHdr,
+      tcpseqHdr,
       protoHdr,
       inportHdr,
       outportHdr,
@@ -35,5 +38,6 @@ public class Fields {
       qidHdr,
       tinHdr,
       toutHdr,
-      pktpathHdr));
+      pktpathHdr,
+      qlenHdr));
 }

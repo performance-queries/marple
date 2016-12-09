@@ -22,7 +22,11 @@ public class PipeStage {
   }
 
   @Override public String toString() {
-    String res = this.pipeName + ": " + this.op.toString();
+    String res = this.pipeName;
+    res += " ";
+    res += this.fields.toString();
+    res += ": ";
+    res += this.op.toString();
     res += "\n";
     res += configInfo.getP4();
     res += "\n";
