@@ -24,6 +24,7 @@ public class FoldConfigInfo implements PipeConfigInfo {
     this.fnName = aggFunc;
     this.code = code.getStmts();
     this.setFields = new HashSet<String>(stateArgs);
+    this.setFields.addAll(this.keyFields);
     this.usedFields = new HashSet<String>(fieldArgs);
     this.usedFields.addAll(this.keyFields);
   }

@@ -1,4 +1,5 @@
 package edu.mit.needlstk;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class PipeStage {
@@ -12,12 +13,12 @@ public class PipeStage {
   private String pipeName;
 
   /// List of fields in the result of this query operation
-  private HashSet<String> fields;
+  private ArrayList<String> fields;
 
   public PipeStage(OperationType op, PipeConfigInfo configInfo) {
     this.op = op;
     this.configInfo = configInfo;
-    this.fields = new HashSet<String>();
+    this.fields = new ArrayList<String>();
   }
 
   @Override public String toString() {
@@ -36,11 +37,15 @@ public class PipeStage {
     this.pipeName = name;
   }
 
-  public void addFields(HashSet<String> fields) {
+  public void addFields(ArrayList<String> fields) {
     this.fields.addAll(fields);
   }
 
-  public void addField(String field) {
-    this.fields.add(field);
+  public HashSet<String> getSetFields() {
+    return configInfo.getSetFields();
+  }
+
+  public HashSet<String> getUsedFields() {
+    return configInfo.getUsedFields();
   }
 }
