@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.tree.*;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Compiler {
   public static void main(String[] args) throws Exception {
@@ -76,13 +77,27 @@ public class Compiler {
 
     /// Produce code for all operators
     System.out.println("Generating code for all query operators...");
-    ConfigGen cg = new ConfigGen(aggFunCode, stateVars, fieldVars);
+    ConfigGen cg = new ConfigGen(aggFunCode, globalSymTab, stateVars, fieldVars);
     cg.visit(tree);
 
     /// Pipeline the stages
     PipeConstructor pc = new PipeConstructor(cg.getQueryToPipe(),
                                              exprTreeCreator.getDepTable(),
                                              exprTreeCreator.getLastAssignedId());
-    System.out.println(pc.stitchPipe().toString());
+    ArrayList<PipeStage> fullPipe = pc.stitchPipe();
+
+    /// Print final output for inspection
+    HashSet<String> packetFields = pc.getAllPacketFields(fullPipe);
+    HashSet<String> registers    = pc.getAllRegisters(fullPipe);
+    System.out.println("=================================");
+    System.out.println("List of all packet fields used/set in query:");
+    System.out.println(packetFields);
+    System.out.println("=================================");
+    System.out.println("List of all registers:");
+    System.out.println(registers);
+    System.out.println("These can also be used as packet fields in certain stages.");
+    System.out.println("=================================");
+    System.out.println("List of pipe stages with code:");
+    System.out.println(fullPipe.toString());
   }
 }
