@@ -64,8 +64,7 @@ public class FoldConfigInfo implements PipeConfigInfo {
         // The result from this stage is valid if two conditions are met.
         // (1) The predicate corresponding to the emit is true;
         // (2) the operand is valid.
-        AugPred thisBranch = isOperandPktLog ? new AugPred(line.getEmitPred()) : new
-            AugPred(line.getEmitPred()).and(operandPred);
+        AugPred thisBranch = new AugPred(line.getEmitPred());
         newCode.add(new ThreeOpStmt(queryId, thisBranch.or(new AugPred(queryId))));
         newCode.add(line);
       } else {
