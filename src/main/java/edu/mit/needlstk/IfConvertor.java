@@ -62,7 +62,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   public ThreeOpCode visitIfConstruct(PerfQueryParser.IfConstructContext ctx) {
     assert(outerPredIdMap.containsKey(ctx));
     assert(outerPredTreeMap.containsKey(ctx));
-    AugPred outerPred = outerPredTreeMap.get(ctx);
+    AugPred outerPred = new AugPred(outerPredIdMap.get(ctx));
     AugPred currPred = new AugPred(ctx.predicate());
     ThreeOpCode code = handleIfOrElse(ctx.ifPrimitive(), currPred, outerPred, true);
     if(ctx.elsePrimitive().size() > 0) {
