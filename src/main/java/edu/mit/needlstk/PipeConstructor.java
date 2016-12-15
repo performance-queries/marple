@@ -115,4 +115,20 @@ public class PipeConstructor {
         break;
     }
   }
+
+  public HashSet<String> getAllPacketFields(ArrayList<PipeStage> pipe) {
+    HashSet<String> fields = new HashSet<String>();
+    for (PipeStage stage: pipe) {
+      fields.addAll(stage.getConfigInfo().getPacketFields());
+    }
+    return fields;
+  }
+
+  public HashSet<String> getAllRegisters(ArrayList<PipeStage> pipe) {
+    HashSet<String> registers = new HashSet<String>();
+    for (PipeStage stage: pipe) {
+      registers.addAll(stage.getConfigInfo().getRegisters());
+    }
+    return registers;
+  }
 }
