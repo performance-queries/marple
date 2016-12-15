@@ -61,11 +61,10 @@ public class Compiler {
     LexicalSymbolTable lst = new LexicalSymbolTable(stateVars, fieldVars);
     lst.visit(tree);
     HashMap<String, HashMap<String, AggFunVarType>> globalSymTab = lst.getGlobalSymTable();
-    System.out.println(globalSymTab.toString());
 
     /// Produce code for aggregation functions
     System.out.println("Generating code for aggregation functions...");
-    IfConvertor ifc = new IfConvertor();
+    IfConvertor ifc = new IfConvertor(globalSymTab);
     ifc.visit(tree);
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
 

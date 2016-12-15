@@ -53,4 +53,8 @@ public class ThreeOpCode {
   public List<ThreeOpStmt> getStmts() {
     return stmts;
   }
+
+  public void addDecl(ThreeOpDecl decl) {
+    this.decls.add(decl);
+  }
 }

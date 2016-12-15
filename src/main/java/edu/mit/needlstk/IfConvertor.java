@@ -23,12 +23,17 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   private Integer INT_WIDTH = 32;
   /// Map aggregation function names to threeopcode function body
   private HashMap<String, ThreeOpCode> aggFunCode;
+  /// Global symbol table of variables and state for each aggregation function
+  private HashMap<String, HashMap<String, AggFunVarType>> symTab;
+  /// Current indicator of the aggregation function being processed
+  private String currAggFun;
 
   /// Constructor
-  public IfConvertor() {
+  public IfConvertor(HashMap<String, HashMap<String, AggFunVarType>> symTab) {
     this.outerPredIdMap = new IdentityHashMap<ParserRuleContext, String>();
     this.outerPredTreeMap = new IdentityHashMap<ParserRuleContext, AugPred>();
     this.aggFunCode = new HashMap<String, ThreeOpCode>();
+    this.symTab = symTab;
   }
 
   /// Get unique integers across all instances of this class. NOT thread-safe.
@@ -71,11 +76,23 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     return code;
   }
 
+  private void addFnVarDecl(HashMap<String, AggFunVarType> localSymTab, ThreeOpCode toc) {
+    for (Map.Entry<String, AggFunVarType> entry: localSymTab.entrySet()) {
+      if (entry.getValue() == AggFunVarType.FN_VAR) {
+        toc.addDecl(new ThreeOpDecl(INT_WIDTH, entry.getKey()));
+      }
+    }
+  }
+
   /// ANTLR visitor for aggFun
   public ThreeOpCode visitAggFun(PerfQueryParser.AggFunContext ctx) {
+    // Indicate the current aggregation function
+    currAggFun = ctx.aggFunc().getText();
     // Set up outer predicate "true"
     AugPred truePred = new AugPred(true);
     ThreeOpCode toc = setupPred(truePred);
+    // Add declarations for function variables
+    addFnVarDecl(this.symTab.get(currAggFun), toc);
     // Merge code from internal statements
     for (PerfQueryParser.StmtContext stmt: ctx.stmt()) {
       outerPredIdMap.put(stmt, toc.peekIdFirstDecl());
@@ -132,6 +149,9 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     ThreeOpDecl predVarDecl = new ThreeOpDecl(INT_WIDTH, predVarId);
     /// 1.2 Assign pred to predVarId
     ThreeOpStmt predVarStmt = new ThreeOpStmt(predVarId, pred);
+    /// 1.3 Add new predicate to symbol table
+    this.symTab.get(currAggFun).put(predVarId, AggFunVarType.PRED_VAR);
+    /// Return code with the new predicate assignment statement
     return new ThreeOpCode(
         new ArrayList<>(Arrays.asList(predVarDecl)),
         new ArrayList<>(Arrays.asList(predVarStmt)));
