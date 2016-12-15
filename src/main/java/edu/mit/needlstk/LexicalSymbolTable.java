@@ -6,6 +6,9 @@ public class LexicalSymbolTable extends PerfQueryBaseVisitor<Boolean> {
   /// A member that always represents the symbol table for the current context
   private HashMap<String, AggFunVarType> outerSymTable;
 
+  /// Global symbol table containing all variables in the code
+  private HashMap<String, HashMap<String, AggFunVarType>> globalSymTable;
+
   /// A member that always represents the agg fun for the current context
   private String currAggFun;
 
@@ -20,6 +23,7 @@ public class LexicalSymbolTable extends PerfQueryBaseVisitor<Boolean> {
                             HashMap<String, List<String>> fieldVars) {
     this.stateVars = stateVars;
     this.fieldVars = fieldVars;
+    this.globalSymTable = new HashMap<String, HashMap<String, AggFunVarType>>();
   }
 
   /// Initialize symbol table for an aggregation function with state and field formal arguments
@@ -27,9 +31,11 @@ public class LexicalSymbolTable extends PerfQueryBaseVisitor<Boolean> {
     /// Bootstrap the agg-fun-specific symbol table with formal parameters
     for (String state: stateVars.get(aggFun)) {
       symTable.put(state, AggFunVarType.STATE);
+      globalSymTable.get(aggFun).put(state, AggFunVarType.STATE);
     }
     for (String field: fieldVars.get(aggFun)) {
       symTable.put(field, AggFunVarType.FIELD);
+      globalSymTable.get(aggFun).put(field, AggFunVarType.FIELD);
     }
   }
 
@@ -49,6 +55,7 @@ public class LexicalSymbolTable extends PerfQueryBaseVisitor<Boolean> {
       assert (definedVar != null);
       if (! outerSymTable.containsKey(definedVar)) {
         outerSymTable.put(definedVar, AggFunVarType.FN_VAR);
+        globalSymTable.get(currAggFun).put(definedVar, AggFunVarType.FN_VAR);
       } else if (outerSymTable.get(definedVar) == AggFunVarType.FIELD) {
           throw new RuntimeException("Can't set a packet field" + definedVar
                                      + " directly in function " + currAggFun);
@@ -92,11 +99,16 @@ public class LexicalSymbolTable extends PerfQueryBaseVisitor<Boolean> {
     // Initialize an outer symbol table using stateVars and fieldVars
     currAggFun = ctx.aggFunc().getText();
     outerSymTable = new HashMap<String, AggFunVarType>();
+    globalSymTable.put(currAggFun, new HashMap<String, AggFunVarType>());
     initSymTable(currAggFun, outerSymTable);
     // Check define-before-use for every statement in the function
     for (PerfQueryParser.StmtContext stmt: ctx.stmt()) {
       visit(stmt);
     }
     return true;
+  }
+
+  public HashMap<String, HashMap<String, AggFunVarType>> getGlobalSymTable() {
+    return this.globalSymTable;
   }
 }
