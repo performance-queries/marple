@@ -117,6 +117,10 @@ public class ThreeOpStmt {
     return (type == StmtType.EMIT);
   }
 
+  public boolean isPredAssign() {
+    return (type == StmtType.PRED_ASSIGN);
+  }
+
   public String getEmitPred() {
     assert (type == StmtType.EMIT);
     return predVar;

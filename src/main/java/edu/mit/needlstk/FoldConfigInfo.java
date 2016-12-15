@@ -10,6 +10,7 @@ public class FoldConfigInfo implements PipeConfigInfo {
   private List<String> stateArgs;
   private List<String> fieldArgs;
   private List<ThreeOpStmt> code;
+  private String outerPredId;
   private HashSet<String> setFields;
   private HashSet<String> usedFields;
   
@@ -23,6 +24,7 @@ public class FoldConfigInfo implements PipeConfigInfo {
     this.fieldArgs = fieldArgs;
     this.fnName = aggFunc;
     this.code = code.getStmts();
+    this.outerPredId = code.peekIdFirstDecl();
     this.setFields = new HashSet<String>(stateArgs);
     this.setFields.addAll(this.keyFields);
     this.usedFields = new HashSet<String>(fieldArgs);
@@ -46,17 +48,30 @@ public class FoldConfigInfo implements PipeConfigInfo {
     /// TODO: The code in the aggregation function will execute regardless of the validity of the
     /// operand, resulting in dead code. This needs to be cleaned up.
     ArrayList<ThreeOpStmt> newCode = new ArrayList<ThreeOpStmt>();
+    AugPred operandPred = isOperandPktLog ? (new AugPred(true)) : (new AugPred(operandQueryId));
     newCode.add(new ThreeOpStmt(queryId, new AugPred(false)));
     for (ThreeOpStmt line: code) {
-      if (line.isEmit()) {
+      /// Replace the "outermost predicate" of the function to operandPred.
+      if (line.isPredAssign()) {
+        if (line.getDefinedVar().equals(this.outerPredId)) {
+          /// If this line assigns the outermost predicate, we should modify it.
+          newCode.add(new ThreeOpStmt(this.outerPredId, operandPred));
+        } else {
+          /// Add the line unmodified otherwise.
+          newCode.add(line);
+        }
+      } else if (line.isEmit()) {
         // The result from this stage is valid if two conditions are met.
         // (1) The predicate corresponding to the emit is true;
         // (2) the operand is valid.
-        AugPred operandPred = isOperandPktLog ? (new AugPred(true)) : (new AugPred(operandQueryId));
-        AugPred thisBranch = new AugPred(line.getEmitPred()).and(operandPred);
+        AugPred thisBranch = isOperandPktLog ? new AugPred(line.getEmitPred()) : new
+            AugPred(line.getEmitPred()).and(operandPred);
         newCode.add(new ThreeOpStmt(queryId, thisBranch.or(new AugPred(queryId))));
+        newCode.add(line);
+      } else {
+        /// Add the line unmodified otherwise.
+        newCode.add(line);
       }
-      newCode.add(line);
     }
     code = newCode;
   }
