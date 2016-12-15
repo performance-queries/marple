@@ -10,14 +10,17 @@ import java.util.Arrays;
 public class ConfigGen extends PerfQueryBaseVisitor<PipeStage> {
   private HashMap<String, PipeStage> queryToPipe;
   private HashMap<String, ThreeOpCode> aggFunCode;
+  private HashMap<String, HashMap<String, AggFunVarType>> aggFunSymTab;
   private HashMap<String, List<String>> stateVars;
   private HashMap<String, List<String>> fieldVars;
 
   public ConfigGen(HashMap<String, ThreeOpCode> aggFunCode,
+                   HashMap<String, HashMap<String, AggFunVarType>> aggFunSymTab,
                    HashMap<String, List<String>> stateVars,
                    HashMap<String, List<String>> fieldVars) {
     this.queryToPipe = new HashMap<>();
     this.aggFunCode = aggFunCode;
+    this.aggFunSymTab = aggFunSymTab;
     this.stateVars = stateVars;
     this.fieldVars = fieldVars;
   }
@@ -45,6 +48,7 @@ public class ConfigGen extends PerfQueryBaseVisitor<PipeStage> {
     FoldConfigInfo fci = new FoldConfigInfo(ctx.columnList(),
                                             aggFun,
                                             aggFunCode.get(aggFun),
+                                            aggFunSymTab.get(aggFun),
                                             stateVars.get(aggFun),
                                             fieldVars.get(aggFun));
     return new PipeStage(OperationType.GROUPBY, fci);
