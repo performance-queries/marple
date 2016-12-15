@@ -1,21 +1,30 @@
 TODOS
 
+changes before printing code into p4:
+* preamble and type annotations for the groupby functions
+* type annotations for all defined variables
+
 simplifying code
 * simplify ternary threeopstmts. e.g., z = true ? x : y ==> z = x
 * change code generated for map to 'functional' semantics?
 * make predicates "smart", e.g., AugPred(true).and(X) == X
-* current map & fold validity statements create dead code if operand is invalid
+* current map code is dead code if operand is invalid
 * remove `_` at beginning of identifiers; make compiler-defined variables start
   with `_` instead
 * cleanup code: add @Override annotation to new antlr visitor passes!
+* simple way to check whether a switch is an egress switch?
+* language identifiers for constants, like TCP protocol number
 
 additional compiler passes
 * pass: handling groupby code generation correctly with `uid` in aggregation
-* pass: ensure fold, map and filter arguments make sense from stage to stage
-  - each toplevel query has unique field names --> overwrite if reused
 * pass: combine with located expr tree to only install on specific switches
 * pass: rules needed to generate outputs for query. By default, assume each
   stage is some intermediate stage; generate output code only for toplevel.
+
+hardware-oriented passes
+* bounded packet history inference + splitting, i.e., on-switch and off-switch
+* making kv store an extern + configure extern
+* configure domino atoms from aggregation functions
 
 printing p4 code from IRs
 * emitting three operand code in p4: variables prefixed by types (e.g.,
