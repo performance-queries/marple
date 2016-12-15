@@ -9,6 +9,8 @@ public class ThreeOpCode {
 
   /// Default integer bitwidth used for declarations in emitted code.
   public static Integer INT_WIDTH = 32;
+  // Default boolean bitwidth used for declarations in emitted code.
+  public static Integer BOOL_WIDTH = 1;
 
   /// Constructor
   public ThreeOpCode(List<ThreeOpDecl> decls, List<ThreeOpStmt> stmts) {
@@ -55,6 +57,14 @@ public class ThreeOpCode {
 
   public List<ThreeOpStmt> getStmts() {
     return stmts;
+  }
+
+  public List<ThreeOpDecl> getDecls() {
+    return decls;
+  }
+
+  public void appendStmt(ThreeOpStmt newStmt) {
+    this.stmts.add(newStmt);
   }
 
   public void addDecl(ThreeOpDecl decl) {
