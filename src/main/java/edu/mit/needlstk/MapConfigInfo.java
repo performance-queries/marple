@@ -3,44 +3,43 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 
-public class MapConfigInfo implements PipeConfigInfo {
-  private List<ThreeOpStmt> code;
-  private HashSet<String> setFields;
-  private HashSet<String> usedFields;
+public class MapConfigInfo extends PipeConfigInfo {
   private Integer numExprs;
 
   public MapConfigInfo(PerfQueryParser.ColumnListContext colList,
                        PerfQueryParser.ExprListContext exprList) {
-    code = new ArrayList<>();
+    ArrayList<ThreeOpStmt> stmts = new ArrayList<>();
     usedFields = new HashSet<String>();
+    symTab = new HashMap<String, AggFunVarType>();
     List<String> cols = ColumnExtractor.getColumns(colList);
     List<PerfQueryParser.ExprContext> exprs = ExprExtractor.getExprs(exprList);
     if (cols.size() != exprs.size()) {
       throw new RuntimeException("List sizes of columns and expressions should match"
                                  + " in map query!");
     }
+    /// For each expression assignment:
+    /// (1) generate ThreeOpCode
+    /// (2) get the set of used variables
+    /// (3) update the stage-local symbol table
     for (int i=0; i<cols.size(); i++) {
+      String col = cols.get(i);
       AugExpr expr = new AugExpr(exprs.get(i));
-      usedFields.addAll(expr.getUsedVars());
-      ThreeOpStmt stmt = new ThreeOpStmt(cols.get(i), expr);
-      code.add(stmt);
+      HashSet<String> usedVars = expr.getUsedVars();
+      usedFields.addAll(usedVars);
+      /// generate ThreeOpCode
+      ThreeOpStmt stmt = new ThreeOpStmt(col, expr);
+      stmts.add(stmt);
+      /// Update the symbol table
+      symTab.put(col, AggFunVarType.FIELD);
+      for (String inputField: usedVars) {
+        symTab.put(inputField, AggFunVarType.FIELD);
+      }
     }
     this.setFields = new HashSet<String>(cols);
+    this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(), stmts);
     numExprs = exprs.size();
-  }
-
-  public String getP4() {
-    String res = "";
-    for (ThreeOpStmt frag: code) {
-      res += frag.print();
-      res += "\n";
-    }
-    return res;
-  }
-
-  public List<ThreeOpStmt> getCode() {
-    return code;
   }
 
   public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
@@ -54,14 +53,7 @@ public class MapConfigInfo implements PipeConfigInfo {
       operandValid = new AugPred(true);
     }
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid);
-    code.add(validStmt);
-  }
-
-  public HashSet<String> getSetFields() {
-    return setFields;
-  }
-
-  public HashSet<String> getUsedFields() {
-    return usedFields;
+    code.appendStmt(validStmt);
+    symTab.put(queryId, AggFunVarType.FIELD);
   }
 }

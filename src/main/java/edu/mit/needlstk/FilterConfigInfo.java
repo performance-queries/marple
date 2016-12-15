@@ -4,27 +4,24 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 
 /// Generate code for filters in a pipeline stage
-public class FilterConfigInfo implements PipeConfigInfo {
+public class FilterConfigInfo extends PipeConfigInfo {
   private AugPred pred;
-  private List<ThreeOpStmt> code;
-  private Integer incr; // It doesn't matter what the value of this is.
-  private HashSet<String> usedFields;
 
   public FilterConfigInfo(PerfQueryParser.PredicateContext ctx) {
     this.pred = new AugPred(ctx);
     this.usedFields = this.pred.getUsedVars();
     String predVar = "0_pred_test"; /// Name local to stage; no need to generate unique names.
-    this.code = new ArrayList<>(Arrays.asList(new ThreeOpStmt(predVar, pred)));
-  }
-
-  public String getP4() {
-    return code.get(0).print() + "\n";
-  }
-
-  public List<ThreeOpStmt> getCode() {
-    return code;
+    ArrayList<ThreeOpStmt> stmts = new ArrayList<>(Arrays.asList(new ThreeOpStmt(predVar, pred)));
+    ArrayList<ThreeOpDecl> decls = new ArrayList<>(Arrays.asList(new ThreeOpDecl(ThreeOpCode.BOOL_WIDTH, predVar)));
+    this.code = new ThreeOpCode(decls, stmts);
+    this.symTab = new HashMap<String, AggFunVarType>();
+    for (String inputField: usedFields) {
+      symTab.put(inputField, AggFunVarType.FIELD);
+    }
+    this.setFields = new HashSet<>();
   }
 
   public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
@@ -35,14 +32,8 @@ public class FilterConfigInfo implements PipeConfigInfo {
       operandValid = new AugPred(true);
     }
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid.and(pred));
-    this.code = new ArrayList<>(Arrays.asList(validStmt));
-  }
-
-  public HashSet<String> getSetFields() {
-    return new HashSet<>();
-  }
-
-  public HashSet<String> getUsedFields() {
-    return usedFields;
+    this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
+                                Arrays.asList(validStmt));
+    this.symTab.put(queryId, AggFunVarType.FIELD);
   }
 }

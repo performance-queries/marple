@@ -4,27 +4,17 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 
-public class ZipConfigInfo implements PipeConfigInfo {
-  private List<ThreeOpStmt> code;
+public class ZipConfigInfo extends PipeConfigInfo {
   private AugPred validPred;
 
   public ZipConfigInfo() {
     validPred = new AugPred(true);
-    code = new ArrayList<>();
-  }
-
-  public String getP4() {
-    String res = "";
-    for (ThreeOpStmt stmt: code) {
-      res += stmt.print();
-      res += "\n";
-    }
-    return res;
-  }
-
-  public List<ThreeOpStmt> getCode() {
-    return code;
+    code = new ThreeOpCode();
+    symTab = new HashMap<String, AggFunVarType>();
+    setFields = new HashSet<String>();
+    usedFields = new HashSet<String>();
   }
 
   public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
@@ -37,14 +27,12 @@ public class ZipConfigInfo implements PipeConfigInfo {
     }
     validPred = validPred.and(operandValid);
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, validPred);
-    this.code = new ArrayList<>(Arrays.asList(validStmt));
-  }
-
-  public HashSet<String> getSetFields() {
-    return new HashSet<>();
-  }
-
-  public HashSet<String> getUsedFields() {
-    return new HashSet<>();
+    /// Update symbol table
+    symTab.put(queryId, AggFunVarType.FIELD);
+    for (String inputField: validPred.getUsedVars()) {
+      symTab.put(inputField, AggFunVarType.FIELD);
+    }
+    this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
+                                Arrays.asList(validStmt));
   }
 }
