@@ -19,8 +19,6 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   /// HashMap that maintains an "outer" predicate for each statement
   private Map<ParserRuleContext, String> outerPredIdMap;
   private Map<ParserRuleContext, AugPred> outerPredTreeMap;
-  /// Default integer bitwidth used for declarations in emitted code.
-  private Integer INT_WIDTH = 32;
   /// Map aggregation function names to threeopcode function body
   private HashMap<String, ThreeOpCode> aggFunCode;
   /// Global symbol table of variables and state for each aggregation function
@@ -79,7 +77,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   private void addFnVarDecl(HashMap<String, AggFunVarType> localSymTab, ThreeOpCode toc) {
     for (Map.Entry<String, AggFunVarType> entry: localSymTab.entrySet()) {
       if (entry.getValue() == AggFunVarType.FN_VAR) {
-        toc.addDecl(new ThreeOpDecl(INT_WIDTH, entry.getKey()));
+        toc.addDecl(new ThreeOpDecl(ThreeOpCode.INT_WIDTH, entry.getKey()));
       }
     }
   }
@@ -146,7 +144,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     /// step 1. Get a new predicate corresponding to this case.
     /// 1.1 Declare a new predicate variable
     String predVarId = "_pred_" + getUid(); // ensure variables can't appear in user program
-    ThreeOpDecl predVarDecl = new ThreeOpDecl(INT_WIDTH, predVarId);
+    ThreeOpDecl predVarDecl = new ThreeOpDecl(ThreeOpCode.INT_WIDTH, predVarId);
     /// 1.2 Assign pred to predVarId
     ThreeOpStmt predVarStmt = new ThreeOpStmt(predVarId, pred);
     /// 1.3 Add new predicate to symbol table
