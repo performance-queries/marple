@@ -128,7 +128,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   private ThreeOpCode setupPred(AugPred pred) {
     /// step 1. Get a new predicate corresponding to this case.
     /// 1.1 Declare a new predicate variable
-    String predVarId = getUid() + "_pred"; // ensure variables can't appear in user program
+    String predVarId = "_pred_" + getUid(); // ensure variables can't appear in user program
     ThreeOpDecl predVarDecl = new ThreeOpDecl(INT_WIDTH, predVarId);
     /// 1.2 Assign pred to predVarId
     ThreeOpStmt predVarStmt = new ThreeOpStmt(predVarId, pred);
