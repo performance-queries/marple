@@ -76,7 +76,7 @@ public class Compiler {
 
     /// Produce code for all operators
     System.out.println("Generating code for all query operators...");
-    CodeGen cg = new CodeGen(aggFunCode, stateVars, fieldVars);
+    ConfigGen cg = new ConfigGen(aggFunCode, stateVars, fieldVars);
     cg.visit(tree);
 
     /// Pipeline the stages

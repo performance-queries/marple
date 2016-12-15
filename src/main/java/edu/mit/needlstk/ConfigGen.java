@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class CodeGen extends PerfQueryBaseVisitor<PipeStage> {
+public class ConfigGen extends PerfQueryBaseVisitor<PipeStage> {
   private HashMap<String, PipeStage> queryToPipe;
   private HashMap<String, ThreeOpCode> aggFunCode;
   private HashMap<String, List<String>> stateVars;
   private HashMap<String, List<String>> fieldVars;
 
-  public CodeGen(HashMap<String, ThreeOpCode> aggFunCode,
-                 HashMap<String, List<String>> stateVars,
-                 HashMap<String, List<String>> fieldVars) {
+  public ConfigGen(HashMap<String, ThreeOpCode> aggFunCode,
+                   HashMap<String, List<String>> stateVars,
+                   HashMap<String, List<String>> fieldVars) {
     this.queryToPipe = new HashMap<>();
     this.aggFunCode = aggFunCode;
     this.stateVars = stateVars;
