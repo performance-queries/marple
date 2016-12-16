@@ -1,20 +1,5 @@
 TODOS
 
-changes before printing code into p4:
-* refactor p4 printing specifics from threeopcode to e.g., "p4printer" class
-* packet fields should be declared with bit widths in query-metadata struct
-
-simplifying code
-* simplify ternary threeopstmts. e.g., z = true ? x : y ==> z = x
-* change code generated for map to 'functional' semantics?
-* make predicates "smart", e.g., AugPred(true).and(X) == X
-* current map code is dead code if operand is invalid
-* remove `_` at beginning of identifiers; make compiler-defined variables start
-  with `_` instead
-* cleanup code: add @Override annotation to new antlr visitor passes!
-* simple way to check whether a switch is an egress switch?
-* language identifiers for constants, like TCP protocol number
-
 additional compiler passes
 * pass: handling groupby code generation correctly with `uid` in aggregation
 * pass: combine with located expr tree to only install on specific switches
@@ -25,6 +10,19 @@ hardware-oriented passes
 * bounded packet history inference + splitting, i.e., on-switch and off-switch
 * making kv store an extern + configure extern
 * configure domino atoms from aggregation functions
+* configure the tofino chip
+
+simplifying code
+* simplify ternary threeopstmts. e.g., z = true ? x : y ==> z = x
+* remove define-before-use checking class and redundant code
+* change code generated for map to 'functional' semantics?
+* make predicates "smart", e.g., AugPred(true).and(X) == X
+* current map code is dead code if operand is invalid
+* remove `_` at beginning of identifiers; make compiler-defined variables start
+  with `_` instead
+* cleanup code: add @Override annotation to new antlr visitor passes!
+* simple way to check whether a switch is an egress switch?
+* language identifiers for constants, like TCP protocol number
 
 printing p4 code from IRs
 * emitting three operand code in p4: variables prefixed by types (e.g.,
