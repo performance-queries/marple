@@ -77,7 +77,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   private void addFnVarDecl(HashMap<String, AggFunVarType> localSymTab, ThreeOpCode toc) {
     for (Map.Entry<String, AggFunVarType> entry: localSymTab.entrySet()) {
       if (entry.getValue() == AggFunVarType.FN_VAR) {
-        toc.addDecl(new ThreeOpDecl(ThreeOpCode.INT_WIDTH, entry.getKey()));
+        toc.addDecl(new ThreeOpDecl(P4Printer.INT_WIDTH, entry.getKey()));
       }
     }
   }
@@ -144,7 +144,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     /// step 1. Get a new predicate corresponding to this case.
     /// 1.1 Declare a new predicate variable
     String predVarId = "_pred_" + getUid(); // ensure variables can't appear in user program
-    ThreeOpDecl predVarDecl = new ThreeOpDecl(ThreeOpCode.BOOL_WIDTH, predVarId);
+    ThreeOpDecl predVarDecl = new ThreeOpDecl(P4Printer.BOOL_WIDTH, predVarId);
     /// 1.2 Assign pred to predVarId
     ThreeOpStmt predVarStmt = new ThreeOpStmt(predVarId, pred);
     /// 1.3 Add new predicate to symbol table

@@ -235,15 +235,15 @@ public class AugPred {
   /// Print P4 code
   public String getP4(HashMap<String, AggFunVarType> symTab) {
     if(type == AugPredType.PRED_TRUE) {
-      return ThreeOpCode.P4_TRUE;
+      return P4Printer.P4_TRUE;
     } else if(type == AugPredType.PRED_FALSE) {
-      return ThreeOpCode.P4_FALSE;
+      return P4Printer.P4_FALSE;
     } else if(type == AugPredType.PRED_ID) {
       if (! symTab.containsKey(predId)) {
         System.out.println("Missing symbol table entry for " + predId);
       }
       assert (symTab.containsKey(predId)); // ensure id exists in symbol table!
-      return ThreeOpCode.p4Ident(predId, symTab.get(predId));
+      return P4Printer.p4Ident(predId, symTab.get(predId));
     } else if(type == AugPredType.PRED_EQ) {
       return "(" + getExprP4(0, symTab) + ") EQ (" + getExprP4(1, symTab) + ")";
     } else if(type == AugPredType.PRED_NE) {

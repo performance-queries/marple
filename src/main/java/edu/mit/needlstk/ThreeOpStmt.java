@@ -119,17 +119,17 @@ public class ThreeOpStmt {
       assert (symTab.containsKey(result));
       assert (symTab.containsKey(predVar));
       /// Produce p4 line of code
-      res = (ThreeOpCode.p4Ident(result, symTab.get(result)) + " = " +
-             ThreeOpCode.p4Ident(predVar, symTab.get(predVar)) + " ? ("
+      res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
+             P4Printer.p4Ident(predVar, symTab.get(predVar)) + " ? ("
              + exprIf.getP4(symTab) + ") : ("
              + exprElse.getP4(symTab) + ");");
     } else if(type == StmtType.PRED_ASSIGN) {
       assert (symTab.containsKey(result));
-      res = (ThreeOpCode.p4Ident(result, symTab.get(result)) + " = " +
+      res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
              pred.getP4(symTab) + ";");
     } else if(type == StmtType.EXPR_ASSIGN) {
       assert (symTab.containsKey(result));
-      res = (ThreeOpCode.p4Ident(result, symTab.get(result)) + " = " +
+      res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
              expr.getP4(symTab) + ";");
     } else if(type == StmtType.EMIT) {
       /// For each state variable in this context,
@@ -137,8 +137,8 @@ public class ThreeOpStmt {
       for (Map.Entry<String, AggFunVarType> entry: symTab.entrySet()) {
         if (entry.getValue() == AggFunVarType.STATE) {
           String ident = entry.getKey();
-          res += (ThreeOpCode.p4Ident(ident, AggFunVarType.FIELD) + " = " +
-                  ThreeOpCode.p4Ident(ident, AggFunVarType.STATE));
+          res += (P4Printer.p4Ident(ident, AggFunVarType.FIELD) + " = " +
+                  P4Printer.p4Ident(ident, AggFunVarType.STATE));
           res += "\n";
         }
       }

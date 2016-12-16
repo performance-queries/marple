@@ -152,9 +152,9 @@ public class AugExpr {
     if(type == AugExprType.EXPR_ID) {
       /// Ensure that symbol table contains the identifier
       assert (symTab.containsKey(ident));
-      return ThreeOpCode.p4Ident(ident, symTab.get(ident));
+      return P4Printer.p4Ident(ident, symTab.get(ident));
     } else if(type == AugExprType.EXPR_VAL) {
-      return ThreeOpCode.p4Value(String.valueOf(value));
+      return P4Printer.p4Value(String.valueOf(value));
     } else if(type == AugExprType.EXPR_COMB) {
       return ("(" + children.get(0).getP4(symTab) + ")" +
               textFromBinop(binop) +
