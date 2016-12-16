@@ -87,11 +87,11 @@ public class Compiler {
     ArrayList<PipeStage> fullPipe = pc.stitchPipe();
 
     /// Print final output for inspection
-    HashSet<String> packetFields = pc.getAllPacketFields(fullPipe);
-    HashSet<String> registers    = pc.getAllRegisters(fullPipe);
+    String decls = pc.getPacketFieldDecls(fullPipe);
+    HashSet<String> registers = pc.getAllRegisters(fullPipe);
     System.out.println("=================================");
     System.out.println("List of all packet fields used/set in query:");
-    System.out.println(packetFields);
+    System.out.println(decls);
     System.out.println("=================================");
     System.out.println("List of all registers:");
     System.out.println(registers);

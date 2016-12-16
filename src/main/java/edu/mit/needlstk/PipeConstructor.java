@@ -11,6 +11,7 @@ public class PipeConstructor {
   private String pktLogStr = "T"; /// Operand denoting the packet log
   private HashSet<String> visited;
   private HashMap<String, ArrayList<String>> schema;
+  private HashSet<String> predPacketFields;
   
   public PipeConstructor(HashMap<String, PipeStage> stages,
                          HashMap<String, Operation> depTable,
@@ -21,6 +22,8 @@ public class PipeConstructor {
     this.visited = new HashSet<>();
     this.schema = new HashMap<String, ArrayList<String>>();
     this.schema.put(pktLogStr, Fields.fields);
+    this.predPacketFields = new HashSet<String>();
+    this.predPacketFields.add(transformQueryId(pktLogStr));
   }
 
   public ArrayList<PipeStage> stitchPipe() {
@@ -109,6 +112,7 @@ public class PipeConstructor {
         ps.getConfigInfo().addValidStmt(transformQueryId(queryId),
                                         transformQueryId(operandQueryId),
                                         operandQueryId.equals(pktLogStr));
+        predPacketFields.add(transformQueryId(queryId));
         break;
       default:
         assert(false);
@@ -130,5 +134,39 @@ public class PipeConstructor {
       registers.addAll(stage.getConfigInfo().getRegisters());
     }
     return registers;
+  }
+
+  private ArrayList<ThreeOpDecl> getPacketFieldDeclList(ArrayList<PipeStage> pipe) {
+    ArrayList<ThreeOpDecl> decls = new ArrayList<>();
+    HashSet<String> fieldsChecked = new HashSet<>();
+    for (PipeStage stage: pipe) {
+      /// Collect all fields that could potentially be packet metadata fields
+      HashSet<String> fields = new HashSet<>(stage.getConfigInfo().getPacketFields());
+      fields.addAll(stage.getConfigInfo().getRegisters());
+      for (String field: fields) {
+        /// Only look to add declaration if field hasn't been looked at so far.
+        if (! fieldsChecked.contains(field)) {
+          if (predPacketFields.contains(field)) {
+            decls.add(new ThreeOpDecl(P4Printer.BOOL_WIDTH, field));
+          } else if ((! Fields.headerFields.contains(field)) &&
+                     (! Fields.metadataFields.contains(field))) {
+            decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, field));
+          } // Else clause: packet fields which are headers or standard metadata
+          fieldsChecked.add(field);
+        }
+      }
+    }
+    return decls;
+  }
+
+  public String getPacketFieldDecls(ArrayList<PipeStage> pipe) {
+    ArrayList<ThreeOpDecl> decls = getPacketFieldDeclList(pipe);
+    String res = "struct Metadata {\n";
+    for (ThreeOpDecl decl: decls) {
+      res += decl.getP4();
+      res += "\n";
+    }
+    res += "}\n";
+    return res;
   }
 }
