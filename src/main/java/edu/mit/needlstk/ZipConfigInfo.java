@@ -29,6 +29,7 @@ public class ZipConfigInfo extends PipeConfigInfo {
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, validPred);
     /// Update symbol table
     symTab.put(queryId, AggFunVarType.FIELD);
+    symTab.put(operandQueryId, AggFunVarType.FIELD);
     for (String inputField: validPred.getUsedVars()) {
       symTab.put(inputField, AggFunVarType.FIELD);
     }

@@ -36,6 +36,7 @@ public class FoldConfigInfo extends PipeConfigInfo {
     AugPred operandPred = isOperandPktLog ? (new AugPred(true)) : (new AugPred(operandQueryId));
     newStmts.add(new ThreeOpStmt(queryId, new AugPred(false)));
     symTab.put(queryId, AggFunVarType.FIELD);
+    symTab.put(operandQueryId, AggFunVarType.FIELD);
     for (ThreeOpStmt line: code.getStmts()) {
       /// Replace the "outermost predicate" of the function to operandPred.
       if (line.isPredAssign()) {

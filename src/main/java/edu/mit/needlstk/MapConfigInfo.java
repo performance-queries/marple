@@ -55,5 +55,6 @@ public class MapConfigInfo extends PipeConfigInfo {
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid);
     code.appendStmt(validStmt);
     symTab.put(queryId, AggFunVarType.FIELD);
+    symTab.put(operandQueryId, AggFunVarType.FIELD);
   }
 }

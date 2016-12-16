@@ -35,5 +35,6 @@ public class FilterConfigInfo extends PipeConfigInfo {
     this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                                 Arrays.asList(validStmt));
     this.symTab.put(queryId, AggFunVarType.FIELD);
+    this.symTab.put(operandQueryId, AggFunVarType.FIELD);
   }
 }
