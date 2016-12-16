@@ -65,4 +65,8 @@ public class FoldConfigInfo extends PipeConfigInfo {
   public List<String> getKeyFields() {
     return keyFields;
   }
+
+  public List<String> getStateArgs() {
+    return stateArgs;
+  }
 }

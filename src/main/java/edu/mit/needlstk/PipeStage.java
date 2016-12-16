@@ -30,6 +30,10 @@ public class PipeStage {
     if (this.op == OperationType.GROUPBY) {
       res += " ";
       res += ((FoldConfigInfo)this.configInfo).getKeyFields().toString();
+      res += "\n";
+      res += "Registers used: ";
+      res += ((FoldConfigInfo)this.configInfo).getStateArgs().toString();
+      res += "\n--";
     }
     res += "\n";
     // res += configInfo.print();
