@@ -1,11 +1,8 @@
 TODOS
 
 changes before printing code into p4:
-* preamble and type annotations for the groupby functions
-* symtable should contain bit widths (packet field declarations as metadata)
-* printing query-metadata fields in separate struct
-* printing code for each state with metadata, header (and state?) prefixes
-* emit statements: copying over state to packet variables
+* refactor p4 printing specifics from threeopcode to e.g., "p4printer" class
+* packet fields should be declared with bit widths in query-metadata struct
 
 simplifying code
 * simplify ternary threeopstmts. e.g., z = true ? x : y ==> z = x
