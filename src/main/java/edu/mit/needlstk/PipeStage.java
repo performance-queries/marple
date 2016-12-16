@@ -23,10 +23,14 @@ public class PipeStage {
 
   @Override public String toString() {
     String res = this.pipeName;
-    res += " ";
+    res += "\nSchema ";
     res += this.fields.toString();
-    res += ": ";
+    res += "\n";
     res += this.op.toString();
+    if (this.op == OperationType.GROUPBY) {
+      res += " ";
+      res += ((FoldConfigInfo)this.configInfo).getKeyFields().toString();
+    }
     res += "\n";
     // res += configInfo.print();
     res += configInfo.getP4();

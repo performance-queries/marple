@@ -61,4 +61,8 @@ public class FoldConfigInfo extends PipeConfigInfo {
     }
     code = new ThreeOpCode(code.getDecls(), newStmts);
   }
+
+  public List<String> getKeyFields() {
+    return keyFields;
+  }
 }
