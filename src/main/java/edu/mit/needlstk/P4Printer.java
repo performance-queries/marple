@@ -24,9 +24,9 @@ public class P4Printer {
     switch(type) {
       case FIELD:
         if (Fields.headerFields.contains(ident)) {
-          return PREFIX_HEADER + ident;
+          return PREFIX_HEADER + Fields.p4Map.get(ident);
         } else if (Fields.metadataFields.contains(ident)) {
-          return PREFIX_STANDARD_META + ident;
+          return PREFIX_STANDARD_META + Fields.p4Map.get(ident);
         } else { // query-defined metadata fields
           return PREFIX_QUERY_META + ident;
         }
