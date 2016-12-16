@@ -2,7 +2,10 @@ TODOS
 
 changes before printing code into p4:
 * preamble and type annotations for the groupby functions
-* type annotations for all defined variables
+* symtable should contain bit widths (packet field declarations as metadata)
+* printing query-metadata fields in separate struct
+* printing code for each state with metadata, header (and state?) prefixes
+* emit statements: copying over state to packet variables
 
 simplifying code
 * simplify ternary threeopstmts. e.g., z = true ? x : y ==> z = x
