@@ -34,6 +34,10 @@ public class LexicalSymbolTable extends PerfQueryBaseVisitor<Boolean> {
       globalSymTable.get(aggFun).put(state, AggFunVarType.STATE);
     }
     for (String field: fieldVars.get(aggFun)) {
+      if (symTable.containsKey(field)) {
+        throw new RuntimeException("Identifier " + field + " cannot appear both as accumulated " +
+                                   "state and packet argument in function " + aggFun);
+      }
       symTable.put(field, AggFunVarType.FIELD);
       globalSymTable.get(aggFun).put(field, AggFunVarType.FIELD);
     }
