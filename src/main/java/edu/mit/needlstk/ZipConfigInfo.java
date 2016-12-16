@@ -10,7 +10,7 @@ public class ZipConfigInfo extends PipeConfigInfo {
   private AugPred validPred;
 
   public ZipConfigInfo() {
-    validPred = new AugPred(true);
+    validPred = null;
     code = new ThreeOpCode();
     symTab = new HashMap<String, AggFunVarType>();
     setFields = new HashSet<String>();
@@ -25,7 +25,11 @@ public class ZipConfigInfo extends PipeConfigInfo {
     } else {
       operandValid = new AugPred(true);
     }
-    validPred = validPred.and(operandValid);
+    if (validPred != null) {
+      validPred = validPred.and(operandValid);
+    } else {
+      validPred = operandValid;
+    }
     ThreeOpStmt validStmt = new ThreeOpStmt(queryId, validPred);
     /// Update symbol table
     symTab.put(queryId, AggFunVarType.FIELD);
