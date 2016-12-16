@@ -3,6 +3,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /// Template for three operand instructions
 /// These are statements of the form:
@@ -102,6 +104,44 @@ public class ThreeOpStmt {
       res = result + " = " + expr.print() + ";";
     } else if(type == StmtType.EMIT) {
       res = "if (" + predVar + ") emit;";
+    } else {
+      assert(false); // Logic error. Expecting a new statement type?
+      res = "";
+    }
+    return res;
+  }
+
+  /// Printing in P4 in the context of a symbol table
+  public String getP4(HashMap<String, AggFunVarType> symTab) {
+    String res = "";
+    if(type == StmtType.TERNARY) {
+      /// Symbol table should contain relevant identifiers
+      assert (symTab.containsKey(result));
+      assert (symTab.containsKey(predVar));
+      /// Produce p4 line of code
+      res = (ThreeOpCode.p4Ident(result, symTab.get(result)) + " = " +
+             ThreeOpCode.p4Ident(predVar, symTab.get(predVar)) + " ? ("
+             + exprIf.getP4(symTab) + ") : ("
+             + exprElse.getP4(symTab) + ");");
+    } else if(type == StmtType.PRED_ASSIGN) {
+      assert (symTab.containsKey(result));
+      res = (ThreeOpCode.p4Ident(result, symTab.get(result)) + " = " +
+             pred.getP4(symTab) + ";");
+    } else if(type == StmtType.EXPR_ASSIGN) {
+      assert (symTab.containsKey(result));
+      res = (ThreeOpCode.p4Ident(result, symTab.get(result)) + " = " +
+             expr.getP4(symTab) + ";");
+    } else if(type == StmtType.EMIT) {
+      /// For each state variable in this context,
+      /// copy the state to packet field of the same name.
+      for (Map.Entry<String, AggFunVarType> entry: symTab.entrySet()) {
+        if (entry.getValue() == AggFunVarType.STATE) {
+          String ident = entry.getKey();
+          res += (ThreeOpCode.p4Ident(ident, AggFunVarType.FIELD) + " = " +
+                  ThreeOpCode.p4Ident(ident, AggFunVarType.STATE));
+          res += "\n";
+        }
+      }
     } else {
       assert(false); // Logic error. Expecting a new statement type?
       res = "";

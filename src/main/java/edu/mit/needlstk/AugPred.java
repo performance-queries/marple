@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 
 /// A class for augmentable predicates, which predicates are mostly constructed from predicates
 /// within aggregation function bodies. The class structure mirrors the structure of predicates in
@@ -217,6 +218,48 @@ public class AugPred {
       return "! (" + getPredStr(0) + ")";
     } else {
       assert (false); // Logic error. Must be one of predetermined pred types
+      return null;
+    }
+  }
+
+  /// Helper to extract P4 output for expression child i
+  private String getExprP4(int i, HashMap<String, AggFunVarType> symTab) {
+    return childExprs.get(i).getP4(symTab);
+  }
+
+  /// Helper to extract P4 output from predicate child i
+  private String getPredP4(int i, HashMap<String, AggFunVarType> symTab) {
+    return childPreds.get(i).getP4(symTab);
+  }
+
+  /// Print P4 code
+  public String getP4(HashMap<String, AggFunVarType> symTab) {
+    if(type == AugPredType.PRED_TRUE) {
+      return ThreeOpCode.P4_TRUE;
+    } else if(type == AugPredType.PRED_FALSE) {
+      return ThreeOpCode.P4_FALSE;
+    } else if(type == AugPredType.PRED_ID) {
+      if (! symTab.containsKey(predId)) {
+        System.out.println("Missing symbol table entry for " + predId);
+      }
+      assert (symTab.containsKey(predId)); // ensure id exists in symbol table!
+      return ThreeOpCode.p4Ident(predId, symTab.get(predId));
+    } else if(type == AugPredType.PRED_EQ) {
+      return "(" + getExprP4(0, symTab) + ") EQ (" + getExprP4(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_NE) {
+      return "(" + getExprP4(0, symTab) + ") NE (" + getExprP4(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_GT) {
+      return "(" + getExprP4(0, symTab) + ") > (" + getExprP4(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_LT) {
+      return "(" + getExprP4(0, symTab) + ") < (" + getExprP4(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_AND) {
+      return "(" + getPredP4(0, symTab) + ") && (" + getPredP4(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_OR) {
+      return "(" + getPredP4(0, symTab) + ") || (" + getPredP4(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_NOT) {
+      return "! (" + getPredP4(0, symTab) + ")";
+    } else {
+      assert (false);
       return null;
     }
   }

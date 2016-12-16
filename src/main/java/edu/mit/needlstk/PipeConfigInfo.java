@@ -11,6 +11,10 @@ public abstract class PipeConfigInfo {
   protected HashSet<String> usedFields;
 
   public String getP4() {
+    return code.getP4(symTab);
+  }
+
+  public String print() {
     return code.print();
   }
 

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 
 public class AugExpr {
   public enum AugExprType {
@@ -140,6 +141,24 @@ public class AugExpr {
       return ("(" + children.get(0).print() + ")" +
               textFromBinop(binop) +
               "(" + children.get(1).print() + ")");
+    } else {
+      assert (false); // Logic error. Must be one of predetermined expr types
+      return null;
+    }
+  }
+
+  /// Print P4 code
+  public String getP4(HashMap<String, AggFunVarType> symTab) {
+    if(type == AugExprType.EXPR_ID) {
+      /// Ensure that symbol table contains the identifier
+      assert (symTab.containsKey(ident));
+      return ThreeOpCode.p4Ident(ident, symTab.get(ident));
+    } else if(type == AugExprType.EXPR_VAL) {
+      return ThreeOpCode.p4Value(String.valueOf(value));
+    } else if(type == AugExprType.EXPR_COMB) {
+      return ("(" + children.get(0).getP4(symTab) + ")" +
+              textFromBinop(binop) +
+              "(" + children.get(1).getP4(symTab) + ")");
     } else {
       assert (false); // Logic error. Must be one of predetermined expr types
       return null;

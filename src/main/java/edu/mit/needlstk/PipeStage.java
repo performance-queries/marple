@@ -28,6 +28,7 @@ public class PipeStage {
     res += ": ";
     res += this.op.toString();
     res += "\n";
+    // res += configInfo.print();
     res += configInfo.getP4();
     res += "\n";
     return res;

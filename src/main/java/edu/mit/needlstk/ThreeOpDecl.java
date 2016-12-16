@@ -14,4 +14,8 @@ public class ThreeOpDecl {
   public String print() {
     return "int" + String.valueOf(bitWidth) + " " + ident + ";";
   }
+
+  public String getP4() {
+    return "bit<" + String.valueOf(bitWidth) + "> " + ident + ";";
+  }
 }
