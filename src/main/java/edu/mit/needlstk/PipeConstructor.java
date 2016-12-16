@@ -164,7 +164,6 @@ public class PipeConstructor {
     String res = "struct Metadata {\n";
     for (ThreeOpDecl decl: decls) {
       res += decl.getP4();
-      res += "\n";
     }
     res += "}\n";
     return res;

@@ -12,10 +12,10 @@ public class ThreeOpDecl {
   }
 
   public String print() {
-    return "int" + String.valueOf(bitWidth) + " " + ident + ";";
+    return "int" + String.valueOf(bitWidth) + " " + ident + ";\n";
   }
 
   public String getP4() {
-    return "bit<" + String.valueOf(bitWidth) + "> " + ident + ";";
+    return "bit<" + String.valueOf(bitWidth) + "> " + ident + ";\n";
   }
 }

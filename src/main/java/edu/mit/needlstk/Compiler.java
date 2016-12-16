@@ -97,7 +97,7 @@ public class Compiler {
     System.out.println(registers);
     System.out.println("These can also be used as packet fields in certain stages.");
     System.out.println("=================================");
-    System.out.println("List of pipe stages with code:");
+    System.out.println("List of pipe stages with code:\n");
     System.out.println(fullPipe.toString());
   }
 }

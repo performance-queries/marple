@@ -97,13 +97,13 @@ public class ThreeOpStmt {
     if(type == StmtType.TERNARY) {
       res = (result + " = " + predVar + " ? ("
              + exprIf.print() + ") : ("
-             + exprElse.print() + ");");
+             + exprElse.print() + ");\n");
     } else if(type == StmtType.PRED_ASSIGN) {
-      res = result + " = " + pred.print() + ";";
+      res = result + " = " + pred.print() + ";\n";
     } else if(type == StmtType.EXPR_ASSIGN) {
-      res = result + " = " + expr.print() + ";";
+      res = result + " = " + expr.print() + ";\n";
     } else if(type == StmtType.EMIT) {
-      res = "if (" + predVar + ") emit;";
+      res = "if (" + predVar + ") emit;\n";
     } else {
       assert(false); // Logic error. Expecting a new statement type?
       res = "";
@@ -122,15 +122,15 @@ public class ThreeOpStmt {
       res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
              P4Printer.p4Ident(predVar, symTab.get(predVar)) + " ? ("
              + exprIf.getP4(symTab) + ") : ("
-             + exprElse.getP4(symTab) + ");");
+             + exprElse.getP4(symTab) + ");\n");
     } else if(type == StmtType.PRED_ASSIGN) {
       assert (symTab.containsKey(result));
       res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
-             pred.getP4(symTab) + ";");
+             pred.getP4(symTab) + ";\n");
     } else if(type == StmtType.EXPR_ASSIGN) {
       assert (symTab.containsKey(result));
       res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
-             expr.getP4(symTab) + ";");
+             expr.getP4(symTab) + ";\n");
     } else if(type == StmtType.EMIT) {
       /// For each state variable in this context,
       /// copy the state to packet field of the same name.
@@ -138,8 +138,9 @@ public class ThreeOpStmt {
         if (entry.getValue() == AggFunVarType.STATE) {
           String ident = entry.getKey();
           res += (P4Printer.p4Ident(ident, AggFunVarType.FIELD) + " = " +
-                  P4Printer.p4Ident(ident, AggFunVarType.STATE));
-          res += "\n";
+                  P4Printer.p4Ident(predVar, symTab.get(predVar)) + " ? (" +
+                  P4Printer.p4Ident(ident, AggFunVarType.STATE) + ") : (" +
+                  P4Printer.p4Ident(ident, AggFunVarType.FIELD) + ");\n");
         }
       }
     } else {

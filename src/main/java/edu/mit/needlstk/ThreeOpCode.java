@@ -33,11 +33,9 @@ public class ThreeOpCode {
     String res = "";
     for (ThreeOpDecl decl: decls) {
       res += decl.print();
-      res += "\n";
     }
     for (ThreeOpStmt stmt: stmts) {
       res += stmt.print();
-      res += "\n";
     }
     return res;
   }
@@ -46,11 +44,9 @@ public class ThreeOpCode {
     String res = "";
     for (ThreeOpDecl decl: decls) {
       res += decl.getP4();
-      res += "\n";
     }
     for (ThreeOpStmt stmt: stmts) {
       res += stmt.getP4(symTab);
-      res += "\n";
     }
     return res;
   }

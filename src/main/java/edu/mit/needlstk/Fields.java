@@ -64,13 +64,13 @@ public class Fields {
     p4Map.put(toutHdr,       "egress_timestamp");  // TODO: corresponding p4 field?
     p4Map.put(qlenHdr,       "queue_len");         // TODO: corresponding p4 field?
     /// Header fields
-    p4Map.put(uidHdr,        "p.ip.identification");
-    p4Map.put(srcipHdr,      "p.ip.srcAddr");
-    p4Map.put(dstipHdr,      "p.ip.dstAddr");
-    p4Map.put(srcportHdr,    "p.tcp.srcport");     // TODO: parse tcp srcport
-    p4Map.put(dstportHdr,    "p.tcp.dstport");     // TODO: parse tcp dstport
-    p4Map.put(tcpseqHdr,     "p.tcp.sequence");    // TODO: parse tcp sequence number
-    p4Map.put(protoHdr,      "p.ip.protocol");
-    p4Map.put(pktpathHdr,    "p.pktpath");         // TODO: add a pktpath header?
+    p4Map.put(uidHdr,        "ip.identification");
+    p4Map.put(srcipHdr,      "ip.srcAddr");
+    p4Map.put(dstipHdr,      "ip.dstAddr");
+    p4Map.put(srcportHdr,    "tcp.srcport");     // TODO: parse tcp srcport
+    p4Map.put(dstportHdr,    "tcp.dstport");     // TODO: parse tcp dstport
+    p4Map.put(tcpseqHdr,     "tcp.sequence");    // TODO: parse tcp sequence number
+    p4Map.put(protoHdr,      "ip.protocol");
+    p4Map.put(pktpathHdr,    "pktpath");         // TODO: add a pktpath header?
   }
 }
