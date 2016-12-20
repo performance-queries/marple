@@ -10,6 +10,7 @@ hardware-oriented passes
 * bounded packet history inference + splitting, i.e., on-switch and off-switch
 * making kv store an extern + configure extern
 * configure domino atoms from aggregation functions
+----- end of December
 * configure the tofino chip
 
 simplifying code
