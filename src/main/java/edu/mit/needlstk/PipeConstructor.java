@@ -161,11 +161,10 @@ public class PipeConstructor {
 
   public String getPacketFieldDecls(ArrayList<PipeStage> pipe) {
     ArrayList<ThreeOpDecl> decls = getPacketFieldDeclList(pipe);
-    String res = "struct Metadata {\n";
+    String res = "";
     for (ThreeOpDecl decl: decls) {
       res += decl.getP4();
     }
-    res += "}\n";
     return res;
   }
 }

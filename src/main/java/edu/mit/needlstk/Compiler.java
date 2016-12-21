@@ -6,8 +6,35 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.PrintWriter;
+import java.io.IOException;
 
 public class Compiler {
+
+  private static String writeOutputs(PipeConstructor pc, ArrayList<PipeStage> pipe) {
+    String fileName = "p4-frags.txt";
+    try {
+      /// Print final output for inspection
+      PrintWriter writer = new PrintWriter(fileName, "UTF-8");
+      String decls = pc.getPacketFieldDecls(pipe);
+      HashSet<String> registers = pc.getAllRegisters(pipe);
+      writer.println("=================================");
+      writer.println(decls);
+      writer.println("=================================");
+      writer.println(registers);
+      writer.println("=================================");
+      for (PipeStage stage: pipe) {
+        writer.println(stage.getP4Fragment());
+        writer.println("=================================");
+      }
+      writer.close();
+      return fileName;
+    } catch (IOException e) {
+      System.err.println("Could not write into P4 fragments file! " + fileName);
+      return null;
+    }
+  }
+
   public static void main(String[] args) throws Exception {
     // create a CharStream that reads from standard input
     ANTLRInputStream input = new ANTLRInputStream(System.in);
@@ -86,18 +113,10 @@ public class Compiler {
                                              exprTreeCreator.getLastAssignedId());
     ArrayList<PipeStage> fullPipe = pc.stitchPipe();
 
-    /// Print final output for inspection
-    String decls = pc.getPacketFieldDecls(fullPipe);
-    HashSet<String> registers = pc.getAllRegisters(fullPipe);
-    System.out.println("=================================");
-    System.out.println("List of all packet fields used/set in query:");
-    System.out.println(decls);
-    System.out.println("=================================");
-    System.out.println("List of all registers:");
-    System.out.println(registers);
-    System.out.println("These can also be used as packet fields in certain stages.");
-    System.out.println("=================================");
-    System.out.println("List of pipe stages with code:\n");
-    System.out.println(fullPipe.toString());
+    /// Print P4 fragments into a file
+    String fragsFile = writeOutputs(pc, fullPipe);
+    if (fragsFile != null) {
+      System.out.println("P4 fragments output in " + fragsFile);
+    }
   }
 }

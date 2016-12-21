@@ -42,6 +42,28 @@ public class PipeStage {
     return res;
   }
 
+  public String getP4Fragment() {
+    String res = this.pipeName;
+    res += "\n";
+    res += this.fields.toString();
+    res += "\n";
+    res += this.op.toString();
+    res += "\n";
+    if (this.op == OperationType.GROUPBY) {
+      res += ((FoldConfigInfo)this.configInfo).getKeyFields().toString();
+      res += "\n";
+      res += ((FoldConfigInfo)this.configInfo).getStateArgs().toString();
+      res += "\n";
+    } else {
+      res += "\n\n";
+    }
+    res += "--\n";
+    // res += configInfo.print();
+    res += configInfo.getP4();
+    res += "\n";
+    return res;
+  }
+
   public PipeConfigInfo getConfigInfo() {
     return configInfo;
   }
