@@ -19,12 +19,12 @@ public class Compiler {
       String decls = pc.getPacketFieldDecls(pipe);
       HashSet<String> registers = pc.getAllRegisters(pipe);
       writer.println("=================================");
-      writer.println(decls);
+      writer.print(decls);
       writer.println("=================================");
       writer.println(registers);
       writer.println("=================================");
       for (PipeStage stage: pipe) {
-        writer.println(stage.getP4Fragment());
+        writer.print(stage.getP4Fragment());
         writer.println("=================================");
       }
       writer.close();
