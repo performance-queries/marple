@@ -7,6 +7,10 @@ additional compiler passes
   stage is some intermediate stage; generate output code only for toplevel.
 * handle tout==infinity in filter code generation
 
+issues to think about
+* semantics for multi-stage groupby queries
+* emit() versus functional design
+
 hardware-oriented passes
 * bounded packet history inference + splitting, i.e., on-switch and off-switch
 * making kv store an extern + configure extern
