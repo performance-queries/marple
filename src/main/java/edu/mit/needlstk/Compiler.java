@@ -101,6 +101,8 @@ public class Compiler {
     ifc.visit(tree);
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
 
+    System.out.println(aggFunCode);
+
     /// Checking define-before-use in generated code retained for sanity checking later
     // DefineBeforeUse codeChecker = new DefineBeforeUse(aggFunCode,
     //                                                   stateVars,

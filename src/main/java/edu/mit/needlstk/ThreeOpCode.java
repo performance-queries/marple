@@ -75,4 +75,8 @@ public class ThreeOpCode {
   public void addDecl(ThreeOpDecl decl) {
     this.decls.add(decl);
   }
+
+  @Override public String toString() {
+    return print();
+  }
 }
