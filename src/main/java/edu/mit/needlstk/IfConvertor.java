@@ -40,15 +40,29 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     return incr.toString();
   }
 
+  private ThreeOpStmt makePrimitiveAssignmentStmt(PerfQueryParser.PrimitiveContext ctx) {
+    /// Simplify statement construction by checking for identically true or false statmeents
+    AugPred contextPred = outerPredTreeMap.get(ctx);
+    String ident = ctx.ID().getText();
+    if (contextPred.isIdenticallyTrue()) {
+      return new ThreeOpStmt(ident, new AugExpr(ctx.expr()));
+    } else if (contextPred.isIdenticallyFalse()) {
+      return new ThreeOpStmt(ident, new AugExpr(ident));
+    } else {
+      return new ThreeOpStmt(ident,
+                             outerPredIdMap.get(ctx),
+                             new AugExpr(ctx.expr()),
+                             new AugExpr(ident));
+    }
+  }
+
   /// ANTLR visitor for primitives
   public ThreeOpCode visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
     assert(outerPredIdMap.containsKey(ctx));
+    assert(outerPredTreeMap.containsKey(ctx));
     if (ctx.ID() != null) {
       // Check whether this is an assignment. Only some primitives are assignments!
-      ThreeOpStmt stmt = new ThreeOpStmt(ctx.ID().getText(),
-                                         outerPredIdMap.get(ctx),
-                                         new AugExpr(ctx.expr()),
-                                         new AugExpr(ctx.ID().getText()));
+      ThreeOpStmt stmt = makePrimitiveAssignmentStmt(ctx);
       return new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                              new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
     } else if (ctx.EMIT() != null) {
@@ -65,6 +79,12 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   public ThreeOpCode visitIfConstruct(PerfQueryParser.IfConstructContext ctx) {
     assert(outerPredIdMap.containsKey(ctx));
     assert(outerPredTreeMap.containsKey(ctx));
+    // TODO: there is a problem here. Subsequent statements may later replace this
+    //  predicate by something that isn't identically true. Must be careful with this
+    // substitution. Reverting to earlier statement now.
+    // AugPred outerPred = (outerPredTreeMap.get(ctx).isIdenticallyTrue() ?
+    //                      new AugPred(true) :
+    //                      new AugPred(outerPredIdMap.get(ctx)));
     AugPred outerPred = new AugPred(outerPredIdMap.get(ctx));
     AugPred currPred = new AugPred(ctx.predicate());
     ThreeOpCode code = handleIfOrElse(ctx.ifPrimitive(), currPred, outerPred, true);
