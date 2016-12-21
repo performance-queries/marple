@@ -5,6 +5,7 @@ additional compiler passes
 * pass: combine with located expr tree to only install on specific switches
 * pass: rules needed to generate outputs for query. By default, assume each
   stage is some intermediate stage; generate output code only for toplevel.
+* handle tout==infinity in filter code generation
 
 hardware-oriented passes
 * bounded packet history inference + splitting, i.e., on-switch and off-switch

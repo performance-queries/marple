@@ -7,6 +7,8 @@ public class P4Printer {
   public static Integer BOOL_WIDTH = 1;
   /// Prefix used to print standard metadata fields in emitted code.
   public static String PREFIX_STANDARD_META = "standard_meta.";
+  /// Prefix used to print performance-related fields in the PKTLOG in emitted code.
+  public static String PREFIX_PKTLOG_META = "pktlog_meta.";
   /// Prefix used to print query-related metadata fields in emitted code.
   public static String PREFIX_QUERY_META = "meta.";
   /// Prefix used to print standard headers in emitted code.
@@ -25,8 +27,10 @@ public class P4Printer {
       case FIELD:
         if (Fields.headerFields.contains(ident)) {
           return PREFIX_HEADER + Fields.p4Map.get(ident);
-        } else if (Fields.metadataFields.contains(ident)) {
+        } else if (Fields.v1MetadataFields.contains(ident)) {
           return PREFIX_STANDARD_META + Fields.p4Map.get(ident);
+        } else if (Fields.pktLogMetadataFields.contains(ident)) {
+          return PREFIX_PKTLOG_META + Fields.p4Map.get(ident);
         } else { // query-defined metadata fields
           return PREFIX_QUERY_META + ident;
         }

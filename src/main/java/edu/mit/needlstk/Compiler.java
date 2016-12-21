@@ -19,6 +19,11 @@ public class Compiler {
       String decls = pc.getPacketFieldDecls(pipe);
       HashSet<String> registers = pc.getAllRegisters(pipe);
       writer.println("=================================");
+      for (String pktLogField: Fields.pktLogMetadataFields) {
+        writer.print(new ThreeOpDecl(P4Printer.INT_WIDTH,
+                                     Fields.p4Map.get(pktLogField)).getP4());
+      }
+      writer.println("=================================");
       writer.print(decls);
       writer.println("=================================");
       writer.println(registers);

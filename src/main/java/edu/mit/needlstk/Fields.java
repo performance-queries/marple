@@ -23,16 +23,24 @@ public class Fields {
   public static String pktpathHdr = "pktpath";
   public static String qlenHdr = "qlen";
 
-  public static ArrayList<String> metadataFields = new ArrayList<>(Arrays.asList(
-      switchHdr,
+  public static ArrayList<String> v1MetadataFields = new ArrayList<>(Arrays.asList(
       inportHdr,
       outportHdr,
-      pktlenHdr,
+      pktlenHdr));
+
+  public static ArrayList<String> pktLogMetadataFields = new ArrayList<>(Arrays.asList(
+      switchHdr,
       payloadlenHdr,
       qidHdr,
       tinHdr,
       toutHdr,
       qlenHdr));
+
+  public static ArrayList<String> metadataFields = new ArrayList<>();
+  static {
+    metadataFields.addAll(v1MetadataFields);
+    metadataFields.addAll(pktLogMetadataFields);
+  }
 
   public static ArrayList<String> headerFields = new ArrayList<>(Arrays.asList(
       uidHdr,
