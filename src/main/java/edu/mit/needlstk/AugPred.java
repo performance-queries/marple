@@ -127,17 +127,48 @@ public class AugPred {
     this.type = isTrue ? AugPredType.PRED_TRUE : AugPredType.PRED_FALSE;
   }
 
+  /// Structural checks to simplify predicate construction
+  public boolean isIdenticallyTrue() {
+    return this.type == AugPredType.PRED_TRUE;
+  }
+
+  public boolean isIdenticallyFalse() {
+    return this.type == AugPredType.PRED_FALSE;
+  }
+
   /// Predicate combinators on existing AugPreds, resulting in new AugPreds.
   public AugPred and(AugPred other) {
-    return new AugPred(AugPredType.PRED_AND, makePredChildren(this, other));
+    if (this.isIdenticallyTrue()) {
+      return other;
+    } else if (other.isIdenticallyTrue()) {
+      return this;
+    } else if (this.isIdenticallyFalse() || other.isIdenticallyFalse()) {
+      return new AugPred(false);
+    } else {
+      return new AugPred(AugPredType.PRED_AND, makePredChildren(this, other));
+    }
   }
 
   public AugPred or(AugPred other) {
-    return new AugPred(AugPredType.PRED_OR, makePredChildren(this, other));
+    if (this.isIdenticallyFalse()) {
+      return other;
+    } else if (other.isIdenticallyFalse()) {
+      return this;
+    } else if (this.isIdenticallyTrue() || other.isIdenticallyTrue()) {
+      return new AugPred(true);
+    } else {
+      return new AugPred(AugPredType.PRED_OR, makePredChildren(this, other));
+    }
   }
 
   public AugPred not() {
-    return new AugPred(AugPredType.PRED_NOT, new ArrayList<>(Arrays.asList(this)));
+    if (this.isIdenticallyTrue()) {
+      return new AugPred(false);
+    } else if (this.isIdenticallyFalse()) {
+      return new AugPred(true);
+    } else {
+      return new AugPred(AugPredType.PRED_NOT, new ArrayList<>(Arrays.asList(this)));
+    }
   }
 
   /// Helper for constructing lists of child predicates from two inputs
