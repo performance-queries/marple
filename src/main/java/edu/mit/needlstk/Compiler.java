@@ -95,6 +95,11 @@ public class Compiler {
     lst.visit(tree);
     HashMap<String, HashMap<String, AggFunVarType>> globalSymTab = lst.getGlobalSymTable();
 
+    /// Detect bounded packet history
+    HistoryDetector hd = new HistoryDetector(stateVars, fieldVars);
+    hd.visit(tree);
+    System.out.println(hd.reportHistory());
+
     /// Produce code for aggregation functions
     System.out.println("Generating code for aggregation functions...");
     IfConvertor ifc = new IfConvertor(globalSymTab);
