@@ -72,8 +72,8 @@ predicate : expr '==' expr # exprEq
 
 // Aggregation functions for group by
 primitive : ID '=' expr | ';' | EMIT;
-ifPrimitive    : primitive;
-elsePrimitive  : primitive;
+ifPrimitive    : primitive | ifConstruct;
+elsePrimitive  : primitive | ifConstruct;
 ifConstruct    : IF predicate '{' ifPrimitive+ '}' (ELSE '{' elsePrimitive+ '}')?;
 stmt : primitive
      | ifConstruct;

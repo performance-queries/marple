@@ -143,7 +143,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   }
 
   public <T extends ParserRuleContext> ThreeOpCode processInternalPrimitive(
-      T ctx, PerfQueryParser.PrimitiveContext pctx) {
+      T ctx, T pctx) {
     assert(outerPredIdMap.containsKey(ctx));
     assert(outerPredTreeMap.containsKey(ctx));
     outerPredIdMap.put(pctx, outerPredIdMap.get(ctx));
@@ -152,11 +152,19 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   }
 
   public ThreeOpCode visitIfPrimitive(PerfQueryParser.IfPrimitiveContext ctx) {
-    return processInternalPrimitive(ctx, ctx.primitive());
+    if (ctx.primitive() != null) {
+      return processInternalPrimitive(ctx, ctx.primitive());
+    } else {
+      return processInternalPrimitive(ctx, ctx.ifConstruct());
+    }
   }
 
   public ThreeOpCode visitElsePrimitive(PerfQueryParser.ElsePrimitiveContext ctx) {
-    return processInternalPrimitive(ctx, ctx.primitive());
+    if (ctx.primitive() != null) {
+      return processInternalPrimitive(ctx, ctx.primitive());
+    } else {
+      return processInternalPrimitive(ctx, ctx.ifConstruct());
+    }
   }
 
   /// Return a three op code initializing a new variable to the supplied predicate
