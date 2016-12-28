@@ -111,6 +111,7 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     // Save old "outer predicate" state
     AugPred oldOuterPred = this.outerPred;
     Integer oldOuterPredId = this.outerPredId;
+    Integer oldOuterPredHist = this.outerPredHist;
     // Handle if/then/else stuff; very similar in both cases. See handleIfOrElse
     AugPred currPred = new AugPred(ctx.predicate());
     handleIfOrElse(ctx.ifPrimitive(), currPred, oldOuterPred);
@@ -118,6 +119,7 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     // Restore outer predicate context
     this.outerPred = oldOuterPred;
     this.outerPredId = oldOuterPredId;
+    this.outerPredHist = oldOuterPredHist;
     return null;
   }
 
