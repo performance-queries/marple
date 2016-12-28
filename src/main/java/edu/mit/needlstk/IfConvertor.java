@@ -16,9 +16,9 @@ import java.util.HashMap;
 public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   /// Unique integer instance
   private Integer incr = 0;
-  /// HashMap that maintains an "outer" predicate for each statement
-  private Map<ParserRuleContext, String> outerPredIdMap;
-  private Map<ParserRuleContext, AugPred> outerPredTreeMap;
+  /// Maintain "outer" predicate context
+  private AugPred outerPred;
+  private String outerPredId;
   /// Map aggregation function names to threeopcode function body
   private HashMap<String, ThreeOpCode> aggFunCode;
   /// Global symbol table of variables and state for each aggregation function
@@ -28,8 +28,6 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
 
   /// Constructor
   public IfConvertor(HashMap<String, HashMap<String, AggFunVarType>> symTab) {
-    this.outerPredIdMap = new IdentityHashMap<ParserRuleContext, String>();
-    this.outerPredTreeMap = new IdentityHashMap<ParserRuleContext, AugPred>();
     this.aggFunCode = new HashMap<String, ThreeOpCode>();
     this.symTab = symTab;
   }
@@ -42,15 +40,14 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
 
   private ThreeOpStmt makePrimitiveAssignmentStmt(PerfQueryParser.PrimitiveContext ctx) {
     /// Simplify statement construction by checking for identically true or false statmeents
-    AugPred contextPred = outerPredTreeMap.get(ctx);
     String ident = ctx.ID().getText();
-    if (contextPred.isIdenticallyTrue()) {
+    if (this.outerPred.isIdenticallyTrue()) {
       return new ThreeOpStmt(ident, new AugExpr(ctx.expr()));
-    } else if (contextPred.isIdenticallyFalse()) {
+    } else if (this.outerPred.isIdenticallyFalse()) {
       return new ThreeOpStmt(ident, new AugExpr(ident));
     } else {
       return new ThreeOpStmt(ident,
-                             outerPredIdMap.get(ctx),
+                             this.outerPredId,
                              new AugExpr(ctx.expr()),
                              new AugExpr(ident));
     }
@@ -58,8 +55,6 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
 
   /// ANTLR visitor for primitives
   public ThreeOpCode visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
-    assert(outerPredIdMap.containsKey(ctx));
-    assert(outerPredTreeMap.containsKey(ctx));
     if (ctx.ID() != null) {
       // Check whether this is an assignment. Only some primitives are assignments!
       ThreeOpStmt stmt = makePrimitiveAssignmentStmt(ctx);
@@ -67,7 +62,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
                              new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
     } else if (ctx.EMIT() != null) {
       // TODO: Emit statements are special kinds of `ThreeOpStmt`s.
-      ThreeOpStmt stmt = new ThreeOpStmt(outerPredIdMap.get(ctx));
+      ThreeOpStmt stmt = new ThreeOpStmt(outerPredId);
       return new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                              new ArrayList<ThreeOpStmt>(Arrays.asList(stmt)));
     } else {
@@ -75,21 +70,22 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     }
   }
 
+  private void restorePredContext(AugPred oldOuterPred, String oldOuterPredId) {
+    this.outerPred = oldOuterPred;
+    this.outerPredId = oldOuterPredId;
+  }
+
   /// ANTLR visitor for ifConstruct
   public ThreeOpCode visitIfConstruct(PerfQueryParser.IfConstructContext ctx) {
-    assert(outerPredIdMap.containsKey(ctx));
-    assert(outerPredTreeMap.containsKey(ctx));
-    // TODO: there is a problem here. Subsequent statements may later replace this
-    //  predicate by something that isn't identically true. Must be careful with this
-    // substitution. Reverting to earlier statement now.
-    // AugPred outerPred = (outerPredTreeMap.get(ctx).isIdenticallyTrue() ?
-    //                      new AugPred(true) :
-    //                      new AugPred(outerPredIdMap.get(ctx)));
-    AugPred outerPred = new AugPred(outerPredIdMap.get(ctx));
     AugPred currPred = new AugPred(ctx.predicate());
-    ThreeOpCode code = handleIfOrElse(ctx.ifPrimitive(), currPred, outerPred, true);
+    /// Save context for outer predicate
+    AugPred oldOuterPred = this.outerPred;
+    String oldOuterPredId = this.outerPredId;
+    ThreeOpCode code = handleIfOrElse(ctx.ifPrimitive(), currPred, this.outerPred, true);
+    restorePredContext(oldOuterPred, oldOuterPredId);
     if(ctx.elsePrimitive().size() > 0) {
       code = code.orderedMerge(handleIfOrElse(ctx.elsePrimitive(), currPred, outerPred, false));
+      restorePredContext(oldOuterPred, oldOuterPredId);
     }
     return code;
   }
@@ -106,65 +102,20 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   public ThreeOpCode visitAggFun(PerfQueryParser.AggFunContext ctx) {
     // Indicate the current aggregation function
     currAggFun = ctx.aggFunc().getText();
-    // Set up outer predicate "true"
+    // Set up outer predicate "true" context
     AugPred truePred = new AugPred(true);
     ThreeOpCode toc = setupPred(truePred);
+    this.outerPred = truePred;
+    this.outerPredId = toc.peekIdFirstDecl();
     // Add declarations for function variables
     addFnVarDecl(this.symTab.get(currAggFun), toc);
     // Merge code from internal statements
     for (PerfQueryParser.StmtContext stmt: ctx.stmt()) {
-      outerPredIdMap.put(stmt, toc.peekIdFirstDecl());
-      outerPredTreeMap.put(stmt, truePred);
       toc = toc.orderedMerge(visit(stmt));
     }
     /// Add generated code for aggregation function
     aggFunCode.put(ctx.aggFunc().getText(), toc);
     return toc;
-  }
-
-  /// ANTLR visitor for stmt
-  public ThreeOpCode visitStmt(PerfQueryParser.StmtContext ctx) {
-    assert(outerPredIdMap.containsKey(ctx));
-    assert(outerPredTreeMap.containsKey(ctx));
-    if(ctx.primitive() != null) {
-      PerfQueryParser.PrimitiveContext pctx = ctx.primitive();
-      outerPredIdMap.put(pctx, outerPredIdMap.get(ctx));
-      outerPredTreeMap.put(pctx, outerPredTreeMap.get(ctx));
-      return visit(pctx);
-    } else if(ctx.ifConstruct() != null) {
-      PerfQueryParser.IfConstructContext ictx = ctx.ifConstruct();
-      outerPredIdMap.put(ictx, outerPredIdMap.get(ctx));
-      outerPredTreeMap.put(ictx, outerPredTreeMap.get(ctx));
-      return visit(ictx);
-    } else {
-      assert (false); // Logic error. Expecint a different kind of statement?
-      return null;
-    }
-  }
-
-  public <T extends ParserRuleContext> ThreeOpCode processInternalPrimitive(
-      T ctx, T pctx) {
-    assert(outerPredIdMap.containsKey(ctx));
-    assert(outerPredTreeMap.containsKey(ctx));
-    outerPredIdMap.put(pctx, outerPredIdMap.get(ctx));
-    outerPredTreeMap.put(pctx, outerPredTreeMap.get(ctx));
-    return visit(pctx);
-  }
-
-  public ThreeOpCode visitIfPrimitive(PerfQueryParser.IfPrimitiveContext ctx) {
-    if (ctx.primitive() != null) {
-      return processInternalPrimitive(ctx, ctx.primitive());
-    } else {
-      return processInternalPrimitive(ctx, ctx.ifConstruct());
-    }
-  }
-
-  public ThreeOpCode visitElsePrimitive(PerfQueryParser.ElsePrimitiveContext ctx) {
-    if (ctx.primitive() != null) {
-      return processInternalPrimitive(ctx, ctx.primitive());
-    } else {
-      return processInternalPrimitive(ctx, ctx.ifConstruct());
-    }
   }
 
   /// Return a three op code initializing a new variable to the supplied predicate
@@ -189,12 +140,12 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
                                                                    AugPred currPred,
                                                                    AugPred outerPred,
                                                                    boolean ifPred) {
-    AugPred clausePred = outerPred.and(ifPred ? currPred : currPred.not());
-    ThreeOpCode toc = setupPred(clausePred);
-    /// Now merge three operand codes from each internal statement    
+    /// Set up new outer predicate context
+    this.outerPred = outerPred.and(ifPred ? currPred : currPred.not());
+    ThreeOpCode toc = setupPred(this.outerPred);
+    this.outerPredId = toc.peekIdFirstDecl();
+    /// Now merge three operand codes from each internal statement
     for (T ctx : ctxList) {
-      outerPredIdMap.put(ctx, toc.peekIdFirstDecl());
-      outerPredTreeMap.put(ctx, clausePred);
       toc = toc.orderedMerge(visit(ctx));
     }
     return toc;
