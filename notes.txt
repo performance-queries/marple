@@ -6,8 +6,10 @@ additional compiler passes
 * pass: rules needed to generate outputs for query. By default, assume each
   stage is some intermediate stage; generate output code only for toplevel.
 * handle tout==infinity in filter code generation
+* print in domino format
 
 issues to think about
+* guarantees of fixed point algorithms for linear-in-state + bounded packet hist
 * semantics for multi-stage groupby queries
 * emit() versus functional design
 
