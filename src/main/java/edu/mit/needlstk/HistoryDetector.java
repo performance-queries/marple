@@ -18,12 +18,15 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   /// Keep track of "outer" predicate for the current context
   private AugPred outerPred;
   private Integer outerPredId;
-  private Integer maxOuterPredId;
   private Integer outerPredHist;
+  /// Running counter containing maximum predicate ID so far
+  private Integer maxOuterPredId;
   /// Track current aggregate function
   private String currAggFun;
   /// Predicate tree representing tree of contexts
-  private PredTree predTree;
+  private HashMap<String, PredTree> predTree;
+  /// Track relationship of predicate IDs to predicates
+  private HashMap<Integer, AugPred> predIdToPredMap;
   /// List of field and state parameters for aggregation functions
   private HashMap<String, List<String>> fields;
   private HashMap<String, List<String>> states;
@@ -44,6 +47,8 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     this.currIterHist = new HashMap<String, HashMap<String, Integer>>();
     this.prevIterHist = new HashMap<String, HashMap<String, Integer>>();
     this.iterCountsMap = new HashMap<String, Integer>();
+    this.predTree = new HashMap<String, PredTree>();
+    this.predIdToPredMap = new HashMap<Integer, AugPred>();
   }
 
   /// Get the history count for a given identifier from the current or previous iteration's history.
@@ -89,21 +94,35 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     return null;
   }
 
-  private void initNewOuterPred(AugPred pred) {
+  private void initNewOuterPred(AugPred pred, boolean addParent) {
+    Integer oldOuterPredId = this.outerPredId;
     this.outerPred = pred;
     this.maxOuterPredId++;
     this.outerPredId = this.maxOuterPredId;
+    this.predIdToPredMap.put(this.outerPredId, this.outerPred);
     this.outerPredHist = getHistFromList(pred.getUsedVars());
+    predTree.get(this.currAggFun).addNewPred(this.maxOuterPredId);
+    if (addParent) {
+      predTree.get(this.currAggFun).addChildToParent(this.outerPredId, oldOuterPredId);
+    }
   }
 
   private <T extends ParserRuleContext> void handleIfOrElse(List<T> ctxList, AugPred currPred,
                                                             AugPred oldOuterPred) {
     // Initialize a new "outer" predicate for the new context
-    initNewOuterPred(oldOuterPred.and(currPred));
+    initNewOuterPred(oldOuterPred.and(currPred), true);
     // Visit new contexts
     for (T ctx : ctxList) {
       visit(ctx);
     }
+  }
+
+  private void restorePredContext(AugPred oldOuterPred,
+                                  Integer oldOuterPredId,
+                                  Integer oldOuterPredHist) {
+    this.outerPred = oldOuterPred;
+    this.outerPredId = oldOuterPredId;
+    this.outerPredHist = oldOuterPredHist;
   }
 
   /// ANTLR visitor for if construct
@@ -115,11 +134,9 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     // Handle if/then/else stuff; very similar in both cases. See handleIfOrElse
     AugPred currPred = new AugPred(ctx.predicate());
     handleIfOrElse(ctx.ifPrimitive(), currPred, oldOuterPred);
+    restorePredContext(oldOuterPred, oldOuterPredId, oldOuterPredHist);
     handleIfOrElse(ctx.elsePrimitive(), currPred.not(), oldOuterPred);
-    // Restore outer predicate context
-    this.outerPred = oldOuterPred;
-    this.outerPredId = oldOuterPredId;
-    this.outerPredHist = oldOuterPredHist;
+    restorePredContext(oldOuterPred, oldOuterPredId, oldOuterPredHist);
     return null;
   }
 
@@ -131,8 +148,9 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   /// ANTLR visitor for main aggregation function
   @Override public Void visitAggFun(PerfQueryParser.AggFunContext ctx) {
     /// Initialize outer predicate and per-function history metadata
-    initNewOuterPred(new AugPred(true));
     this.currAggFun = ctx.aggFunc().getText();
+    this.predTree.put(currAggFun, new PredTree(this.maxOuterPredId));
+    initNewOuterPred(new AugPred(true), false);
     this.currIterHist.put(currAggFun, new HashMap<String, Integer>());
     this.prevIterHist.put(currAggFun, new HashMap<String, Integer>());
     this.iterCount = 0;
