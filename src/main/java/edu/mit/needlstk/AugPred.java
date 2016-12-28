@@ -253,6 +253,10 @@ public class AugPred {
     }
   }
 
+  @Override public String toString() {
+    return this.print();
+  }
+
   /// Helper to extract P4 output for expression child i
   private String getExprP4(int i, HashMap<String, AggFunVarType> symTab) {
     return childExprs.get(i).getP4(symTab);
