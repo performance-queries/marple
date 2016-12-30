@@ -100,31 +100,48 @@ public class PythonCodeGenerator extends PerfQueryBaseListener {
     TreeSet<String> cols = new TreeSet<>(Utility.getAllTokens(ctx.columnList(), PerfQueryParser.ID));
     System.err.println(generateStatePreamble(states));
     System.err.println(generateTuplePreamble(cols));
-    System.err.println(processCodeBlock(ctx.stmt(), states) + "\n");
+    System.err.println(processCodeBlock(ctx.codeBlock(), states, 0) + "\n");
     System.err.println(generateStatePostamble(states));
     System.err.println("  return tupleVar;");
   }
 
-  private String processCodeBlock(List<PerfQueryParser.StmtContext> codeBlock, TreeSet<String> states) {
+  private String nSpaces(Integer n) {
+    return String.format("%1$" + n + "s", "");
+  }
+
+  private String processCodeBlock(PerfQueryParser.CodeBlockContext codeBlock,
+                                  TreeSet<String> states,
+                                  Integer indent) {
     String ret = "";
-    for (int i = 0; i < codeBlock.size(); i++) {
-      assert(codeBlock.get(i).getChildCount() == 1);
-      assert(codeBlock.get(i).getChild(0) instanceof ParserRuleContext);
-      ParserRuleContext singleStmt = (ParserRuleContext)codeBlock.get(i).getChild(0);
+    for (int i = 0; i < codeBlock.getChildCount(); i++) {
+      //assert(codeBlock.get(i).getChildCount() == 1);
+      //assert(codeBlock.get(i).getChild(0) instanceof ParserRuleContext);
+      //ParserRuleContext singleStmt = (ParserRuleContext)codeBlock.get(i).getChild(0);
+      ParserRuleContext singleStmt = (ParserRuleContext)codeBlock.getChild(i);
+      assert(singleStmt instanceof PerfQueryParser.PrimitiveContext ||
+             singleStmt instanceof PerfQueryParser.IfConstructContext);
       if (singleStmt instanceof PerfQueryParser.PrimitiveContext) {
-        ret += "  " + processPrimitive(singleStmt, states) + "\n";
+        ret += nSpaces(indent+2) + processPrimitive(singleStmt, states) + "\n";
       } else if (singleStmt instanceof PerfQueryParser.IfConstructContext) {
         PerfQueryParser.IfConstructContext ifStmt = (PerfQueryParser.IfConstructContext)singleStmt;
-        ret += "  if " + textWithSpaces(ifStmt.predicate()) + " : \n";
-        for (int j = 0; j < ifStmt.ifPrimitive().size(); j++) {
-          ret += "    " + processPrimitive(ifStmt.ifPrimitive().get(j), states) + "\n";
-        }
+        ret += nSpaces(indent+2) + "if " + textWithSpaces(ifStmt.predicate()) + " : \n";
+        assert (ifStmt.ifCodeBlock().getChildCount() == 1);
+        ret += processCodeBlock((PerfQueryParser.CodeBlockContext)ifStmt.ifCodeBlock().getChild(0),
+                                states, indent+2);
+        // for (int j = 0; j < ifStmt.ifPrimitive().size(); j++) {
+        //   ret += "    " + processPrimitive(ifStmt.ifPrimitive().get(j), states) + "\n";
+        // }
         // Optional else
+        // if (ifStmt.ELSE() != null) {
         if (ifStmt.ELSE() != null) {
-          ret += "  else : \n";
-          for (int j = 0; j < ifStmt.elsePrimitive().size(); j++) {
-            ret += "    " + processPrimitive(ifStmt.elsePrimitive().get(j), states) + "\n";
-          }
+          ret += nSpaces(indent+2) + "else : \n";
+          assert (ifStmt.elseCodeBlock().getChildCount() == 1);
+          ret += processCodeBlock(
+              (PerfQueryParser.CodeBlockContext)ifStmt.elseCodeBlock().getChild(0),
+              states, indent+2);
+          // for (int j = 0; j < ifStmt.elsePrimitive().size(); j++) {
+          //   ret += "    " + processPrimitive(ifStmt.elsePrimitive().get(j), states) + "\n";
+          // }
         }
       }
     }
