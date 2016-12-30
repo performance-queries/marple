@@ -51,6 +51,16 @@ public class ThreeOpCode {
     return res;
   }
 
+  public String getDomino(HashMap<String, AggFunVarType> symTab) {
+    String res = "";
+    // No declarations printed, as they are all collected into the packet structure.
+    // Only print statements.
+    for (ThreeOpStmt stmt: stmts) {
+      res += stmt.getDomino(symTab);
+    }
+    return res;
+  }
+
   /// Return the identifier of the first declaration in the code. Useful for things like setting up
   /// a "true" predicate at the outermost scope, and reusing that identifier everywhere.
   public String peekIdFirstDecl() {

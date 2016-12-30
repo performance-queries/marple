@@ -121,7 +121,7 @@ public class PipeConstructor {
   }
 
   public HashSet<String> getAllPacketFields(ArrayList<PipeStage> pipe) {
-    HashSet<String> fields = new HashSet<String>();
+    HashSet<String> fields = new HashSet<>();
     for (PipeStage stage: pipe) {
       fields.addAll(stage.getConfigInfo().getPacketFields());
     }
@@ -129,11 +129,19 @@ public class PipeConstructor {
   }
 
   public HashSet<String> getAllRegisters(ArrayList<PipeStage> pipe) {
-    HashSet<String> registers = new HashSet<String>();
+    HashSet<String> registers = new HashSet<>();
     for (PipeStage stage: pipe) {
       registers.addAll(stage.getConfigInfo().getRegisters());
     }
     return registers;
+  }
+
+  public HashSet<String> getAllNonRegisters(ArrayList<PipeStage> pipe) {
+    HashSet<String> nonRegisters = new HashSet<>();
+    for (PipeStage stage: pipe) {
+      nonRegisters.addAll(stage.getConfigInfo().getNonRegisters());
+    }
+    return nonRegisters;
   }
 
   private ArrayList<ThreeOpDecl> getPacketFieldDeclList(ArrayList<PipeStage> pipe) {
@@ -159,11 +167,37 @@ public class PipeConstructor {
     return decls;
   }
 
-  public String getPacketFieldDecls(ArrayList<PipeStage> pipe) {
+  private ArrayList<ThreeOpDecl> getNonRegisterDeclList(ArrayList<PipeStage> pipe) {
+    ArrayList<ThreeOpDecl> decls = new ArrayList<>();
+    HashSet<String> fieldsChecked = new HashSet<>();
+    for (PipeStage stage: pipe) {
+      /// Collect all fields that could potentially be packet metadata fields
+      HashSet<String> fields = stage.getConfigInfo().getAllFields();
+      for (String field: fields) {
+        /// Only look to add declaration if field hasn't been looked at so far.
+        if (! fieldsChecked.contains(field)) {
+          decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, field));
+          fieldsChecked.add(field);
+        }
+      }
+    }
+    return decls;
+  }
+
+  public String getPacketFieldDeclsP4(ArrayList<PipeStage> pipe) {
     ArrayList<ThreeOpDecl> decls = getPacketFieldDeclList(pipe);
     String res = "";
     for (ThreeOpDecl decl: decls) {
       res += decl.getP4();
+    }
+    return res;
+  }
+
+  public String getNonRegisterDeclsDomino(ArrayList<PipeStage> pipe) {
+    ArrayList<ThreeOpDecl> decls = getNonRegisterDeclList(pipe);
+    String res = "";
+    for (ThreeOpDecl decl: decls) {
+      res += decl.getDomino();
     }
     return res;
   }

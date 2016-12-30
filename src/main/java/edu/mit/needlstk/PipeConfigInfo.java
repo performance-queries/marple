@@ -14,6 +14,10 @@ public abstract class PipeConfigInfo {
     return code.getP4(symTab);
   }
 
+  public String getDomino() {
+    return code.getDomino(symTab);
+  }
+
   public String print() {
     return code.print();
   }
@@ -46,6 +50,18 @@ public abstract class PipeConfigInfo {
 
   public HashSet<String> getRegisters() {
     return getFieldsOfType(AggFunVarType.STATE);
+  }
+
+  public HashSet<String> getNonRegisters() {
+    HashSet<String> nonRegisters = new HashSet<>();
+    nonRegisters.addAll(getFieldsOfType(AggFunVarType.FIELD));
+    nonRegisters.addAll(getFieldsOfType(AggFunVarType.PRED_VAR));
+    nonRegisters.addAll(getFieldsOfType(AggFunVarType.FN_VAR));
+    return nonRegisters;
+  }
+
+  public HashSet<String> getAllFields() {
+    return new HashSet<String>(symTab.keySet());
   }
 
   public abstract void addValidStmt(String q, String oq, boolean opT);
