@@ -18,4 +18,8 @@ public class ThreeOpDecl {
   public String getP4() {
     return "bit<" + String.valueOf(bitWidth) + "> " + ident + ";\n";
   }
+
+  public String getDomino() {
+    return "  int " + ident + ";\n";
+  }
 }

@@ -63,6 +63,10 @@ public class PipeStage {
     return res;
   }
 
+  public String getDominoFragment() {
+    return configInfo.getDomino();
+  }
+
   public PipeConfigInfo getConfigInfo() {
     return configInfo;
   }

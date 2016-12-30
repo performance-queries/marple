@@ -262,9 +262,17 @@ public class AugPred {
     return childExprs.get(i).getP4(symTab);
   }
 
+  private String getExprDomino(int i, HashMap<String, AggFunVarType> symTab) {
+    return childExprs.get(i).getDomino(symTab);
+  }
+
   /// Helper to extract P4 output from predicate child i
   private String getPredP4(int i, HashMap<String, AggFunVarType> symTab) {
     return childPreds.get(i).getP4(symTab);
+  }
+
+  private String getPredDomino(int i, HashMap<String, AggFunVarType> symTab) {
+    return childPreds.get(i).getDomino(symTab);
   }
 
   /// Print P4 code
@@ -293,6 +301,38 @@ public class AugPred {
       return "(" + getPredP4(0, symTab) + ") || (" + getPredP4(1, symTab) + ")";
     } else if(type == AugPredType.PRED_NOT) {
       return "! (" + getPredP4(0, symTab) + ")";
+    } else {
+      assert (false);
+      return null;
+    }
+  }
+
+  /// Print domino code
+  public String getDomino(HashMap<String, AggFunVarType> symTab) {
+    if(type == AugPredType.PRED_TRUE) {
+      return DominoPrinter.DOMINO_TRUE;
+    } else if(type == AugPredType.PRED_FALSE) {
+      return DominoPrinter.DOMINO_FALSE;
+    } else if(type == AugPredType.PRED_ID) {
+      if (! symTab.containsKey(predId)) {
+        System.out.println("Missing symbol table entry for " + predId);
+      }
+      assert (symTab.containsKey(predId)); // ensure id exists in symbol table!
+      return DominoPrinter.dominoIdent(predId, symTab.get(predId));
+    } else if(type == AugPredType.PRED_EQ) {
+      return "(" + getExprDomino(0, symTab) + ") == (" + getExprDomino(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_NE) {
+      return "(" + getExprDomino(0, symTab) + ") != (" + getExprDomino(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_GT) {
+      return "(" + getExprDomino(0, symTab) + ") > (" + getExprDomino(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_LT) {
+      return "(" + getExprDomino(0, symTab) + ") < (" + getExprDomino(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_AND) {
+      return "(" + getPredDomino(0, symTab) + ") && (" + getPredDomino(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_OR) {
+      return "(" + getPredDomino(0, symTab) + ") || (" + getPredDomino(1, symTab) + ")";
+    } else if(type == AugPredType.PRED_NOT) {
+      return "! (" + getPredDomino(0, symTab) + ")";
     } else {
       assert (false);
       return null;

@@ -150,6 +150,44 @@ public class ThreeOpStmt {
     return res;
   }
 
+  public String getDomino(HashMap<String, AggFunVarType> symTab) {
+    String res = "";
+    if (type == StmtType.TERNARY) {
+      /// Symbol table should contain relevant identifiers
+      assert (symTab.containsKey(result));
+      assert (symTab.containsKey(predVar));
+      /// Produce p4 line of code
+      res = "  " + (DominoPrinter.dominoIdent(result, symTab.get(result)) + " = " +
+             DominoPrinter.dominoIdent(predVar, symTab.get(predVar)) + " ? ("
+             + exprIf.getDomino(symTab) + ") : ("
+             + exprElse.getDomino(symTab) + ");\n");
+    } else if(type == StmtType.PRED_ASSIGN) {
+      assert (symTab.containsKey(result));
+      res = "  " + (DominoPrinter.dominoIdent(result, symTab.get(result)) + " = " +
+             pred.getDomino(symTab) + ";\n");
+    } else if(type == StmtType.EXPR_ASSIGN) {
+      assert (symTab.containsKey(result));
+      res = "  " + (DominoPrinter.dominoIdent(result, symTab.get(result)) + " = " +
+             expr.getDomino(symTab) + ";\n");
+    } else if(type == StmtType.EMIT) {
+      /// For each state variable in this context,
+      /// copy the state to packet field of the same name.
+      for (Map.Entry<String, AggFunVarType> entry: symTab.entrySet()) {
+        if (entry.getValue() == AggFunVarType.STATE) {
+          String ident = entry.getKey();
+          res += ("  " + DominoPrinter.dominoIdent(ident, AggFunVarType.FIELD) + " = " +
+                  DominoPrinter.dominoIdent(predVar, symTab.get(predVar)) + " ? (" +
+                  DominoPrinter.dominoIdent(ident, AggFunVarType.STATE) + ") : (" +
+                  DominoPrinter.dominoIdent(ident, AggFunVarType.FIELD) + ");\n");
+        }
+      }
+    } else {
+      assert(false); // Logic error. Expecting a new statement type?
+      res = "";
+    }
+    return res;
+  }
+
   @Override public String toString() {
     return print();
   }

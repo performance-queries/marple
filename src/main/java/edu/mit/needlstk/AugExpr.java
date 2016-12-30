@@ -164,4 +164,22 @@ public class AugExpr {
       return null;
     }
   }
+
+  /// Print domino code
+  public String getDomino(HashMap<String, AggFunVarType> symTab) {
+    if(type == AugExprType.EXPR_ID) {
+      /// Ensure that symbol table contains the identifier
+      assert (symTab.containsKey(ident));
+      return DominoPrinter.dominoIdent(ident, symTab.get(ident));
+    } else if(type == AugExprType.EXPR_VAL) {
+      return DominoPrinter.dominoValue(String.valueOf(value));
+    } else if(type == AugExprType.EXPR_COMB) {
+      return ("(" + children.get(0).getDomino(symTab) + ")" +
+              textFromBinop(binop) +
+              "(" + children.get(1).getDomino(symTab) + ")");
+    } else {
+      assert (false); // Logic error. Must be one of predetermined expr types
+      return null;
+    }
+  }
 }
