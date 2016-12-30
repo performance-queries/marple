@@ -89,11 +89,9 @@ public class LexicalSymbolTable extends PerfQueryBaseVisitor<Boolean> {
     HashMap<String, AggFunVarType> oldOuterSymTable = new HashMap<>(outerSymTable);
     // check the predicate, if branch, and else branch.
     checkPred(ctx.predicate());
-    for (PerfQueryParser.IfPrimitiveContext ifCtx: ctx.ifPrimitive()) {
-      visit(ifCtx);
-    }
-    for (PerfQueryParser.ElsePrimitiveContext elseCtx: ctx.elsePrimitive()) {
-      visit(elseCtx);
+    visit(ctx.ifCodeBlock());
+    if (ctx.elseCodeBlock() != null) {
+      visit(ctx.elseCodeBlock());
     }
     outerSymTable = oldOuterSymTable;
     return true;
@@ -106,9 +104,7 @@ public class LexicalSymbolTable extends PerfQueryBaseVisitor<Boolean> {
     globalSymTable.put(currAggFun, new HashMap<String, AggFunVarType>());
     initSymTable(currAggFun, outerSymTable);
     // Check define-before-use for every statement in the function
-    for (PerfQueryParser.StmtContext stmt: ctx.stmt()) {
-      visit(stmt);
-    }
+    visit(ctx.codeBlock());
     return true;
   }
 
