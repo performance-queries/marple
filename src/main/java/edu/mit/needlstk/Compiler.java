@@ -10,63 +10,6 @@ import java.io.PrintWriter;
 import java.io.IOException;
 
 public class Compiler {
-
-  private static String writeP4(PipeConstructor pc, ArrayList<PipeStage> pipe) {
-    String fileName = "p4-frags.txt";
-    try {
-      /// Print final output for inspection
-      PrintWriter writer = new PrintWriter(fileName, "UTF-8");
-      String decls = pc.getPacketFieldDeclsP4(pipe);
-      HashSet<String> registers = pc.getAllRegisters(pipe);
-      writer.println("=================================");
-      for (String pktLogField: Fields.pktLogMetadataFields) {
-        writer.print(new ThreeOpDecl(P4Printer.INT_WIDTH,
-                                     Fields.p4Map.get(pktLogField)).getP4());
-      }
-      writer.println("=================================");
-      writer.print(decls);
-      writer.println("=================================");
-      writer.println(registers);
-      writer.println("=================================");
-      for (PipeStage stage: pipe) {
-        writer.print(stage.getP4Fragment());
-        writer.println("=================================");
-      }
-      writer.close();
-      return fileName;
-    } catch (IOException e) {
-      System.err.println("Could not write into P4 fragments file! " + fileName);
-      return null;
-    }
-  }
-
-  private static String writeDomino(PipeConstructor pc, ArrayList<PipeStage> pipe) {
-    String fileName = "domino-frags.txt";
-    try {
-      /// Print final output for inspection
-      PrintWriter writer = new PrintWriter(fileName, "UTF-8");
-      String decls = pc.getNonRegisterDeclsDomino(pipe);
-      HashSet<String> registers = pc.getAllRegisters(pipe);
-      writer.print("struct Packet {\n");
-      writer.print(decls);
-      writer.print("}\n\n");
-      for (String reg: registers) {
-        writer.print("int " + reg + " = 0;\n");
-      }
-      writer.print("\n\n");
-      writer.print("void func(struct Packet pkt) {\n");
-      for (PipeStage stage: pipe) {
-        writer.print(stage.getDominoFragment());
-      }
-      writer.print("}\n\n");
-      writer.close();
-      return fileName;
-    } catch (IOException e) {
-      System.err.println("Could not write into P4 fragments file! " + fileName);
-      return null;
-    }
-  }
-
   public static void main(String[] args) throws Exception {
     // create a CharStream that reads from standard input
     ANTLRInputStream input = new ANTLRInputStream(System.in);
@@ -153,14 +96,14 @@ public class Compiler {
     ArrayList<PipeStage> fullPipe = pc.stitchPipe();
 
     /// Print P4 fragments into a file
-    String fragsFile = writeP4(pc, fullPipe);
+    String fragsFile = CodeFragmentPrinter.writeP4(pc, fullPipe);
     if (fragsFile != null) {
       System.out.println("P4 fragments output in " + fragsFile);
     }
 
-    String dominoFile = writeDomino(pc, fullPipe);
-    if (dominoFile != null) {
-      System.out.println("Domino fragments output in " + dominoFile);
+    boolean printed = CodeFragmentPrinter.writeDomino(pc, fullPipe);
+    if (printed) {
+      System.out.println("Domino fragments output in domino-*-frags.txt");
     }
   }
 }

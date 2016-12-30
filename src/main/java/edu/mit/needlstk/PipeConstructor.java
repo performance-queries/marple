@@ -136,6 +136,15 @@ public class PipeConstructor {
     return registers;
   }
 
+  public String getAllRegisterDeclsDomino(ArrayList<PipeStage> pipe) {
+    HashSet<String> registers = getAllRegisters(pipe);
+    String res = "";
+    for (String reg: registers) {
+      res += ("int " + reg + " = 0;\n");
+    }
+    return res;
+  }
+
   public HashSet<String> getAllNonRegisters(ArrayList<PipeStage> pipe) {
     HashSet<String> nonRegisters = new HashSet<>();
     for (PipeStage stage: pipe) {

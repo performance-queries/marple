@@ -1,20 +1,24 @@
 TODOS
 
 additional compiler passes
+* domino per-function printing
+* bounded packet history inference + splitting, i.e., on-switch and off-switch
+  - predicated expressions for state variables
+  - detect linear-in-state; find predicated A,B expressions
+  - vector-valued state: matrices
 * pass: handling groupby code generation correctly with `uid` in aggregation
 * pass: combine with located expr tree to only install on specific switches
 * pass: rules needed to generate outputs for query. By default, assume each
   stage is some intermediate stage; generate output code only for toplevel.
 * handle tout==infinity in filter code generation
-* print in domino format
 
 issues to think about
 * guarantees of fixed point algorithms for linear-in-state + bounded packet hist
+  - casting as lattice theory/abstract interpretation
 * semantics for multi-stage groupby queries
 * emit() versus functional design
 
 hardware-oriented passes
-* bounded packet history inference + splitting, i.e., on-switch and off-switch
 * making kv store an extern + configure extern
 * configure domino atoms from aggregation functions
 ----- end of December

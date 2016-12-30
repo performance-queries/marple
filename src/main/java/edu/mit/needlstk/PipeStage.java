@@ -71,6 +71,10 @@ public class PipeStage {
     return configInfo;
   }
 
+  public String getPipeName() {
+    return this.pipeName;
+  }
+
   public void setPipeName(String name) {
     this.pipeName = name;
   }
@@ -85,5 +89,9 @@ public class PipeStage {
 
   public HashSet<String> getUsedFields() {
     return configInfo.getUsedFields();
+  }
+
+  public OperationType getOp() {
+    return this.op;
   }
 }
