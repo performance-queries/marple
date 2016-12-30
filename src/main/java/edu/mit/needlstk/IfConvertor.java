@@ -53,6 +53,15 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     }
   }
 
+  /// ANTLR visitor for code block that aggregates code generated within individual productions
+  @Override public ThreeOpCode visitCodeBlock(PerfQueryParser.CodeBlockContext ctx) {
+    ThreeOpCode toc = new ThreeOpCode();
+    for (ParseTree child: ctx.children) {
+      toc = toc.orderedMerge(visit((ParserRuleContext)child));
+    }
+    return toc;
+  }
+
   /// ANTLR visitor for primitives
   public ThreeOpCode visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
     if (ctx.ID() != null) {
@@ -81,10 +90,10 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     /// Save context for outer predicate
     AugPred oldOuterPred = this.outerPred;
     String oldOuterPredId = this.outerPredId;
-    ThreeOpCode code = handleIfOrElse(ctx.ifPrimitive(), currPred, this.outerPred, true);
+    ThreeOpCode code = handleIfOrElse(ctx.ifCodeBlock(), currPred, this.outerPred, true);
     restorePredContext(oldOuterPred, oldOuterPredId);
-    if(ctx.elsePrimitive().size() > 0) {
-      code = code.orderedMerge(handleIfOrElse(ctx.elsePrimitive(), currPred, outerPred, false));
+    if(ctx.elseCodeBlock() != null) {
+      code = code.orderedMerge(handleIfOrElse(ctx.elseCodeBlock(), currPred, outerPred, false));
       restorePredContext(oldOuterPred, oldOuterPredId);
     }
     return code;
@@ -110,9 +119,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     // Add declarations for function variables
     addFnVarDecl(this.symTab.get(currAggFun), toc);
     // Merge code from internal statements
-    for (PerfQueryParser.StmtContext stmt: ctx.stmt()) {
-      toc = toc.orderedMerge(visit(stmt));
-    }
+    toc = toc.orderedMerge(visit(ctx.codeBlock()));
     /// Add generated code for aggregation function
     aggFunCode.put(ctx.aggFunc().getText(), toc);
     return toc;
@@ -136,7 +143,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
   
   /// Helper to handle one part of an IF ... ELSE statement: either the IF or ELSE. The logic is
   /// very similar for the two, so they can be handled through the same function.
-  private <T extends ParserRuleContext> ThreeOpCode handleIfOrElse(List<T> ctxList,
+  private <T extends ParserRuleContext> ThreeOpCode handleIfOrElse(T ctx,
                                                                    AugPred currPred,
                                                                    AugPred outerPred,
                                                                    boolean ifPred) {
@@ -145,9 +152,7 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
     ThreeOpCode toc = setupPred(this.outerPred);
     this.outerPredId = toc.peekIdFirstDecl();
     /// Now merge three operand codes from each internal statement
-    for (T ctx : ctxList) {
-      toc = toc.orderedMerge(visit(ctx));
-    }
+    toc = toc.orderedMerge(visit(ctx));
     return toc;
   }
 

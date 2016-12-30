@@ -107,14 +107,13 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     }
   }
 
-  private <T extends ParserRuleContext> void handleIfOrElse(List<T> ctxList, AugPred currPred,
+  private <T extends ParserRuleContext> void handleIfOrElse(T ctx,
+                                                            AugPred currPred,
                                                             AugPred oldOuterPred) {
     // Initialize a new "outer" predicate for the new context
     initNewOuterPred(oldOuterPred.and(currPred), true);
     // Visit new contexts
-    for (T ctx : ctxList) {
-      visit(ctx);
-    }
+    visit(ctx);
   }
 
   private void restorePredContext(AugPred oldOuterPred,
@@ -133,10 +132,12 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     Integer oldOuterPredHist = this.outerPredHist;
     // Handle if/then/else stuff; very similar in both cases. See handleIfOrElse
     AugPred currPred = new AugPred(ctx.predicate());
-    handleIfOrElse(ctx.ifPrimitive(), currPred, oldOuterPred);
+    handleIfOrElse(ctx.ifCodeBlock(), currPred, oldOuterPred);
     restorePredContext(oldOuterPred, oldOuterPredId, oldOuterPredHist);
-    handleIfOrElse(ctx.elsePrimitive(), currPred.not(), oldOuterPred);
-    restorePredContext(oldOuterPred, oldOuterPredId, oldOuterPredHist);
+    if (ctx.elseCodeBlock() != null) {
+      handleIfOrElse(ctx.elseCodeBlock(), currPred.not(), oldOuterPred);
+      restorePredContext(oldOuterPred, oldOuterPredId, oldOuterPredHist);
+    }
     return null;
   }
 
@@ -159,9 +160,7 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
       // Clear current history for a fresh start and generate history
       this.iterCount += 1;
       this.currIterHist.put(currAggFun, new HashMap<String, Integer>());
-      for (PerfQueryParser.StmtContext stmt: ctx.stmt()) {
-        visit(stmt);
-      }
+      visit(ctx.codeBlock());
       // Replace results of previous iteration by current iteration
       needMoreIterations = (! reachedFixedPoint()) && this.iterCount < MAX_PKT_HISTORY;
       this.prevIterHist.get(currAggFun).clear();

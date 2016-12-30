@@ -71,14 +71,24 @@ predicate : expr '==' expr # exprEq
 	  ;
 
 // Aggregation functions for group by
-primitive : ID '=' expr | ';' | EMIT;
-ifPrimitive    : primitive | ifConstruct;
-elsePrimitive  : primitive | ifConstruct;
-ifConstruct    : IF predicate '{' ifPrimitive+ '}' (ELSE '{' elsePrimitive+ '}')?;
-stmt : primitive
-     | ifConstruct;
+// primitive : ID '=' expr | ';' | EMIT;
+// ifPrimitive    : primitive | ifConstruct;
+// elsePrimitive  : primitive | ifConstruct;
+// ifConstruct    : IF predicate '{' ifPrimitive+ '}' (ELSE '{' elsePrimitive+ '}')?;
+// stmt : primitive
+//      | ifConstruct;
 
-aggFun : DEF ASSOC? aggFunc '(' stateList ',' columnList ')' ':' stmt+;
+// aggFun : DEF ASSOC? aggFunc '(' stateList ',' columnList ')' ':' stmt+;
+
+// Aggregation functions for group by
+primitive       : ID '=' expr | ';' | EMIT;
+codeBlock       : primitive* ifConstruct primitive*
+                | primitive+;
+ifCodeBlock   : codeBlock;
+elseCodeBlock : codeBlock;
+ifConstruct   : IF predicate '{' ifCodeBlock '}' (ELSE '{' elseCodeBlock '}')?;
+
+aggFun: DEF ASSOC? aggFunc '(' stateList ',' columnList ')' ':' codeBlock;
 
 // The four operators
 filter    :  FILTER '(' stream ',' predicate ')';
