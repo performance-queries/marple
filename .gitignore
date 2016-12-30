@@ -2,5 +2,5 @@
 *.class
 PerfQuery*.java
 target
-p4-frags.txt
-domino-frags.txt
+*-frags.txt
+domino-*.c
