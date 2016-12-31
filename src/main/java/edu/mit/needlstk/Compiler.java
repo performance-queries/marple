@@ -103,7 +103,7 @@ public class Compiler {
 
     boolean printed = CodeFragmentPrinter.writeDomino(pc, fullPipe);
     if (printed) {
-      System.out.println("Domino fragments output in domino-*-frags.txt");
+      System.out.println("Domino fragments output in domino-*.c");
     }
   }
 }

@@ -46,11 +46,14 @@ public class CodeFragmentPrinter {
         if (stage.getOp() == OperationType.GROUPBY) {
           String fileName = fPrefix + stage.getPipeName() + fSuffix;
           PrintWriter writer = new PrintWriter(fileName, "UTF-8");
+          writer.print("// Packet fields\n");
           writer.print("struct Packet {\n");
           writer.print(decls);
           writer.print("}\n\n");
+          writer.print("// State declarations\n");
           writer.print(regs);
           writer.print("\n");
+          writer.print("// Fold function definition\n");
           writer.print("void func(struct Packet pkt) {\n");
           writer.print(stage.getDominoFragment());          
           writer.print("}\n\n");
