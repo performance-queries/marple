@@ -10,8 +10,12 @@ Some scenarios (culled from the Everflow paper):
 * Packet drops in a TCP connection
 * Loops in routing
 * RDMA pauses
-* Occasional latency spikes
-* Add our own performance related anamolies
+* Occasional latency spikes like the INT demo
+* Add our own performance related anamolies: things that are hard for Everflow
+to do
+* Deadlocks in RDMA networks: Two papers from HotNets' 16:
+--> "Unlocking Credit Loop Deadlocks"
+--> "Deadlocks in Datacenter Networks: Why Do They Form, and How to Avoid Them"
 
 The general workflow is: use chaos monkey primitive to create chaos scenario,
 use needlstk to debug scenario, and pin point root cause.
@@ -19,4 +23,18 @@ use needlstk to debug scenario, and pin point root cause.
 Each chaos monkey is a sequence of calls to chaos monkey primitives that
 results in the chaos scenario.
 
-A debug session is a sequence of needlstk queries to drill down to the problem.
+A debug session is a sequence of \sysname queries to drill down to the problem.
+
+INT demo scenario: Recreate this from the SOSR/SIGCOMM demo.
+
+INT demo debug session:
+
+1. First determine there's a problem by looking at the HTTP GET latency spikes.
+2. Then, issue a query for the next five seconds (or whatever is the time required to diagnose this problem).
+3. First query is to look at latency of the victim flow on all queues.
+4. Next, identify large latency queues using their queue ids.
+5. Once you have the large latency queue ids, compute the epoch values as
+(pkt.tout + pkt.tin) / EPOCH_INTERVAL
+6. Aggregate by qid, 5tuple, EPOCH to determine all 5tuples that instantaneously
+share the queue with the victim flow.
+7. Look at them manually and decide which flows are the problem.
