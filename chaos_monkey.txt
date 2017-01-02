@@ -16,7 +16,7 @@ Some scenarios (culled from the Everflow paper):
 The general workflow is: use chaos monkey primitive to create chaos scenario,
 use needlstk to debug scenario, and pin point root cause.
 
-Each chaous monkey is a sequence of calls to chaos monkey primitives that
+Each chaos monkey is a sequence of calls to chaos monkey primitives that
 results in the chaos scenario.
 
 A debug session is a sequence of needlstk queries to drill down to the problem.
