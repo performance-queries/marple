@@ -1,0 +1,22 @@
+Some primitives:
+* Packet loss primitive
+* Link failure primitive
+* switch failure primitive
+* adversarial UDP flow primitive
+
+Some scenarios (culled from the Everflow paper):
+=================================
+* Unequal load balancing split due to ECMP
+* Packet drops in a TCP connection
+* Loops in routing
+* RDMA pauses
+* Occasional latency spikes
+* Add our own performance related anamolies
+
+The general workflow is: use chaos monkey primitive to create chaos scenario,
+use needlstk to debug scenario, and pin point root cause.
+
+Each chaous monkey is a sequence of calls to chaos monkey primitives that
+results in the chaos scenario.
+
+A debug session is a sequence of needlstk queries to drill down to the problem.
