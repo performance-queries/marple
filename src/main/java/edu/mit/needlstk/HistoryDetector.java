@@ -30,6 +30,8 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   /// List of field and state parameters for aggregation functions
   private HashMap<String, List<String>> fields;
   private HashMap<String, List<String>> states;
+  /// Mapping from a context in the grammar to an outer predicate ID
+  private HashMap<ParserRuleContext, Integer> ctxToPredIdMap;
 
   /// Fixed-point computation variables
   /// Iteration count
@@ -49,6 +51,7 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     this.iterCountsMap = new HashMap<String, Integer>();
     this.predTree = new HashMap<String, PredTree>();
     this.predIdToPredMap = new HashMap<Integer, AugPred>();
+    this.ctxToPredIdMap = new HashMap<ParserRuleContext, Integer>();
   }
 
   /// Get the history count for a given identifier from the current or previous iteration's history.
@@ -94,16 +97,27 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     return null;
   }
 
-  private void initNewOuterPred(AugPred pred, boolean addParent) {
-    Integer oldOuterPredId = this.outerPredId;
-    this.outerPred = pred;
-    this.maxOuterPredId++;
-    this.outerPredId = this.maxOuterPredId;
-    this.predIdToPredMap.put(this.outerPredId, this.outerPred);
-    this.outerPredHist = getHistFromList(pred.getUsedVars());
-    predTree.get(this.currAggFun).addNewPred(this.maxOuterPredId);
-    if (addParent) {
-      predTree.get(this.currAggFun).addChildToParent(this.outerPredId, oldOuterPredId);
+  /// Initialize new outer predicate for a given context
+  private <T extends ParserRuleContext> void initNewOuterPred(T ctx,
+                                                              AugPred pred,
+                                                              boolean addParent) {
+    if (! this.ctxToPredIdMap.containsKey(ctx)) {
+      Integer oldOuterPredId = this.outerPredId;
+      this.outerPred = pred;
+      this.maxOuterPredId++;
+      this.outerPredId = this.maxOuterPredId;
+      this.predIdToPredMap.put(this.outerPredId, this.outerPred);
+      this.outerPredHist = getHistFromList(pred.getUsedVars());
+      predTree.get(this.currAggFun).addNewPred(this.maxOuterPredId);
+      if (addParent) {
+        predTree.get(this.currAggFun).addChildToParent(this.outerPredId, oldOuterPredId);
+      }
+      this.ctxToPredIdMap.put(ctx, this.outerPredId);
+    } else {
+      /// Restore information from the stored predicate ID for this context
+      this.outerPredId = this.ctxToPredIdMap.get(ctx);
+      this.outerPred = this.predIdToPredMap.get(this.outerPredId);
+      this.outerPredHist = getHistFromList(this.outerPred.getUsedVars());
     }
   }
 
@@ -111,7 +125,7 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
                                                             AugPred currPred,
                                                             AugPred oldOuterPred) {
     // Initialize a new "outer" predicate for the new context
-    initNewOuterPred(oldOuterPred.and(currPred), true);
+    initNewOuterPred(ctx, oldOuterPred.and(currPred), true);
     // Visit new contexts
     visit(ctx);
   }
@@ -150,8 +164,8 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   @Override public Void visitAggFun(PerfQueryParser.AggFunContext ctx) {
     /// Initialize outer predicate and per-function history metadata
     this.currAggFun = ctx.aggFunc().getText();
-    this.predTree.put(currAggFun, new PredTree(this.maxOuterPredId));
-    initNewOuterPred(new AugPred(true), false);
+    this.predTree.put(currAggFun, new PredTree(this.maxOuterPredId+1));
+    initNewOuterPred(ctx, new AugPred(true), false);
     this.currIterHist.put(currAggFun, new HashMap<String, Integer>());
     this.prevIterHist.put(currAggFun, new HashMap<String, Integer>());
     this.iterCount = 0;
@@ -177,6 +191,12 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     res += "\n";
     res += "Number of iterations before fixed point/termination:\n";
     res += this.iterCountsMap.toString();
+    res += "\n";
+    res += "Predicate tree:\n";
+    res += this.predTree.toString();
+    res += "\n";
+    res += "Predicate ID to predicate mapping:\n";
+    res += this.predIdToPredMap.toString();
     res += "\n";
     return res;
   }
