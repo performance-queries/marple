@@ -2,6 +2,7 @@ package edu.mit.needlstk;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Arrays;
 
 public class PredTree {
   /// node --> list of children nodes.
@@ -10,7 +11,8 @@ public class PredTree {
   public HashMap<Integer, Integer> parentMap;
   /// Root of the predicate tree
   private Integer rootId;
-  /// Ancestry information, book-kept and checked recursively. Enables quick intersection checks.
+  /// Ancestry information, book-kept and checked recursively. Enables quick intersection
+  /// checks. These are *strict* ancestors, meaning that a node is not an ancestor of itself.
   private HashMap<Integer, HashSet<Integer>> ancestors;
 
   public PredTree(Integer rootId) {
@@ -54,9 +56,56 @@ public class PredTree {
       return predB;
     } else if (isAncestor(predB, predA)) {
       return predA;
+    } else if (predA == predB) {
+      return predA;
     } else { // no intersection
       return -1;
     }
+  }
+
+  /// Check if a node is contained in the predicate tree.
+  public boolean contains(Integer predId) {
+    return (this.childMap.containsKey(predId) &&
+            this.parentMap.containsKey(predId) &&
+            this.ancestors.containsKey(predId));
+  }
+
+  /// Get a set of nodes "covering" the subtree rooted at the ancestor, once predicate pred is
+  /// removed.
+  private HashSet<Integer> getFrontierNodes(Integer ancestor, Integer node) {
+    assert (isAncestor(ancestor, node) || ancestor == node);
+    HashSet<Integer> frontier = new HashSet<>();
+    Integer currNode = node;
+    while (currNode != ancestor) {
+      ArrayList<Integer> siblings = this.childMap.get(this.parentMap.get(currNode));
+      frontier.addAll(siblings);
+      frontier.remove(currNode);
+      currNode = this.parentMap.get(currNode);
+    }
+    return frontier;
+  }
+
+  /// Given a set of nodes, determine the least ancestor (defined by the tree hierarchy, with root
+  /// being the highest ancestor) of a given node in the set, if any, and -1 otherwise. An element
+  /// is defined to be an ancestor of itself for this function.
+  private Integer getLeastAncestorInSet(HashSet<Integer> nodeSet, Integer node) {
+    while (node != -1) {
+      if (nodeSet.contains(node)) return node;
+      node = this.parentMap.get(node);
+    }
+    return -1;
+  }
+
+  /// Help the maintenance of a "cover set" under a given predicate. This is used by PredHist to
+  /// maintain coverage of an entire predicate in the process of breaking predicates up.
+  public void adjustCoverSet(HashSet<Integer> coverSet, Integer pred) {
+    Integer leastAncestor = this.getLeastAncestorInSet(coverSet, pred);
+    if (leastAncestor == -1) {
+      throw new RuntimeException("There should be at least one ancestor of the predicate in the"
+                                 + " cover set.");
+    }
+    coverSet.addAll(this.getFrontierNodes(leastAncestor, pred));
+    coverSet.remove(leastAncestor);
   }
 
   @Override public String toString() {
