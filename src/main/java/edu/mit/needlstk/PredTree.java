@@ -36,6 +36,7 @@ public class PredTree {
       childMap.get(parentId).add(childId);
       parentMap.put(childId, parentId);
       ancestors.get(childId).addAll(ancestors.get(parentId));
+      ancestors.get(childId).add(parentId);
       return true;
     } else {
       return false;
@@ -99,6 +100,10 @@ public class PredTree {
   /// Help the maintenance of a "cover set" under a given predicate. This is used by PredHist to
   /// maintain coverage of an entire predicate in the process of breaking predicates up.
   public void adjustCoverSet(HashSet<Integer> coverSet, Integer pred) {
+    if (! this.childMap.containsKey(pred)) {
+      throw new RuntimeException("Predicate " + pred + " not found in tree ("
+                                 + this.toString() + "); cannot adjust cover set.");
+    }
     Integer leastAncestor = this.getLeastAncestorInSet(coverSet, pred);
     if (leastAncestor == -1) {
       throw new RuntimeException("There should be at least one ancestor of the predicate in the"
@@ -110,5 +115,9 @@ public class PredTree {
 
   @Override public String toString() {
     return this.childMap.toString();
+  }
+
+  public Integer getNodes() {
+    return this.childMap.size();
   }
 }

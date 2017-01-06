@@ -76,44 +76,39 @@ public class PredHist {
     return new ArrayList<Integer>(this.hists.values()).get(0);
   }
 
-  /// Static function that finds a predicate-wise maximum of two histories
-  public static PredHist getMaxHist(PredHist p1, PredHist p2, PredTree predTree) {
-    HashMap<Integer, Integer> h1 = p1.getHists();
-    HashMap<Integer, Integer> h2 = p2.getHists();
-    HashMap<Integer, Integer> newH = new HashMap<>();
-    for (Integer pred1: h1.keySet()) {
-      for (Integer pred2: h2.keySet()) {
-        Integer intersection = predTree.intersect(pred1, pred2);
-        if (intersection != -1) {
-          newH.put(intersection, Math.max(h1.get(pred1), h2.get(pred2)));
-        }
-      }
-    } // end for each combination of predicates in histories p1 and p2
-    return new PredHist(newH);
+  /// Interface for lambda of (Integer, Integer) -> Integer
+  public interface TwoArgIntOperator {
+    public Integer op(Integer a, Integer b);
   }
 
-  /// Static function that merges a new predicate history into this history.
-  public void setHist(PredHist p, PredTree predTree) {
-    HashMap<Integer, Integer> newHist = p.getHists();
+  public static PredHist compareHist(PredHist p1,
+                                     PredHist p2,
+                                     PredTree predTree,
+                                     TwoArgIntOperator taop) {
+    HashMap<Integer, Integer> oldHist = new HashMap<>(p1.getHists()); // copy that gets modified.
+    HashMap<Integer, Integer> newHist = p2.getHists();
     for (Integer newPred: newHist.keySet()) {
       HashSet<Integer> coverNew = new HashSet<>(Arrays.asList(newPred));
-      for (Integer oldPred: this.hists.keySet()) {
+      for (Integer oldPred: oldHist.keySet()) {
         /// Various cases of intersection between the predicates
+        Integer newHistVal = taop.op(oldHist.get(oldPred), newHist.get(newPred));
         if (oldPred == newPred) {
-          this.hists.put(oldPred, newHist.get(oldPred));
+          oldHist.put(oldPred, newHistVal);
+          coverNew.clear();
         } else if (predTree.isAncestor(newPred, oldPred)) {
-          this.hists.put(oldPred, newHist.get(newPred));
+          oldHist.put(oldPred, newHistVal);
           predTree.adjustCoverSet(coverNew, oldPred);
         } else if (predTree.isAncestor(oldPred, newPred)) {
-          this.hists.put(newPred, newHist.get(newPred));
+          oldHist.put(newPred, newHistVal);
           /// Break up old predicate into new disjoint pieces
-          Integer oldHist = this.hists.get(oldPred);
-          this.hists.remove(oldPred);
           HashSet<Integer> coverOld = new HashSet<>(Arrays.asList(oldPred));
           predTree.adjustCoverSet(coverOld, newPred);
           for (Integer coverPred: coverOld) {
-            this.hists.put(coverPred, oldHist); // concurrent modification exception?
+            oldHist.put(coverPred, oldHist.get(oldPred));
           }
+          oldHist.remove(oldPred);
+          /// NewPred is completely covered; clear the cover set and break.
+          coverNew.clear();
           break;
         } else if (predTree.intersect(oldPred, newPred) == -1) {
           /// Do nothing.
@@ -123,9 +118,21 @@ public class PredHist {
       }
       /// Add whatever remains in coverNew to the history
       for (Integer coverPred: coverNew) {
-        this.hists.put(coverPred, newHist.get(newPred));
+        oldHist.put(coverPred, newHist.get(newPred));
       }
     }
+    return new PredHist(oldHist);
+  }
+
+  /// Incorporate a provided predicated history p into the current history.
+  public void setHist(PredHist p, PredTree predTree) {
+    PredHist newHist = compareHist(this, p, predTree, (a,b) -> b);
+    this.hists = newHist.getHists();
+  }
+
+  /// Static function that finds a predicate-wise maximum of two histories
+  public static PredHist getMaxHist(PredHist p1, PredHist p2, PredTree predTree) {
+    return compareHist(p1, p2, predTree, (a,b) -> Math.max(a,b));
   }
 
   @Override public String toString() {

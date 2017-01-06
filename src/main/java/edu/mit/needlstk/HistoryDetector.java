@@ -33,7 +33,8 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   private HashMap<String, List<String>> fields;
   private HashMap<String, List<String>> states;
   /// Mapping from a context in the grammar to an outer predicate ID
-  private HashMap<ParserRuleContext, Integer> ctxToPredIdMap;
+  private HashMap<ParserRuleContext, Integer> ctxToPredIdTrueMap;
+  private HashMap<ParserRuleContext, Integer> ctxToPredIdFalseMap;
 
   /// Fixed-point computation variables
   /// Iteration count
@@ -53,13 +54,14 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     this.iterCountsMap = new HashMap<String, Integer>();
     this.predTree = new HashMap<String, PredTree>();
     this.predIdToPredMap = new HashMap<Integer, AugPred>();
-    this.ctxToPredIdMap = new HashMap<ParserRuleContext, Integer>();
+    this.ctxToPredIdTrueMap = new HashMap<ParserRuleContext, Integer>();
+    this.ctxToPredIdFalseMap = new HashMap<ParserRuleContext, Integer>();
   }
 
   /// Get predicated history for a given identifier from the current or previous iteration's
   /// history. This returns a predicate history that is complete with respect to the current outer
   /// predicate.
-  private PredHist getHist(String ident) {
+  private PredHist getHist(String ident, Integer givenOuterPredId) {
     /// Get a default history value in case the current outer predicate isn't completely covered by
     /// the current history.
     Integer defaultHist;
@@ -80,18 +82,20 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     }
     /// Check for current history for this variable, filling in gaps with the default value where
     /// necessary.
+    PredHist result;
     if (currIterHist.get(currAggFun).containsKey(ident)) {
-      return currIterHist.get(currAggFun).get(ident).
-          getRelevantPredHist(this.outerPredId, this.predTree.get(this.currAggFun), defaultHist);
+      result = currIterHist.get(currAggFun).get(ident).
+          getRelevantPredHist(givenOuterPredId, this.predTree.get(this.currAggFun), defaultHist);
     } else {
-      return new PredHist(this.outerPredId, defaultHist);
+      result = new PredHist(givenOuterPredId, defaultHist);
     }
+    return result;
   }
 
-  private PredHist getHistFromList(HashSet<String> usedVars) {
+  private PredHist getHistFromList(HashSet<String> usedVars, Integer givenOuterPredId) {
     return usedVars.stream().
-        map(var -> getHist(var)).
-        reduce(new PredHist(this.truePredId, 0),
+        map(var -> getHist(var, givenOuterPredId)).
+        reduce(new PredHist(givenOuterPredId, 0),
                (maxhist, hist) -> PredHist.getMaxHist(maxhist, hist,
                                                       this.predTree.get(currAggFun)));
   }
@@ -100,14 +104,17 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   @Override public Void visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
     if (ctx.ID() != null) {
       // get maximum historical dependence among used vars in the current assignment
-      PredHist exprHist = getHistFromList(new AugExpr(ctx.expr()).getUsedVars());
-      PredHist assignHist = PredHist.getMaxHist(exprHist, this.outerPredHist, this.predTree.get(this.currAggFun));
+      PredHist exprHist = getHistFromList(new AugExpr(ctx.expr()).getUsedVars(), this.outerPredId);
+      PredHist assignHist = PredHist.getMaxHist(exprHist, this.outerPredHist,
+                                                this.predTree.get(this.currAggFun));
+
       // insert history entry for defined variable
-      if (currIterHist.get(currAggFun).containsKey(ctx.ID().getText())) {
-        currIterHist.get(currAggFun).get(ctx.ID().getText()).setHist(assignHist,
-    this.predTree.get(this.currAggFun));
+      String ident = ctx.ID().getText();
+      if (currIterHist.get(currAggFun).containsKey(ident)) {
+        currIterHist.get(currAggFun).get(ident).setHist(
+            assignHist, this.predTree.get(this.currAggFun));
       } else {
-        currIterHist.get(currAggFun).put(ctx.ID().getText(), assignHist);
+        currIterHist.get(currAggFun).put(ident, assignHist);
       }
     } // else do nothing (EMIT and ;)
     return null;
@@ -115,37 +122,57 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
 
   /// Initialize new outer predicate for a given context
   private <T extends ParserRuleContext> void initNewOuterPred(T ctx,
-                                                              AugPred pred,
-                                                              boolean addParent) {
-    if (! this.ctxToPredIdMap.containsKey(ctx)) {
-      /// Initialize a new outer predicate for this context
-      Integer oldOuterPredId = this.outerPredId;
-      this.outerPred = pred;
+                                                              AugPred outerPred,
+                                                              AugPred currPred,
+                                                              boolean rooted,
+                                                              Integer givenOuterPredId) {
+    assert (ctx != null);
+    assert (! this.ctxToPredIdTrueMap.containsKey(ctx));
+    assert (! this.ctxToPredIdFalseMap.containsKey(ctx));
+    /// Initialize two new predicates for this context, corresponding to true and false.
+    this.maxOuterPredId++;
+    Integer outerPredTrue = this.maxOuterPredId;
+    this.predIdToPredMap.put(outerPredTrue, outerPred.and(currPred));
+    /// Adjust predicate tree
+    PredTree pt = this.predTree.get(this.currAggFun);
+    pt.addNewPred(outerPredTrue);
+    /// Set up context to predicate mappings
+    this.ctxToPredIdTrueMap.put(ctx, outerPredTrue);
+    /// Repeat the exact same things for the false branch, if this predicate isn't the root.
+    if (! rooted) {
       this.maxOuterPredId++;
-      this.outerPredId = this.maxOuterPredId;
-      this.predIdToPredMap.put(this.outerPredId, this.outerPred);
-      predTree.get(this.currAggFun).addNewPred(this.maxOuterPredId);
-      if (addParent) {
-        predTree.get(this.currAggFun).addChildToParent(this.outerPredId, oldOuterPredId);
-      }
-      this.ctxToPredIdMap.put(ctx, this.outerPredId);
-    } else {
-      /// Restore information from the stored predicate ID for this context
-      this.outerPredId = this.ctxToPredIdMap.get(ctx);
-      this.outerPred = this.predIdToPredMap.get(this.outerPredId);
+      Integer outerPredFalse = this.maxOuterPredId;
+      this.predIdToPredMap.put(outerPredFalse, outerPred.and(currPred.not()));
+      pt.addNewPred(outerPredFalse);
+      this.ctxToPredIdFalseMap.put(ctx, outerPredFalse);
+      /// Additionally, add new predicates as children to outer predicate if not the root.
+      pt.addChildToParent(outerPredTrue, givenOuterPredId);
+      pt.addChildToParent(outerPredFalse, givenOuterPredId);
     }
-    /// Evaluate history for the current outer predicate
-    this.outerPredHist = getHistFromList(this.outerPred.getUsedVars());
   }
 
-  private <T extends ParserRuleContext> void handleIfOrElse(T ctx,
-                                                            AugPred currPred,
-                                                            AugPred oldOuterPred) {
-    // Initialize a new "outer" predicate for the new context
-    initNewOuterPred(ctx, oldOuterPred.and(currPred), true);
-    // Visit new contexts
-    if (ctx != null) {
-      visit(ctx);
+  /// Used by handleIfOrElse to restore a specific outer predicate context.
+  private <T extends ParserRuleContext> void restoreFromStoredContext(T ctx,
+                                                                      boolean trueBranch,
+                                                                      Integer givenOuterPredId) {
+    assert (ctx != null && this.ctxToPredIdTrueMap.containsKey(ctx));
+    HashMap<ParserRuleContext, Integer> ctxToPredMap = trueBranch ?
+        this.ctxToPredIdTrueMap : this.ctxToPredIdFalseMap;
+    this.outerPredId = ctxToPredMap.get(ctx);
+    this.outerPred = this.predIdToPredMap.get(this.outerPredId);
+    /// Evaluate history for current outer predicate in the context of given outer predicate.
+    this.outerPredHist = getHistFromList(this.outerPred.getUsedVars(), givenOuterPredId);
+  }
+
+  private <T extends ParserRuleContext> void handleIfOrElse(T ifCtx,
+                                                            T elseCtx,
+                                                            Integer oldOuterPredId) {
+    // Visit If and Else blocks after setting up appropriate predicate contexts
+    restoreFromStoredContext(ifCtx, true, oldOuterPredId);
+    visit(ifCtx);
+    if (elseCtx != null) {
+      restoreFromStoredContext(ifCtx, false, oldOuterPredId);
+      visit(elseCtx);
     }
   }
 
@@ -163,11 +190,14 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     AugPred oldOuterPred = this.outerPred;
     Integer oldOuterPredId = this.outerPredId;
     PredHist oldOuterPredHist = this.outerPredHist;
-    // Handle if/then/else stuff; very similar in both cases. See handleIfOrElse
+    // Initialize new predicates corresponding to if and else branches. Do this only for the first
+    // iteration of the fixed point loop.
     AugPred currPred = new AugPred(ctx.predicate());
-    handleIfOrElse(ctx.ifCodeBlock(), currPred, oldOuterPred);
-    restorePredContext(oldOuterPred, oldOuterPredId, oldOuterPredHist);
-    handleIfOrElse(ctx.elseCodeBlock(), currPred.not(), oldOuterPred);
+    if (this.iterCount == 1) {
+      initNewOuterPred(ctx.ifCodeBlock(), oldOuterPred, currPred, false, oldOuterPredId);
+    }
+    // Visit the if and else branches. see handleIfOrElse.
+    handleIfOrElse(ctx.ifCodeBlock(), ctx.elseCodeBlock(), oldOuterPredId);
     restorePredContext(oldOuterPred, oldOuterPredId, oldOuterPredHist);
     return null;
   }
@@ -179,7 +209,8 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     for (Map.Entry<String, PredHist> entry: currHist.entrySet()) {
       if (! prevHist.containsKey(entry.getKey())) {
         return false;
-      } else if (prevHist.get(entry.getKey()).structuralEquals(entry.getValue().squash(this.truePredId))) {
+      } else if (! prevHist.get(entry.getKey()).structuralEquals(
+          entry.getValue().squash(this.truePredId))) {
         return false;
       }
     }
@@ -191,8 +222,9 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     /// Initialize outer predicate and per-function history metadata
     this.currAggFun = ctx.aggFunc().getText();
     this.truePredId = this.maxOuterPredId + 1;
-    this.predTree.put(currAggFun, new PredTree(truePredId));
-    initNewOuterPred(ctx, new AugPred(true), false);
+    this.predTree.put(currAggFun, new PredTree(this.truePredId));
+    initNewOuterPred(ctx, new AugPred(true), new AugPred(true), true, this.truePredId);
+    restoreFromStoredContext(ctx, true, this.truePredId);
     this.currIterHist.put(currAggFun, new HashMap<String, PredHist>());
     this.prevIterHist.put(currAggFun, new HashMap<String, PredHist>());
     this.iterCount = 0;
@@ -229,12 +261,13 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     res += "Number of iterations before fixed point/termination:\n";
     res += this.iterCountsMap.toString();
     res += "\n";
-    res += "Predicate tree:\n";
-    res += this.predTree.toString();
-    res += "\n";
-    res += "Predicate ID to predicate mapping:\n";
-    res += this.predIdToPredMap.toString();
-    res += "\n";
+    // res += "Predicate tree:\n";
+    // res += this.predTree.toString();
+    // res += "\n";
+    // res += "Predicate ID to predicate mapping:\n";
+    // for (Map.Entry<Integer, AugPred> entry: this.predIdToPredMap.entrySet()) {
+    //   res += String.valueOf(entry.getKey()) + ": " + entry.getValue().print() + "\n";
+    // }
     return res;
   }
 }
