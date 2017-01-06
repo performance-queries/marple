@@ -84,11 +84,11 @@ public class CodeFragmentPrinter {
       writer.print(regs);
       writer.print("\n");
       writer.print("// Fold function definition\n");
-      writer.print("void func(struct Packet pkt) {\n\n");
+      writer.print("void func(struct Packet pkt) {\n");
       for (PipeStage stage: pipe) {
         writer.print(stage.getDominoFragment());
-        writer.print("}\n\n");
       }
+      writer.print("}\n");
       writer.close();
       return true;
     } catch (IOException e) {
