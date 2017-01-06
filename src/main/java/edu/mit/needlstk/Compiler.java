@@ -101,7 +101,7 @@ public class Compiler {
       System.out.println("P4 fragments output in " + fragsFile);
     }
 
-    boolean printed = CodeFragmentPrinter.writeDomino(pc, fullPipe);
+    boolean printed = CodeFragmentPrinter.writeDominoMonolithic(pc, fullPipe);
     if (printed) {
       System.out.println("Domino fragments output in domino-*.c");
     }
