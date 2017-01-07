@@ -7,7 +7,6 @@ def rec_fun([maxseq,
   state8 = state7;
   state7 = tcpseq;
   state9 = state7;
-  maxseq = maxseq + tcpseq
   if (tcpseq > dstip) {
     state1 = 4;
     if (tcpseq > dstip + 10) {
