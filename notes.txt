@@ -1,7 +1,20 @@
 TODOS
 
+* p4 printing: from Vikram's pointers
+* A, B determination for linear-in-state: AST maintenance
+  - why is this useful? need complete configuration with actual atoms etc.
+  - so why do this anyhow? this just seems like a special case of domino...
+* domino-related changes
+* passes to fix other cases: uid groupby, tout==inf, packet cloning for results
+
+domino related
+* pred_i = ! pred_j instead of recomputing the expression pred_i = ! (pred_j_expr)
+* x = pred_3 ? ... ==> x = !pred_2 : ...
+* switch is a keyword in C -- don't use that as a packet field in domino
+* loss rate --> unary operator -1 isn't handled.
+* can we reduce outcast.sql compiler output size? 15 stages may be high...
+
 additional compiler passes
-* domino per-function printing
 * bounded packet history inference + splitting, i.e., on-switch and off-switch
   - predicated expressions for state variables
   - detect linear-in-state; find predicated A,B expressions
@@ -10,6 +23,7 @@ additional compiler passes
 * pass: combine with located expr tree to only install on specific switches
 * pass: rules needed to generate outputs for query. By default, assume each
   stage is some intermediate stage; generate output code only for toplevel.
+* pass: include evicted key-value outputs on the cloned packet
 * handle tout==infinity in filter code generation
 
 issues to think about
@@ -21,8 +35,7 @@ issues to think about
 hardware-oriented passes
 * making kv store an extern + configure extern
 * configure domino atoms from aggregation functions
------ end of December
-* configure the tofino chip
+* configure the tofino chip(?)
 
 simplifying code
 * simplify ternary threeopstmts. e.g., z = true ? x : y ==> z = x
@@ -30,24 +43,14 @@ simplifying code
 * change code generated for map to 'functional' semantics?
 * make predicates "smart", e.g., AugPred(true).and(X) == X
 * current map code is dead code if operand is invalid
-* remove `_` at beginning of identifiers; make compiler-defined variables start
-  with `_` instead
 * cleanup code: add @Override annotation to new antlr visitor passes!
 * simple way to check whether a switch is an egress switch?
 * language identifiers for constants, like TCP protocol number
 
-printing p4 code from IRs
-* emitting three operand code in p4: variables prefixed by types (e.g.,
-  "metadata", "packet", "register", etc.)
-* emits should load state on to packets
-
 possible error handling for aggregate functions
 * warn if no code path changes the state variables
-* warn if predicates are used
 * print code line numbers in errors. e.g., see define before use error msgs
 * better formatting for error messages
 
-cleaning up the template
-* set defaultValue for aggfun through a template parameter
-  - what's the language construct?
-* multiple stages with specific code to insert
+template
+* setting default acc value for aggregation function in language & template?
