@@ -204,13 +204,17 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
 
   /// Condition to detect whether we've reached a fixed point
   private boolean reachedFixedPoint() {
-    HashMap<String, PredHist> currHist = this.currIterHist.get(this.currAggFun);
+    HashMap<String, PredHist> squashedCurrHist = squashIterHist(
+        this.currIterHist.get(this.currAggFun),
+        this.predTree.get(this.currAggFun),
+        this.states.get(this.currAggFun));
     HashMap<String, PredHist> prevHist = this.prevIterHist.get(this.currAggFun);
-    for (Map.Entry<String, PredHist> entry: currHist.entrySet()) {
-      if (! prevHist.containsKey(entry.getKey())) {
-        return false;
-      } else if (! prevHist.get(entry.getKey()).structuralEquals(
-          entry.getValue().squash(this.truePredId))) {
+    /// Compare histories for each identifier and return true if none of the histories changed.
+    if (! prevHist.keySet().equals(squashedCurrHist.keySet())) {
+      return false;
+    }
+    for (String ident: squashedCurrHist.keySet()) {
+      if (! prevHist.get(ident).structuralEquals(squashedCurrHist.get(ident))) {
         return false;
       }
     }
@@ -237,26 +241,43 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
       // Replace results of previous iteration by current iteration
       needMoreIterations = (! reachedFixedPoint()) && this.iterCount < MAX_PKT_HISTORY;
       this.prevIterHist.get(currAggFun).clear();
-      this.prevIterHist.put(currAggFun, this.currIterHist.get(currAggFun));
-      this.squashPrevIterHist(); // summarize previous iteration's history
+      // this.prevIterHist.put(currAggFun, this.currIterHist.get(currAggFun));
+      // summarize previous iteration's history
+      HashMap<String, PredHist> squashedIterHist = squashIterHist(
+          this.currIterHist.get(currAggFun),
+          this.predTree.get(currAggFun),
+          this.states.get(currAggFun));
+      this.prevIterHist.put(currAggFun, squashedIterHist);
     }
     this.iterCountsMap.put(currAggFun, iterCount);
     return null;
   }
 
-  /// Summarize the previous iteration's history for each variable.
-  private void squashPrevIterHist() {
-    for (Map.Entry<String, PredHist> entry: this.prevIterHist.get(this.currAggFun).entrySet()) {
+  /// Summarize an iteration's history for each variable.
+  private HashMap<String, PredHist> squashIterHist(HashMap<String, PredHist> iterHist,
+                                                   PredTree predTree,
+                                                   List<String> states) {
+    HashMap<String, PredHist> newIterHist = new HashMap<String, PredHist>();
+    for (Map.Entry<String, PredHist> entry: iterHist.entrySet()) {
       String var = entry.getKey();
       PredHist varHist = entry.getValue();
-      this.prevIterHist.get(this.currAggFun).put(var, varHist.squash(this.truePredId));
+      /// ensure histories are "complete" with respect to entire predicate space
+      PredHist adjustedHist;
+      if (states.contains(var)) {
+        adjustedHist = new PredHist(this.truePredId, MAX_PKT_HISTORY);
+        adjustedHist.setHist(varHist, predTree);
+      } else {
+        adjustedHist = varHist;
+      }
+      newIterHist.put(var, adjustedHist.squash(this.truePredId));
     }
+    return newIterHist;
   }
 
   /// Helper to print history status
   public String reportHistory() {
     String res = "History bounds after fixed-point iterations:\n";
-    res += this.currIterHist.toString();
+    res += this.prevIterHist.toString();
     res += "\n";
     res += "Number of iterations before fixed point/termination:\n";
     res += this.iterCountsMap.toString();
