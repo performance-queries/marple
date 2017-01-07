@@ -104,10 +104,10 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   @Override public Void visitPrimitive(PerfQueryParser.PrimitiveContext ctx) {
     if (ctx.ID() != null) {
       // get maximum historical dependence among used vars in the current assignment
+      PredTree pt = this.predTree.get(this.currAggFun);
       PredHist exprHist = getHistFromList(new AugExpr(ctx.expr()).getUsedVars(), this.outerPredId);
-      PredHist assignHist = PredHist.getMaxHist(exprHist, this.outerPredHist,
-                                                this.predTree.get(this.currAggFun));
-
+      PredHist relevantOuterHist = this.outerPredHist.getRelevantPredHist(this.outerPredId, pt, -1);
+      PredHist assignHist = PredHist.getMaxHist(exprHist, relevantOuterHist, pt);
       // insert history entry for defined variable
       String ident = ctx.ID().getText();
       if (currIterHist.get(currAggFun).containsKey(ident)) {
