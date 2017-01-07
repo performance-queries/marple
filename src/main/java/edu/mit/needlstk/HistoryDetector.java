@@ -258,6 +258,7 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
                                                    PredTree predTree,
                                                    List<String> states) {
     HashMap<String, PredHist> newIterHist = new HashMap<String, PredHist>();
+    HashSet<String> unseenStates = new HashSet<>(states);
     for (Map.Entry<String, PredHist> entry: iterHist.entrySet()) {
       String var = entry.getKey();
       PredHist varHist = entry.getValue();
@@ -266,10 +267,14 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
       if (states.contains(var)) {
         adjustedHist = new PredHist(this.truePredId, MAX_PKT_HISTORY);
         adjustedHist.setHist(varHist, predTree);
+        unseenStates.remove(var);
       } else {
         adjustedHist = varHist;
       }
       newIterHist.put(var, adjustedHist.squash(this.truePredId));
+    }
+    for (String unseen: unseenStates) {
+      newIterHist.put(unseen, new PredHist(this.truePredId, -1)); // state never assigned: set history -1
     }
     return newIterHist;
   }
