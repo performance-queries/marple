@@ -3,6 +3,8 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public abstract class PipeConfigInfo {
   protected ThreeOpCode code;
@@ -24,9 +26,16 @@ public abstract class PipeConfigInfo {
   protected void addTmpOfField(String tmp) {
     String tmpId = tmpTransformQueryId(tmp);
     String fieldId = fieldTransformQueryId(tmp);
-    this.preamble.appendStmt(new ThreeOpStmt(tmpId, new AugExpr(fieldId)));
+    // Add new declaration for temporary bool variables of packet meta fields
     this.preamble.addDecl(new ThreeOpDecl(P4Printer.BOOL_WIDTH, P4Printer.BOOL_TYPE, tmpId));
-    this.postamble.appendStmt(new ThreeOpStmt(fieldId, new AugExpr(tmpId)));
+    // add a preamble stmt: tmpId = (fieldId == 1w1)
+    this.preamble.appendStmt(new ThreeOpStmt(tmpId, new AugPred(
+        AugPred.AugPredType.PRED_EQ,
+        new ArrayList<AugExpr>(Arrays.asList(
+            new AugExpr(fieldId),
+            new AugExpr(1, 1))))));
+    // add a postamble stmt: field = tmpId ? 1w1: 1w0
+    this.postamble.appendStmt(new ThreeOpStmt(fieldId, tmpId, new AugExpr(1, 1), new AugExpr(0, 1)));
     symTab.put(tmpId, AggFunVarType.FN_VAR);
     symTab.put(fieldId, AggFunVarType.FIELD);
   }

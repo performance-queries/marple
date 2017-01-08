@@ -28,8 +28,10 @@ public class AugExpr {
   public String ident;
 
   /// If the expression is a value: an integer or -1 (for infinity). There are only positive
-  /// integers in the grammar as of now.
+  /// integers in the grammar as of now. Values can also have bit widths, e.g., 1 or 32.
   public Integer value;
+  public Integer width;
+  public static Integer DEFAULT_VAL_WIDTH = 32;
 
   /// Children expressions and combinator if this is a compound expression
   public List<AugExpr> children;
@@ -46,6 +48,7 @@ public class AugExpr {
       PerfQueryParser.ExprValContext newCtx = (PerfQueryParser.ExprValContext)ctx;
       String valText = newCtx.VALUE().getText();
       this.value = (valText.equals("infinity")) ? -1 : Integer.valueOf(valText);
+      this.width = DEFAULT_VAL_WIDTH;
     } else if (ctx instanceof PerfQueryParser.ExprCombContext) {
       this.type = AugExprType.EXPR_COMB;
       PerfQueryParser.ExprCombContext newCtx = (PerfQueryParser.ExprCombContext)ctx;
@@ -63,6 +66,20 @@ public class AugExpr {
   public AugExpr(String id) {
     this.type = AugExprType.EXPR_ID;
     this.ident = id;
+  }
+
+  /// Constructor for specific case of expression with a supplied value
+  public AugExpr(Integer val) {
+    this.type = AugExprType.EXPR_VAL;
+    this.value = val;
+    this.width = DEFAULT_VAL_WIDTH;
+  }
+
+  /// Constructor for values with specific bit widths
+  public AugExpr(Integer val, Integer width) {
+    this.type = AugExprType.EXPR_VAL;
+    this.value = val;
+    this.width = width;
   }
 
   /// Helper to get binary operator enum from token text
@@ -103,6 +120,7 @@ public class AugExpr {
     this.type = copySrc.type;
     this.ident = copySrc.ident;
     this.value = copySrc.value;
+    this.width = copySrc.width;
     this.children = copySrc.children;
     this.binop = copySrc.binop;
   }
@@ -154,7 +172,7 @@ public class AugExpr {
       assert (symTab.containsKey(ident));
       return P4Printer.p4Ident(ident, symTab.get(ident));
     } else if(type == AugExprType.EXPR_VAL) {
-      return P4Printer.p4Value(String.valueOf(value));
+      return P4Printer.p4Value(String.valueOf(value), width);
     } else if(type == AugExprType.EXPR_COMB) {
       return ("(" + children.get(0).getP4(symTab) + ")" +
               textFromBinop(binop) +

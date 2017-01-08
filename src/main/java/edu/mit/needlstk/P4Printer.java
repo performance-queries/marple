@@ -19,7 +19,7 @@ public class P4Printer {
   /// Placeholder prefix used to print register state in emitted code.
   public static String PREFIX_STATE = "val.";
   // Prefix to print constant values in emitted code. Use 32 bit integers.
-  public static String PREFIX_VALUE = "32w";
+  public static String MIDFIX_VALUE = "w";
   // True and False literals in P4
   public static String P4_TRUE  = "true";
   public static String P4_FALSE = "false";
@@ -49,7 +49,7 @@ public class P4Printer {
   }
 
   /// Helper to print values with the right prefix
-  public static String p4Value(String value) {
-    return PREFIX_VALUE + value;
+  public static String p4Value(String value, Integer width) {
+    return width + MIDFIX_VALUE + value;
   }
 }

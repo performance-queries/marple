@@ -1,8 +1,5 @@
 TODOS
 
-* p4 printing: from Vikram's pointers
-  - assigning bool to bit<1>
-  - bit<1> declaration within query_meta struct
 * A, B determination for linear-in-state: AST maintenance
   - why is this useful? need complete configuration with actual atoms etc.
   - so why do this anyhow? this just seems like a special case of domino...
