@@ -35,4 +35,8 @@ public class ThreeOpDecl {
   public String getDomino() {
     return "  int " + ident + ";\n";
   }
+
+  public String getDomino() {
+    return "  int " + ident + ";\n";
+  }
 }

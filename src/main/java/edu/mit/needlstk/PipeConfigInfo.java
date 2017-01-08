@@ -54,6 +54,10 @@ public abstract class PipeConfigInfo {
     return code.getDomino(symTab);
   }
 
+  public String getDomino() {
+    return code.getDomino(symTab);
+  }
+
   public String print() {
     String res = "// Preamble\n";
     res += this.preamble.print();
