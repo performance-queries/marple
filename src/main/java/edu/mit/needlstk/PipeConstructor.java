@@ -23,7 +23,7 @@ public class PipeConstructor {
     this.schema = new HashMap<String, ArrayList<String>>();
     this.schema.put(pktLogStr, Fields.fields);
     this.predPacketFields = new HashSet<String>();
-    this.predPacketFields.add(transformQueryId(pktLogStr));
+    this.predPacketFields.add(PipeConfigInfo.fieldTransformQueryId(pktLogStr));
   }
 
   public ArrayList<PipeStage> stitchPipe() {
@@ -95,10 +95,6 @@ public class PipeConstructor {
     return stageList;
   }
 
-  private String transformQueryId(String queryId) {
-    return "_" + queryId + "_valid";
-  }
-
   /// Given a stage of a specific type, add a "validity" statement at the end of it.
   private void addValidStmt(String queryId,
                             String operandQueryId,
@@ -109,10 +105,10 @@ public class PipeConstructor {
       case PROJECT:
       case JOIN:
       case GROUPBY:
-        ps.getConfigInfo().addValidStmt(transformQueryId(queryId),
-                                        transformQueryId(operandQueryId),
+        ps.getConfigInfo().addValidStmt(queryId,
+                                        operandQueryId,
                                         operandQueryId.equals(pktLogStr));
-        predPacketFields.add(transformQueryId(queryId));
+        predPacketFields.add(PipeConfigInfo.fieldTransformQueryId(queryId));
         break;
       default:
         assert(false);

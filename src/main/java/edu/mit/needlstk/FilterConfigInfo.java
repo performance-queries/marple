@@ -22,19 +22,20 @@ public class FilterConfigInfo extends PipeConfigInfo {
       symTab.put(inputField, AggFunVarType.FIELD);
     }
     this.setFields = new HashSet<>();
+    initPrePostAmble();
   }
 
   public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
     AugPred operandValid;
     if (! isOperandPktLog) {
-      operandValid = new AugPred(operandQueryId);
+      operandValid = new AugPred(tmpTransformQueryId(operandQueryId));
     } else {
       operandValid = new AugPred(true);
     }
-    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid.and(pred));
+    ThreeOpStmt validStmt = new ThreeOpStmt(tmpTransformQueryId(queryId), operandValid.and(pred));
     this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                                 Arrays.asList(validStmt));
-    this.symTab.put(queryId, AggFunVarType.FIELD);
-    this.symTab.put(operandQueryId, AggFunVarType.FIELD);
+    addTmpOfField(queryId);
+    addTmpOfField(operandQueryId);
   }
 }

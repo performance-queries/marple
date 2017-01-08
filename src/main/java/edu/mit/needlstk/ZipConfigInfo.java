@@ -15,13 +15,14 @@ public class ZipConfigInfo extends PipeConfigInfo {
     symTab = new HashMap<String, AggFunVarType>();
     setFields = new HashSet<String>();
     usedFields = new HashSet<String>();
+    initPrePostAmble();
   }
 
   public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
     /// Each operand coming in must be valid for the zip to be valid.
     AugPred operandValid;
     if (! isOperandPktLog) {
-      operandValid = new AugPred(operandQueryId);
+      operandValid = new AugPred(tmpTransformQueryId(operandQueryId));
     } else {
       operandValid = new AugPred(true);
     }
@@ -30,12 +31,12 @@ public class ZipConfigInfo extends PipeConfigInfo {
     } else {
       validPred = operandValid;
     }
-    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, validPred);
+    ThreeOpStmt validStmt = new ThreeOpStmt(tmpTransformQueryId(queryId), validPred);
     /// Update symbol table
-    symTab.put(queryId, AggFunVarType.FIELD);
-    symTab.put(operandQueryId, AggFunVarType.FIELD);
+    addTmpOfField(queryId);
+    addTmpOfField(operandQueryId);
     for (String inputField: validPred.getUsedVars()) {
-      symTab.put(inputField, AggFunVarType.FIELD);
+      addTmpOfField(inputField);
     }
     this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                                 Arrays.asList(validStmt));

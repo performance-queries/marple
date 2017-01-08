@@ -29,14 +29,15 @@ public class FoldConfigInfo extends PipeConfigInfo {
     this.setFields.addAll(this.keyFields);
     this.usedFields = new HashSet<String>(fieldArgs);
     this.usedFields.addAll(this.keyFields);
+    initPrePostAmble();
   }
 
   public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
     ArrayList<ThreeOpStmt> newStmts = new ArrayList<ThreeOpStmt>();
-    AugPred operandPred = isOperandPktLog ? (new AugPred(true)) : (new AugPred(operandQueryId));
-    newStmts.add(new ThreeOpStmt(queryId, new AugPred(false)));
-    symTab.put(queryId, AggFunVarType.FIELD);
-    symTab.put(operandQueryId, AggFunVarType.FIELD);
+    AugPred operandPred = isOperandPktLog ? (new AugPred(true)) : (new AugPred(tmpTransformQueryId(operandQueryId)));
+    newStmts.add(new ThreeOpStmt(tmpTransformQueryId(queryId), new AugPred(false)));
+    addTmpOfField(queryId);
+    addTmpOfField(operandQueryId);
     for (ThreeOpStmt line: code.getStmts()) {
       /// Replace the "outermost predicate" of the function to operandPred.
       if (line.isPredAssign()) {
@@ -52,7 +53,8 @@ public class FoldConfigInfo extends PipeConfigInfo {
         // (1) The predicate corresponding to the emit is true;
         // (2) the operand is valid.
         AugPred thisBranch = new AugPred(line.getEmitPred());
-        newStmts.add(new ThreeOpStmt(queryId, thisBranch.or(new AugPred(queryId))));
+        newStmts.add(new ThreeOpStmt(tmpTransformQueryId(queryId),
+                                     thisBranch.or(new AugPred(tmpTransformQueryId(queryId)))));
         newStmts.add(line);
       } else {
         /// Add the line unmodified otherwise.

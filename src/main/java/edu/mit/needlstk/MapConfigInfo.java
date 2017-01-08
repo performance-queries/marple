@@ -40,6 +40,7 @@ public class MapConfigInfo extends PipeConfigInfo {
     this.setFields = new HashSet<String>(cols);
     this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(), stmts);
     numExprs = exprs.size();
+    initPrePostAmble();
   }
 
   public void addValidStmt(String queryId, String operandQueryId, boolean isOperandPktLog) {
@@ -48,13 +49,13 @@ public class MapConfigInfo extends PipeConfigInfo {
     /// since we wouldn't need to evaluate any of the map expressions.
     AugPred operandValid;
     if (! isOperandPktLog) {
-      operandValid = new AugPred(operandQueryId);
+      operandValid = new AugPred(tmpTransformQueryId(operandQueryId));
     } else {
       operandValid = new AugPred(true);
     }
-    ThreeOpStmt validStmt = new ThreeOpStmt(queryId, operandValid);
+    ThreeOpStmt validStmt = new ThreeOpStmt(tmpTransformQueryId(queryId), operandValid);
     code.appendStmt(validStmt);
-    symTab.put(queryId, AggFunVarType.FIELD);
-    symTab.put(operandQueryId, AggFunVarType.FIELD);
+    addTmpOfField(queryId);
+    addTmpOfField(operandQueryId);
   }
 }

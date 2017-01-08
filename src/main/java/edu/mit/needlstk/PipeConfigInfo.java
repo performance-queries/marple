@@ -9,9 +9,36 @@ public abstract class PipeConfigInfo {
   protected HashMap<String, AggFunVarType> symTab;
   protected HashSet<String> setFields;
   protected HashSet<String> usedFields;
+  /// Preamble and postamble for function-level variables to packet meta variables
+  protected ThreeOpCode preamble;
+  protected ThreeOpCode postamble;
+
+  public static String tmpTransformQueryId(String queryId) {
+    return "_tmp_" + queryId + "_valid";
+  }
+
+  public static String fieldTransformQueryId(String queryId) {
+    return "_" + queryId + "_valid";
+  }
+
+  protected void addTmpOfField(String tmp) {
+    String tmpId = tmpTransformQueryId(tmp);
+    String fieldId = fieldTransformQueryId(tmp);
+    this.preamble.appendStmt(new ThreeOpStmt(tmpId, new AugExpr(fieldId)));
+    this.preamble.addDecl(new ThreeOpDecl(P4Printer.BOOL_WIDTH, tmpId));
+    this.postamble.appendStmt(new ThreeOpStmt(fieldId, new AugExpr(tmpId)));
+    symTab.put(tmpId, AggFunVarType.FN_VAR);
+    symTab.put(fieldId, AggFunVarType.FIELD);
+  }
 
   public String getP4() {
-    return code.getP4(symTab);
+    String res = "// Preamble\n";
+    res += this.preamble.getP4(symTab);
+    res += "// Function body\n";
+    res += code.getP4(symTab);
+    res += "// Postamble\n";
+    res += this.postamble.getP4(symTab);
+    return res;
   }
 
   public String getDomino() {
@@ -19,7 +46,13 @@ public abstract class PipeConfigInfo {
   }
 
   public String print() {
-    return code.print();
+    String res = "// Preamble\n";
+    res += this.preamble.print();
+    res += "// Function body\n";
+    res += code.print();
+    res += "// Postamble\n";
+    res += this.postamble.print();
+    return res;
   }
 
   public HashMap<String, AggFunVarType> getSymTab() {
@@ -65,4 +98,9 @@ public abstract class PipeConfigInfo {
   }
 
   public abstract void addValidStmt(String q, String oq, boolean opT);
+
+  protected void initPrePostAmble() {
+    this.preamble = new ThreeOpCode();
+    this.postamble = new ThreeOpCode();
+  }
 }

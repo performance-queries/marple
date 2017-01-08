@@ -16,7 +16,11 @@ public class ThreeOpDecl {
   }
 
   public String getP4() {
-    return "bit<" + String.valueOf(bitWidth) + "> " + ident + ";\n";
+    if (bitWidth == P4Printer.BOOL_WIDTH) {
+      return "bool " + ident + ";\n";
+    } else {
+      return "bit<" + String.valueOf(bitWidth) + "> " + ident + ";\n";
+    }
   }
 
   public String getDomino() {

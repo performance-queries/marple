@@ -49,7 +49,7 @@ public class CodeFragmentPrinter {
           writer.print("// Packet fields\n");
           writer.print("struct Packet {\n");
           writer.print(decls);
-          writer.print("}\n\n");
+          writer.print("};\n\n");
           writer.print("// State declarations\n");
           writer.print(regs);
           writer.print("\n");
@@ -79,7 +79,7 @@ public class CodeFragmentPrinter {
       writer.print("// Packet fields\n");
       writer.print("struct Packet {\n");
       writer.print(decls);
-      writer.print("}\n\n");
+      writer.print("};\n\n");
       writer.print("// State declarations\n");
       writer.print(regs);
       writer.print("\n");
