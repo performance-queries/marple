@@ -25,7 +25,7 @@ public abstract class PipeConfigInfo {
     String tmpId = tmpTransformQueryId(tmp);
     String fieldId = fieldTransformQueryId(tmp);
     this.preamble.appendStmt(new ThreeOpStmt(tmpId, new AugExpr(fieldId)));
-    this.preamble.addDecl(new ThreeOpDecl(P4Printer.BOOL_WIDTH, tmpId));
+    this.preamble.addDecl(new ThreeOpDecl(P4Printer.BOOL_WIDTH, P4Printer.BOOL_TYPE, tmpId));
     this.postamble.appendStmt(new ThreeOpStmt(fieldId, new AugExpr(tmpId)));
     symTab.put(tmpId, AggFunVarType.FN_VAR);
     symTab.put(fieldId, AggFunVarType.FIELD);

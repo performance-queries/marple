@@ -5,6 +5,9 @@ public class P4Printer {
   public static Integer INT_WIDTH = 32;
   /// Default boolean bitwidth used for declarations in emitted code.
   public static Integer BOOL_WIDTH = 1;
+  /// Type information for variables
+  public static Integer INT_TYPE = 1;
+  public static Integer BOOL_TYPE = 2;
   /// Prefix used to print standard metadata fields in emitted code.
   public static String PREFIX_STANDARD_META = "common_meta.";
   /// Prefix used to print performance-related fields in the PKTLOG in emitted code.

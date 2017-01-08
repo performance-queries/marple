@@ -160,10 +160,10 @@ public class PipeConstructor {
         /// Only look to add declaration if field hasn't been looked at so far.
         if (! fieldsChecked.contains(field)) {
           if (predPacketFields.contains(field)) {
-            decls.add(new ThreeOpDecl(P4Printer.BOOL_WIDTH, field));
+            decls.add(new ThreeOpDecl(P4Printer.BOOL_WIDTH, P4Printer.INT_TYPE, field));
           } else if ((! Fields.headerFields.contains(field)) &&
                      (! Fields.metadataFields.contains(field))) {
-            decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, field));
+            decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE, field));
           } // Else clause: packet fields which are headers or standard metadata
           fieldsChecked.add(field);
         }
@@ -181,7 +181,7 @@ public class PipeConstructor {
       for (String field: fields) {
         /// Only look to add declaration if field hasn't been looked at so far.
         if (! fieldsChecked.contains(field)) {
-          decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, field));
+          decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE, field));
           fieldsChecked.add(field);
         }
       }

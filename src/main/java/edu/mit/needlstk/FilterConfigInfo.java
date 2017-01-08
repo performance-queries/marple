@@ -15,7 +15,8 @@ public class FilterConfigInfo extends PipeConfigInfo {
     this.usedFields = this.pred.getUsedVars();
     String predVar = "0_pred_test"; /// Name local to stage; no need to generate unique names.
     ArrayList<ThreeOpStmt> stmts = new ArrayList<>(Arrays.asList(new ThreeOpStmt(predVar, pred)));
-    ArrayList<ThreeOpDecl> decls = new ArrayList<>(Arrays.asList(new ThreeOpDecl(P4Printer.BOOL_WIDTH, predVar)));
+    ArrayList<ThreeOpDecl> decls = new ArrayList<>(Arrays.asList(new ThreeOpDecl(
+        P4Printer.BOOL_WIDTH, P4Printer.BOOL_TYPE, predVar)));
     this.code = new ThreeOpCode(decls, stmts);
     this.symTab = new HashMap<String, AggFunVarType>();
     for (String inputField: usedFields) {
