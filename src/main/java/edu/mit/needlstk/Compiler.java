@@ -78,12 +78,6 @@ public class Compiler {
 
     System.out.println(aggFunCode);
 
-    /// Checking define-before-use in generated code retained for sanity checking later
-    // DefineBeforeUse codeChecker = new DefineBeforeUse(aggFunCode,
-    //                                                   stateVars,
-    //                                                   fieldVars);
-    // codeChecker.check();
-
     /// Produce code for all operators
     System.out.println("Generating code for all query operators...");
     ConfigGen cg = new ConfigGen(aggFunCode, globalSymTab, stateVars, fieldVars);
