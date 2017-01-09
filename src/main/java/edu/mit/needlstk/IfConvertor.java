@@ -86,14 +86,23 @@ public class IfConvertor extends PerfQueryBaseVisitor<ThreeOpCode> {
 
   /// ANTLR visitor for ifConstruct
   public ThreeOpCode visitIfConstruct(PerfQueryParser.IfConstructContext ctx) {
+    /// Set up a predicate corresponding to the branch condition
     AugPred currPred = new AugPred(ctx.predicate());
+    ThreeOpCode code = setupPred(currPred);
+    String currPredId = code.peekIdFirstDecl();
     /// Save context for outer predicate
     AugPred oldOuterPred = this.outerPred;
     String oldOuterPredId = this.outerPredId;
-    ThreeOpCode code = handleIfOrElse(ctx.ifCodeBlock(), currPred, this.outerPred, true);
+    code = code.orderedMerge(handleIfOrElse(ctx.ifCodeBlock(),
+                                            new AugPred(currPredId),
+                                            new AugPred(outerPredId),
+                                            true));
     restorePredContext(oldOuterPred, oldOuterPredId);
     if(ctx.elseCodeBlock() != null) {
-      code = code.orderedMerge(handleIfOrElse(ctx.elseCodeBlock(), currPred, outerPred, false));
+      code = code.orderedMerge(handleIfOrElse(ctx.elseCodeBlock(),
+                                              new AugPred(currPredId),
+                                              new AugPred(outerPredId),
+                                              false));
       restorePredContext(oldOuterPred, oldOuterPredId);
     }
     return code;

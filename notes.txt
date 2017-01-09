@@ -1,8 +1,7 @@
 TODOS
 
 * A, B determination for linear-in-state: AST maintenance
-  - why is this useful? need complete configuration with actual atoms etc.
-  - so why do this anyhow? this just seems like a special case of domino...
+  - main reason: possible direct use of simpler AS+B atom (no predicated versions)
 * domino-related changes
 * passes to fix other cases: uid groupby, tout==inf, packet cloning for results
 
