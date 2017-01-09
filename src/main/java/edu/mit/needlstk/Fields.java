@@ -81,4 +81,13 @@ public class Fields {
     p4Map.put(protoHdr,      "ip.protocol");
     p4Map.put(pktpathHdr,    "pktpath");         // TODO: add a pktpath header?
   }
+
+  /// Map from query field name to domino field names
+  public static HashMap<String, String> dominoMap = new HashMap<>();
+  static {
+    for (String field: fields) { // domino prints all identifiers by same name
+      dominoMap.put(field, field);
+    } // except the switch:
+    dominoMap.put(switchHdr, "switch_hdr");
+  }
 }

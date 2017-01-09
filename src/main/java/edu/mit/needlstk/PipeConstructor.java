@@ -181,7 +181,9 @@ public class PipeConstructor {
       for (String field: fields) {
         /// Only look to add declaration if field hasn't been looked at so far.
         if (! fieldsChecked.contains(field)) {
-          decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE, field));
+          decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE,
+                                    Fields.dominoMap.containsKey(field) ?
+                                    Fields.dominoMap.get(field) : field));
           fieldsChecked.add(field);
         }
       }

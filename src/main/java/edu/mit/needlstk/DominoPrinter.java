@@ -12,7 +12,8 @@ public class DominoPrinter {
       case FIELD:
       case FN_VAR:
       case PRED_VAR:
-        return PREFIX_PACKET_FIELD + ident;
+        return PREFIX_PACKET_FIELD + (
+            Fields.dominoMap.containsKey(ident) ? Fields.dominoMap.get(ident) : ident);
       case STATE:
         return ident;
       default:
@@ -22,6 +23,10 @@ public class DominoPrinter {
   }
 
   public static String dominoValue(String value) {
-    return value;
+    if (! value.equals("-1")) {
+      return value;
+    } else { /// TODO: this is a temp hack to stop domino complaining about unary minus.
+      return "(0-1)";
+    }
   }
 }

@@ -2,14 +2,9 @@ TODOS
 
 * A, B determination for linear-in-state: AST maintenance
   - main reason: possible direct use of simpler AS+B atom (no predicated versions)
-* domino-related changes
 * passes to fix other cases: uid groupby, tout==inf, packet cloning for results
 
 domino related
-* pred_i = ! pred_j instead of recomputing the expression pred_i = ! (pred_j_expr)
-* x = pred_3 ? ... ==> x = !pred_2 : ...
-* switch is a keyword in C -- don't use that as a packet field in domino
-* loss rate --> unary operator -1 isn't handled.
 * can we reduce outcast.sql compiler output size? 15 stages may be high...
 
 additional compiler passes
