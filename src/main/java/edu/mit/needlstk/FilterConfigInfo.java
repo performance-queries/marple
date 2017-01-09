@@ -36,7 +36,9 @@ public class FilterConfigInfo extends PipeConfigInfo {
     ThreeOpStmt validStmt = new ThreeOpStmt(tmpTransformQueryId(queryId), operandValid.and(pred));
     this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                                 Arrays.asList(validStmt));
-    addTmpOfField(queryId);
-    addTmpOfField(operandQueryId);
+    addTmpOfField(queryId, false);
+    if (! isOperandPktLog) {
+      addTmpOfField(operandQueryId, true);
+    }
   }
 }

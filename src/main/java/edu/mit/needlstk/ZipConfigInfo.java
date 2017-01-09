@@ -33,10 +33,9 @@ public class ZipConfigInfo extends PipeConfigInfo {
     }
     ThreeOpStmt validStmt = new ThreeOpStmt(tmpTransformQueryId(queryId), validPred);
     /// Update symbol table
-    addTmpOfField(queryId);
-    addTmpOfField(operandQueryId);
-    for (String inputField: validPred.getUsedVars()) {
-      addTmpOfField(inputField);
+    addTmpOfField(queryId, false);
+    if (! isOperandPktLog) {
+      addTmpOfField(operandQueryId, true);
     }
     this.code = new ThreeOpCode(new ArrayList<ThreeOpDecl>(),
                                 Arrays.asList(validStmt));

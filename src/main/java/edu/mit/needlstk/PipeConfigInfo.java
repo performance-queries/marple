@@ -23,21 +23,32 @@ public abstract class PipeConfigInfo {
     return "_" + queryId + "_valid";
   }
 
-  protected void addTmpOfField(String tmp) {
+  protected void addTmpOfField(String tmp, boolean readOffField) {
     String tmpId = tmpTransformQueryId(tmp);
     String fieldId = fieldTransformQueryId(tmp);
-    // Add new declaration for temporary bool variables of packet meta fields
-    this.preamble.addDecl(new ThreeOpDecl(P4Printer.BOOL_WIDTH, P4Printer.BOOL_TYPE, tmpId));
-    // add a preamble stmt: tmpId = (fieldId == 1w1)
-    this.preamble.appendStmt(new ThreeOpStmt(tmpId, new AugPred(
-        AugPred.AugPredType.PRED_EQ,
-        new ArrayList<AugExpr>(Arrays.asList(
-            new AugExpr(fieldId),
-            new AugExpr(1, 1))))));
-    // add a postamble stmt: field = tmpId ? 1w1: 1w0
-    this.postamble.appendStmt(new ThreeOpStmt(fieldId, tmpId, new AugExpr(1, 1), new AugExpr(0, 1)));
-    symTab.put(tmpId, AggFunVarType.FN_VAR);
-    symTab.put(fieldId, AggFunVarType.FIELD);
+    if (! symTab.containsKey(tmpId)) { // check that we didn't already add this field.
+      // Add new declaration for temporary bool variables of packet meta fields
+      this.preamble.addDecl(new ThreeOpDecl(P4Printer.BOOL_WIDTH, P4Printer.BOOL_TYPE, tmpId));
+      // if the tmp reads off a field, then add a preamble stmt:
+      // tmpId = (fieldId == 1w1)
+      if (readOffField) {
+        this.preamble.appendStmt(new ThreeOpStmt(tmpId, new AugPred(
+            AugPred.AugPredType.PRED_EQ,
+            new ArrayList<AugExpr>(Arrays.asList(
+                new AugExpr(fieldId),
+                new AugExpr(1, 1))))));
+      }
+      // add a postamble stmt to write back the tmp into a packet field:
+      // field = tmpId ? 1w1: 1w0
+      if (! readOffField) {
+        this.postamble.appendStmt(new ThreeOpStmt(fieldId,
+                                                  tmpId,
+                                                  new AugExpr(1, 1),
+                                                  new AugExpr(0, 1)));
+      }
+      symTab.put(tmpId, AggFunVarType.FN_VAR);
+      symTab.put(fieldId, AggFunVarType.FIELD);
+    }
   }
 
   public String getP4() {

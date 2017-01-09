@@ -36,8 +36,10 @@ public class FoldConfigInfo extends PipeConfigInfo {
     ArrayList<ThreeOpStmt> newStmts = new ArrayList<ThreeOpStmt>();
     AugPred operandPred = isOperandPktLog ? (new AugPred(true)) : (new AugPred(tmpTransformQueryId(operandQueryId)));
     newStmts.add(new ThreeOpStmt(tmpTransformQueryId(queryId), new AugPred(false)));
-    addTmpOfField(queryId);
-    addTmpOfField(operandQueryId);
+    addTmpOfField(queryId, false);
+    if (! isOperandPktLog) {
+      addTmpOfField(operandQueryId, true);
+    }
     for (ThreeOpStmt line: code.getStmts()) {
       /// Replace the "outermost predicate" of the function to operandPred.
       if (line.isPredAssign()) {

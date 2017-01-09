@@ -55,7 +55,9 @@ public class MapConfigInfo extends PipeConfigInfo {
     }
     ThreeOpStmt validStmt = new ThreeOpStmt(tmpTransformQueryId(queryId), operandValid);
     code.appendStmt(validStmt);
-    addTmpOfField(queryId);
-    addTmpOfField(operandQueryId);
+    addTmpOfField(queryId, false);
+    if (! isOperandPktLog) {
+      addTmpOfField(operandQueryId, true);
+    }
   }
 }
