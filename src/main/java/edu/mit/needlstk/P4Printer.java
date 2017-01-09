@@ -9,11 +9,11 @@ public class P4Printer {
   public static Integer INT_TYPE = 1;
   public static Integer BOOL_TYPE = 2;
   /// Prefix used to print standard metadata fields in emitted code.
-  public static String PREFIX_STANDARD_META = "common_meta.";
+  public static String PREFIX_STANDARD_META = "meta.common_meta.";
   /// Prefix used to print performance-related fields in the PKTLOG in emitted code.
-  public static String PREFIX_PKTLOG_META = "common_meta.";
+  public static String PREFIX_PKTLOG_META = "meta.common_meta.";
   /// Prefix used to print query-related metadata fields in emitted code.
-  public static String PREFIX_QUERY_META = "query_meta.";
+  public static String PREFIX_QUERY_META = "meta.query_meta.";
   /// Prefix used to print standard headers in emitted code.
   public static String PREFIX_HEADER = "hdrs.";
   /// Placeholder prefix used to print register state in emitted code.
