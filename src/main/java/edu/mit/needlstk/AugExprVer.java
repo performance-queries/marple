@@ -22,23 +22,24 @@ public class AugExprVer extends AugExpr {
   }
 
   public AugExprVer(String id, Integer version) {
+    super(id);
     this.type = AugExprType.EXPR_ID;
     this.identVersion = version;
   }
 
   /// Other default constructors
-  public AugExprVar(Integer val) {
+  public AugExprVer(Integer val) {
     super(val);
   }
 
-  public AugExprVar(Integer val, Integer width) {
+  public AugExprVer(Integer val, Integer width) {
     super(val, width);
   }
 
   /// Printing for inspection on console
   public String printWithVersion() {
     if (type == AugExprType.EXPR_ID) {
-      return ident + (identVersion >= 0) ? String.format("_%d", identVersion) : "";
+      return ident + ((identVersion >= 0) ? String.format("_%d", identVersion) : "");
     } else {
       return super.print();
     }
