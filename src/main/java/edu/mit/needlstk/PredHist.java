@@ -21,11 +21,6 @@ public class PredHist extends PredState<Integer> {
     super(truePred, defaultVal);
   }
 
-  /// Construct directly through a hashmap
-  public PredHist(HashMap<Integer, Integer> hists) {
-    super(hists);
-  }
-
   /// merge into one history value, which is the maximum across all the predicates in the history
   public PredHist squash(Integer truePredId) {
     Integer squashedHist = this.hists.values().stream().

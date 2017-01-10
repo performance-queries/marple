@@ -46,9 +46,6 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   /// Tracking AST information
   private HashMap<String, HashMap<String, PredState<AugExpr>>> ast;
 
-  /// TODO: remove after forcing compilation
-  AugExprVer foo;
-
   public HistoryDetector(HashMap<String, List<String>> statesMap,
                          HashMap<String, List<String>> fieldsMap) {
     this.fields = fieldsMap;
