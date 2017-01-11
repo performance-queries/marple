@@ -44,7 +44,7 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   private HashMap<String, HashMap<String, PredHist>> currIterHist;
   private HashMap<String, HashMap<String, PredHist>> prevIterHist;
   /// Tracking AST information
-  private HashMap<String, HashMap<String, PredState<AugExpr>>> ast;
+  private HashMap<String, HashMap<String, PredAST>> ast;
 
   public HistoryDetector(HashMap<String, List<String>> statesMap,
                          HashMap<String, List<String>> fieldsMap) {

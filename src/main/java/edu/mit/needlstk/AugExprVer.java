@@ -15,6 +15,7 @@ public class AugExprVer extends AugExpr {
 
   /// Constructors for expressions with identifier version numbers
   public AugExprVer(PerfQueryParser.ExprContext ctx, Integer version) {
+    /// TODO: edit constructor for recursive construction of AugExprVer instead of AugExpr.
     super(ctx);
     if (this.type == AugExprType.EXPR_ID) {
       this.identVersion = version;
@@ -34,6 +35,16 @@ public class AugExprVer extends AugExpr {
 
   public AugExprVer(Integer val, Integer width) {
     super(val, width);
+  }
+
+  public AugExprVer subst(String givenId, Integer givenVersion, AugExprVer expr) {
+    if (type == AugExprType.EXPR_ID) {
+      if (ident.equals(givenId) && identVersion == givenVersion) { // replace by the new expr
+        return expr;
+      } else {
+        return this;
+      }
+    }
   }
 
   /// Printing for inspection on console
