@@ -288,9 +288,9 @@ public class AugPred {
       assert (symTab.containsKey(predId)); // ensure id exists in symbol table!
       return P4Printer.p4Ident(predId, symTab.get(predId));
     } else if(type == AugPredType.PRED_EQ) {
-      return "(" + getExprP4(0, symTab) + ") EQ (" + getExprP4(1, symTab) + ")";
+      return "(" + getExprP4(0, symTab) + ") == (" + getExprP4(1, symTab) + ")";
     } else if(type == AugPredType.PRED_NE) {
-      return "(" + getExprP4(0, symTab) + ") NE (" + getExprP4(1, symTab) + ")";
+      return "(" + getExprP4(0, symTab) + ") != (" + getExprP4(1, symTab) + ")";
     } else if(type == AugPredType.PRED_GT) {
       return "(" + getExprP4(0, symTab) + ") > (" + getExprP4(1, symTab) + ")";
     } else if(type == AugPredType.PRED_LT) {
