@@ -117,7 +117,7 @@ public class AugExpr {
         assert (false); // Expecting a different expression combinator?
         return null;
     }
-  }  
+  }
 
   private void copy(AugExpr copySrc) {
     this.type = copySrc.type;
@@ -150,6 +150,92 @@ public class AugExpr {
         assert(false);
         return null;
     }
+  }
+
+  /// If the expression is affine in the identifier provided, return the A and B coefficients as
+  /// expressions. Otherwise, an empty list is returned.
+  /// This detection is very simple and sound, although quite incomplete. The expression must either
+  /// be exactly equal to:
+  /// AugExpr(var) (OR)
+  /// AugExpr((expr*var) + (expr)) (OR)
+  /// AugExpr(value) (OR)
+  /// AugExpr(var + expr)
+  /// The order of the terms can move around, but the form is the same.
+  /// Note that the second form only allows expressions where the var (say x) is one of the two
+  /// topmost AST elements. For example, according to this function, (3*2)*x is recognized as affine
+  /// in x, but (3*x)*2 is not.
+  public ArrayList<AugExpr> getAffineCoefficients(String var) {
+    /// AugExpr(var)
+    if (this.isSingleIdentExpr(var)) {
+      return new ArrayList<AugExpr>(Arrays.asList(
+          new AugExpr(1),
+          new AugExpr(0)));
+    }
+    /// AugExpr(value)
+    if (this.isValueExpr()) {
+      return new ArrayList<AugExpr>(Arrays.asList(
+          new AugExpr(0),
+          this));
+    }
+    /// AugExpr((expr*var) + (expr))
+    if (! (type == AugExprType.EXPR_COMB)) return new ArrayList<AugExpr>();
+    AugExpr child0 = this.children.get(0);
+    AugExpr child1 = this.children.get(1);
+    if (this.isAddExpr()) {
+      if (child0.isLinearExpr(var) && ! child1.usesIdent(var)) {
+        return new ArrayList<AugExpr>(Arrays.asList(
+            child0.getLinearCoefficient(var),
+            child1));
+      } else if (child1.isLinearExpr(var) && ! child0.usesIdent(var)) {
+        return new ArrayList<AugExpr>(Arrays.asList(
+            child1.getLinearCoefficient(var),
+            child0));
+      }
+    }
+    return new ArrayList<AugExpr>();
+  }
+
+  /// Helpers for affine coefficient detection
+  public AugExpr getLinearCoefficient(String var) {
+    assert (this.isLinearExpr(var));
+    if (isSingleIdentExpr(var)) return new AugExpr(1);
+    else return this.children.get(0).isSingleIdentExpr(var) ?
+             this.children.get(1) : this.children.get(0);
+  }
+
+  public boolean isMulExpr() {
+    return (type == AugExprType.EXPR_COMB && binop == Binop.BINOP_MUL);
+  }
+
+  public boolean isAddExpr() {
+    return (type == AugExprType.EXPR_COMB && binop == Binop.BINOP_ADD);
+  }
+
+  public boolean isSingleIdentExpr(String var) {
+    return (type == AugExprType.EXPR_ID && ident.equals(var));
+  }
+
+  public boolean isValueExpr() {
+    return (type == AugExprType.EXPR_VAL);
+  }
+
+  public boolean usesIdent(String var) {
+    return this.getUsedVars().contains(var);
+  }
+
+  public boolean isLinearExpr(String var) {
+    if (isSingleIdentExpr(var)) return true;
+    if (isValueExpr()) return true;
+    if (! (type == AugExprType.EXPR_COMB)) return false;
+    AugExpr child0 = this.children.get(0);
+    AugExpr child1 = this.children.get(1);
+    return (this.isMulExpr() &&
+            ((child0.isSingleIdentExpr(var) && ! child1.usesIdent(var)) ||
+             (child1.isSingleIdentExpr(var) && ! child0.usesIdent(var))));
+  }
+
+  public boolean isAffine(String var) {
+    return (getAffineCoefficients(var).size() == 2);
   }
 
   /// Printing for inspection on console
@@ -203,4 +289,10 @@ public class AugExpr {
       return null;
     }
   }
+
+  /// Return type of the expression
+  public AugExprType getType() {
+    return this.type;
+  }
+
 }
