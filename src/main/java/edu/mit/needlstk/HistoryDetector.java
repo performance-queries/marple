@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   /// Maximum length of packet history permitted
-  private Integer MAX_PKT_HISTORY = 100;
+  public static Integer MAX_PKT_HISTORY = 100;
   /// Keep track of "outer" predicate for the current context
   private AugPred outerPred;
   private Integer outerPredId;
@@ -303,5 +303,16 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     //   res += String.valueOf(entry.getKey()) + ": " + entry.getValue().print() + "\n";
     // }
     return res;
+  }
+
+  public HashMap<String, HashMap<String, Integer>> getConvergedHist() {
+    HashMap<String, HashMap<String, Integer>> converged = new HashMap<>();
+    for (String aggFun: this.prevIterHist.keySet()) {
+      converged.put(aggFun, new HashMap<String, Integer>());
+      for (String var: this.prevIterHist.get(aggFun).keySet()) {
+        converged.get(aggFun).put(var, this.prevIterHist.get(aggFun).get(var).getSingletonHist());
+      }
+    }
+    return converged;
   }
 }
