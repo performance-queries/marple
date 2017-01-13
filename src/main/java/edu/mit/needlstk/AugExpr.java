@@ -82,6 +82,17 @@ public class AugExpr {
     this.width = width;
   }
 
+  /// Constructor for combinational expressions with a specified binary operator
+  public AugExpr(AugExpr op1, AugExpr op2, String op) {
+    if (op != "+" && op != "-" && op != "*" && op != "/") {
+      throw new RuntimeException("Operators must be one of pre-specified arithmetic types:\n" +
+                                 "+ - * / \n");
+    }
+    this.type = AugExprType.EXPR_COMB;
+    this.children = new ArrayList<>(Arrays.asList(op1, op2));
+    this.binop = binopFromText(op);
+  }
+
   /// Default constructor for inheritance
   public AugExpr() { }
 

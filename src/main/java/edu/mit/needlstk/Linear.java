@@ -21,15 +21,19 @@ public class Linear {
   private HashMap<String, List<String>> states;
   /// Field variable inputs for aggregation functions
   private HashMap<String, List<String>> fields;
+  /// Symbol table
+  private HashMap<String, HashMap<String, AggFunVarType>> symTab;
   
   public Linear(HashMap<String, ThreeOpCode> aggFunCode,
                 HashMap<String, HashMap<String, Integer>> histMap,
                 HashMap<String, List<String>> stateVars,
-                HashMap<String, List<String>> fieldVars) {
+                HashMap<String, List<String>> fieldVars,
+                HashMap<String, HashMap<String, AggFunVarType>> symTab) {
     this.tocs = aggFunCode;
     this.hists = histMap;
     this.states = stateVars;
     this.fields = fieldVars;
+    this.symTab = symTab;
   }
 
   /// Given a list of states and a converged history, return whether 
@@ -89,5 +93,91 @@ public class Linear {
       }
     }
     return true;
+  }
+
+  /// Make adjustments to aggregation function code to isolate linear in state update into one
+  /// statement for all cases
+  public ThreeOpCode adjustLinearInState(ThreeOpCode toc,
+                                         String state,
+                                         HashMap<String, Integer> hist,
+                                         HashMap<String, AggFunVarType> syms) {
+    ThreeOpCode newToc = new ThreeOpCode(toc.decls, new ArrayList<ThreeOpStmt>());
+    /// Add declarations for A and B coefficients
+    String aId = aCoeff(state);
+    String bId = bCoeff(state);
+    newToc.addDecl(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE, aId));
+    newToc.addDecl(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE, bId));
+    syms.put(aId, AggFunVarType.FN_VAR);
+    syms.put(bId, AggFunVarType.FN_VAR);
+    /// Add default definitions for A and B.
+    newToc.appendStmt(new ThreeOpStmt(aId, new AugExpr(1)));
+    newToc.appendStmt(new ThreeOpStmt(bId, new AugExpr(0)));
+    /// Check line-by-line to adjust assignments to the state.
+    for (ThreeOpStmt stmt: toc.stmts) {
+      if (state.equals(stmt.getDefinedVar())) {
+        /// State assignment: only modify 'a' and 'b' now; not the state itself.
+        assert (stmt.isTernary() || stmt.isExprAssign());
+        if (stmt.isTernary()) {
+          newToc.appendStmts(adjustTernary(stmt, state, aId, bId));
+        } else if (stmt.isExprAssign()) {
+          newToc.appendStmts(adjustExprAssign(stmt, state, aId, bId));
+        } else {
+          assert (false); // state assignment statements have to be one of two types!
+        }
+      } else { // statement not involving the state at all
+        newToc.appendStmt(stmt);
+      }
+    }
+    /// Add a final statement adjusting the state through a linear-in-state update using the 'a' and
+    /// 'b' coefficients:
+    /// state = (aId * state) + bId
+    newToc.appendStmt(new ThreeOpStmt(state, new AugExpr(
+        new AugExpr(new AugExpr(aId), new AugExpr(state), "*"),
+        new AugExpr(bId), "+")));
+    return newToc;
+  }
+
+  /// Helpers to get linear-in-state updates to all happen in the end.
+  private ArrayList<ThreeOpStmt> adjustTernary(ThreeOpStmt stmt, String state, String aId, String bId) {
+    assert (stmt.isTernary());
+    String predVar = stmt.getPredVarOfTernary();
+    ArrayList<AugExpr> exprs = stmt.getUsedExprs();
+    assert (exprs.size() == 2); // exprIf and exprElse
+    AugExpr exprIf = exprs.get(0);
+    AugExpr exprElse = exprs.get(1);
+    /// Get affine coefficients for the expressions
+    ArrayList<AugExpr> ifAffines   = exprIf.getAffineCoefficients(state);
+    ArrayList<AugExpr> elseAffines = exprElse.getAffineCoefficients(state);
+    /// Set up 'a' and 'b' assignment statements
+    ArrayList<ThreeOpStmt> stmts = new ArrayList<>();
+    /// TODO: not dealing with repeated assignments to state
+    stmts.add(new ThreeOpStmt(aId, predVar, ifAffines.get(0), elseAffines.get(0)));
+    stmts.add(new ThreeOpStmt(bId, predVar, ifAffines.get(1), elseAffines.get(1)));
+    return stmts;
+  }
+
+  private ArrayList<ThreeOpStmt> adjustExprAssign(ThreeOpStmt stmt,
+                                                  String state,
+                                                  String aId,
+                                                  String bId) {
+    assert (stmt.isExprAssign());
+    ArrayList<AugExpr> exprs = stmt.getUsedExprs();
+    assert (exprs.size() == 1);
+    AugExpr expr = exprs.get(0);
+    ArrayList<AugExpr> affines = expr.getAffineCoefficients(state);
+    /// Set up 'a' and 'b' assignment statements
+    ArrayList<ThreeOpStmt> stmts = new ArrayList<>();
+    /// TODO: not dealing with repeated assignments to state
+    stmts.add(new ThreeOpStmt(aId, affines.get(0)));
+    stmts.add(new ThreeOpStmt(bId, affines.get(1)));
+    return stmts;
+  }
+
+  private String aCoeff(String var) {
+    return "_" + var + "_a";
+  }
+
+  private String bCoeff(String var) {
+    return "_" + var + "_b";
   }
 }
