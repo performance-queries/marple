@@ -82,8 +82,11 @@ public class AugExpr {
     this.width = width;
   }
 
+  /// Default constructor for inheritance
+  public AugExpr() { }
+
   /// Helper to get binary operator enum from token text
-  private Binop binopFromText(String txt) {
+  protected Binop binopFromText(String txt) {
     switch(txt) {
       case "+":
         return Binop.BINOP_ADD;
