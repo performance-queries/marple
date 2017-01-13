@@ -68,6 +68,7 @@ public class Compiler {
     /// Detect bounded packet history
     HistoryDetector hd = new HistoryDetector(stateVars, fieldVars);
     hd.visit(tree);
+    HashMap<String, HashMap<String, Integer>> hists = hd.getConvergedHistory();
     System.out.println(hd.reportHistory());
 
     /// Produce code for aggregation functions
@@ -75,6 +76,11 @@ public class Compiler {
     IfConvertor ifc = new IfConvertor(globalSymTab);
     ifc.visit(tree);
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
+
+    /// Adjust state updates which are linear-in-state
+    Linear linear = new Linear(aggFunCode, hists, stateVars, globalSymTab);
+    globalSymTab = linear.getGlobalSymTab();
+    aggFunCode   = linear.getAggFunCode();
 
     System.out.println(aggFunCode);
 

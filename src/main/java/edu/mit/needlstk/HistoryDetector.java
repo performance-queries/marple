@@ -305,7 +305,7 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     return res;
   }
 
-  public HashMap<String, HashMap<String, Integer>> getConvergedHist() {
+  public HashMap<String, HashMap<String, Integer>> getConvergedHistory() {
     HashMap<String, HashMap<String, Integer>> converged = new HashMap<>();
     for (String aggFun: this.prevIterHist.keySet()) {
       converged.put(aggFun, new HashMap<String, Integer>());

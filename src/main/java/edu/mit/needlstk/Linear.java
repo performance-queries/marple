@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
@@ -27,12 +28,10 @@ public class Linear {
   public Linear(HashMap<String, ThreeOpCode> aggFunCode,
                 HashMap<String, HashMap<String, Integer>> histMap,
                 HashMap<String, List<String>> stateVars,
-                HashMap<String, List<String>> fieldVars,
                 HashMap<String, HashMap<String, AggFunVarType>> symTab) {
     this.tocs = aggFunCode;
     this.hists = histMap;
     this.states = stateVars;
-    this.fields = fieldVars;
     this.symTab = symTab;
   }
 
@@ -58,6 +57,32 @@ public class Linear {
       }
     }
     return newHist;
+  }
+
+  /// For each aggregation function and state, detect and adjust linear-in-state updates.
+  public void extractLinearUpdates() {
+    /// Basic sanity checks
+    Set<String> aggFuns = this.tocs.keySet();
+    assert (aggFuns.equals(this.hists.keySet()));
+    assert (aggFuns.equals(this.states.keySet()));
+    assert (aggFuns.equals(this.fields.keySet()));
+    assert (aggFuns.equals(this.symTab.keySet()));
+    /// For each function and state, detect and adjust linear-in-state updates.
+    for (String fun: aggFuns) {
+      List<String> stateList = this.states.get(fun);
+      ArrayList<String> infStates = getInfHistoryStates(stateList, this.hists.get(fun));
+      ThreeOpCode currToc = this.tocs.get(fun);
+      ThreeOpCode newToc;
+      for (String state: infStates) {
+        boolean lis = detectLinearInState(currToc, state, this.hists.get(fun));
+        if (lis) {
+          newToc = adjustLinearInState(
+              currToc, state, this.hists.get(fun), this.symTab.get(fun));
+          currToc = newToc;
+        }
+      }
+      this.tocs.put(fun, currToc);
+    }
   }
 
   /// Detect two conditions to scale key-value-type updates for a state of infinite packet history:
@@ -179,5 +204,14 @@ public class Linear {
 
   private String bCoeff(String var) {
     return "_" + var + "_b";
+  }
+
+  /// Helpers to extract new code and new symbol tables.
+  public HashMap<String, ThreeOpCode> getAggFunCode() {
+    return this.tocs;
+  }
+
+  public HashMap<String, HashMap<String, AggFunVarType>> getGlobalSymTab() {
+    return this.symTab;
   }
 }
