@@ -104,6 +104,12 @@ public class ThreeOpStmt {
     }
   }
 
+  /// If the statement is ternary, return name of the enclosing predicate identifier.
+  public String getPredVarOfTernary() {
+    assert (type == StmtType.TERNARY);
+    return predVar;
+  }
+
   /// Printing for visual inspection on console
   public String print() {
     String res;
