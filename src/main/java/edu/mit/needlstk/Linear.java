@@ -170,21 +170,35 @@ public class Linear {
   }
 
   /// Helpers to get linear-in-state updates to all happen in the end.
+
+  /// Updated expressions from repeated linear updates of state
+  private AugExpr updateA(String aId, AugExpr newExprA) {
+    return new AugExpr(new AugExpr(aId), newExprA, "*");
+  }
+
+  private AugExpr updateB(String bId, AugExpr newExprA, AugExpr newExprB) {
+    return new AugExpr(newExprB,
+                       new AugExpr(newExprA, new AugExpr(bId), "*"),
+                       "+");
+  }
+
+  /// Return adjusting statements when state is updated using the ternary statement
   private ArrayList<ThreeOpStmt> adjustTernary(ThreeOpStmt stmt, String state, String aId, String bId) {
     assert (stmt.isTernary());
     String predVar = stmt.getPredVarOfTernary();
     ArrayList<AugExpr> exprs = stmt.getUsedExprs();
     assert (exprs.size() == 2); // exprIf and exprElse
     AugExpr exprIf = exprs.get(0);
-    AugExpr exprElse = exprs.get(1);
-    /// Get affine coefficients for the expressions
-    ArrayList<AugExpr> ifAffines   = exprIf.getAffineCoefficients(state);
-    ArrayList<AugExpr> elseAffines = exprElse.getAffineCoefficients(state);
+    /// Get affine coefficients for the expressions. There is an implicit assumption that we leave
+    /// the values of the coefficients same in the else case. This is a result of our if-conversion
+    /// algorithm.
+    ArrayList<AugExpr> ifAffines  = exprIf.getAffineCoefficients(state);
+    AugExpr newExprA = ifAffines.get(0);
+    AugExpr newExprB = ifAffines.get(1);
     /// Set up 'a' and 'b' assignment statements
     ArrayList<ThreeOpStmt> stmts = new ArrayList<>();
-    /// TODO: not dealing with repeated assignments to state
-    stmts.add(new ThreeOpStmt(aId, predVar, ifAffines.get(0), elseAffines.get(0)));
-    stmts.add(new ThreeOpStmt(bId, predVar, ifAffines.get(1), elseAffines.get(1)));
+    stmts.add(new ThreeOpStmt(aId, predVar, updateA(aId, newExprA), new AugExpr(aId)));
+    stmts.add(new ThreeOpStmt(bId, predVar, updateB(bId, newExprA, newExprB), new AugExpr(bId)));
     return stmts;
   }
 
@@ -196,12 +210,14 @@ public class Linear {
     ArrayList<AugExpr> exprs = stmt.getUsedExprs();
     assert (exprs.size() == 1);
     AugExpr expr = exprs.get(0);
+    /// Get affine coefficients for the expressions
     ArrayList<AugExpr> affines = expr.getAffineCoefficients(state);
+    AugExpr newExprA = affines.get(0);
+    AugExpr newExprB = affines.get(1);
     /// Set up 'a' and 'b' assignment statements
     ArrayList<ThreeOpStmt> stmts = new ArrayList<>();
-    /// TODO: not dealing with repeated assignments to state
-    stmts.add(new ThreeOpStmt(aId, affines.get(0)));
-    stmts.add(new ThreeOpStmt(bId, affines.get(1)));
+    stmts.add(new ThreeOpStmt(aId, updateA(aId, newExprA)));
+    stmts.add(new ThreeOpStmt(bId, updateB(bId, newExprA, newExprB)));
     return stmts;
   }
 
