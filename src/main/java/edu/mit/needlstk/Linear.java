@@ -28,10 +28,12 @@ public class Linear {
   public Linear(HashMap<String, ThreeOpCode> aggFunCode,
                 HashMap<String, HashMap<String, Integer>> histMap,
                 HashMap<String, List<String>> stateVars,
+                HashMap<String, List<String>> fieldVars,
                 HashMap<String, HashMap<String, AggFunVarType>> symTab) {
     this.tocs = aggFunCode;
     this.hists = histMap;
     this.states = stateVars;
+    this.fields = fieldVars;
     this.symTab = symTab;
   }
 
@@ -44,12 +46,15 @@ public class Linear {
   }
 
   /// Assign histories to predicates by passing over the history and the code.
-  public HashMap<String, Integer> getPredHist(ThreeOpCode toc, HashMap<String, Integer> hist) {
+  public HashMap<String, Integer> getPredHist(ThreeOpCode toc,
+                                              HashMap<String, Integer> hist,
+                                              List<String> fieldList) {
     HashMap<String, Integer> predHist = new HashMap<>();
     HashMap<String, Integer> newHist = new HashMap<String, Integer>(hist);
     for (ThreeOpStmt stmt: toc.stmts) {
       if (stmt.isPredAssign()) {
         Integer maxHist = stmt.getUsedVars().stream().
+            filter(var -> ! (fieldList.contains(var))).
             map(var -> newHist.get(var)).
             reduce(0, (a,b) -> Math.max(a, b));
         assert (! newHist.containsKey(stmt.getDefinedVar()));
@@ -72,12 +77,13 @@ public class Linear {
       List<String> stateList = this.states.get(fun);
       ArrayList<String> infStates = getInfHistoryStates(stateList, this.hists.get(fun));
       ThreeOpCode currToc = this.tocs.get(fun);
+      HashMap<String, Integer> newHist = getPredHist(currToc, this.hists.get(fun), this.fields.get(fun));
       ThreeOpCode newToc;
       for (String state: infStates) {
-        boolean lis = detectLinearInState(currToc, state, this.hists.get(fun));
+        boolean lis = detectLinearInState(currToc, state, newHist);
         if (lis) {
           newToc = adjustLinearInState(
-              currToc, state, this.hists.get(fun), this.symTab.get(fun));
+              currToc, state, newHist, this.symTab.get(fun));
           currToc = newToc;
         }
       }
@@ -102,9 +108,10 @@ public class Linear {
         ArrayList<AugExpr> exprs = stmt.getUsedExprs();
         if (exprs.size() == 0) return false;
         /// check if the enclosing predicate only involves bounded packet history
-        if (stmt.isTernary() &&
-            hist.get(stmt.getPredVarOfTernary()) == HistoryDetector.MAX_PKT_HISTORY)
-          return false;
+        if (stmt.isTernary()) {
+          assert (hist.containsKey(stmt.getPredVarOfTernary()));
+          if (hist.get(stmt.getPredVarOfTernary()) == HistoryDetector.MAX_PKT_HISTORY) return false;
+        }
         /// each used expression should be affine.
         for (AugExpr expr: exprs) {
           if (! expr.isAffine(state)) return false;

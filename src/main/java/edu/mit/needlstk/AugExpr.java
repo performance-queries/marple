@@ -306,4 +306,7 @@ public class AugExpr {
     return this.type;
   }
 
+  @Override public String toString() {
+    return print();
+  }
 }

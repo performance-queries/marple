@@ -78,7 +78,9 @@ public class Compiler {
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
 
     /// Adjust state updates which are linear-in-state
-    Linear linear = new Linear(aggFunCode, hists, stateVars, globalSymTab);
+    System.out.println("Performing linear-in-state transformations...");
+    Linear linear = new Linear(aggFunCode, hists, stateVars, fieldVars, globalSymTab);
+    linear.extractLinearUpdates();
     globalSymTab = linear.getGlobalSymTab();
     aggFunCode   = linear.getAggFunCode();
 
