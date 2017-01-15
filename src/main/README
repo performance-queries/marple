@@ -1,0 +1,5 @@
+To autogenerate p4 code, run (from this dir)
+```
+$> go build
+$> cat ${p4-frags.txt location} | ./main > ${output.p4 location}
+```
