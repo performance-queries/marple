@@ -1,0 +1,72 @@
+    action {{.UpdateFn}}(inout {{.ValueName}} val) {
+{{.UpdateCode}}
+    }
+
+    action {{.EqualsFn}}(in {{.KeyName}} key1, in {{.KeyName}} key2, out bool eq) {
+        eq = true;{{range $i, $field := $.FieldNames}}
+        eq = (key1.{{$field}} == key2.{{$field}}) ? eq : false;{{end}}
+    }
+
+    action {{.ZeroFn}}(in {{.KeyName}} key, out bool zero) {
+        zero = true;{{range $i, $field := $.FieldNames}}
+        zero = (key.{{$field}} == 0) ? zero : false;{{end}}
+     }
+
+    {{range $i, $n := .RowFieldNameList}}
+    register<{{$.KeyName}}>(32w{{$.TableSize}}) {{$.KeyRegisterName}}{{$i}};{{end}}
+    {{range $i, $n := .RowFieldNameList}}
+    register<{{$.ValueName}}>(32w{{$.TableSize}}) {{$.ValueRegisterName}}{{$i}};{{end}}
+    const {{.ValueName}} {{.DefaultValueName}} = {{.DefaultValueDefinition}};
+    const {{.KeyName}} {{.DefaultKeyName}} = {{$.DefaultKeyDefinition}};
+
+    // Using register regKeys, regValues.
+    action {{.LRUFn}}(out {{.KeyName}} evictedKey, out {{.ValueName}} evictedValue) {
+        {{.KeyName}} inKey;{{range $i, $field := $.FieldNames}}
+        inKey.{{$field}} = {{index $.KeySourceFields $i}};{{end}}
+
+        bit<32> hsh = 32w1;
+        hash(hsh, HashAlgorithm.crc32, 32w0, inKey, 32w{{.TableSize}});
+        {{.RowKeyName}} rowKeys = { {{rep .DefaultKeyName .LruWays}} };
+        {{.RowValueName}} rowValues = { {{rep .DefaultValueName .LruWays}} };
+        bool done = false;
+        bool same = false;
+        bool zero = false;
+        {{range $i, $n := .RowFieldNameList}}
+        {{$.KeyRegisterName}}{{$i}}.read(rowKeys.{{$n}}, hsh);
+        {{$.ValueRegisterName}}{{$i}}.read(rowValues.{{$n}}, hsh);{{end}}
+        {{.KeyName}} curKey;
+        {{/* RowFieldNameList is a list of field names in the Row key struct: ["first", "second", "third", "fourth"]*/}}
+        {{range $i, $n := .RowFieldNameList}}{{$ip1 := add $i 1}}{{$names := slice $.RowFieldNameList 0 $ip1 }}
+        curKey = rowKeys.{{$n}};
+        same = false;
+        zero = false;
+        {{$.EqualsFn}}(curKey, inKey, same);
+        {{$.ZeroFn}}(curKey, zero);
+        if (!done && (same || zero)) {
+            {{$.ValueName}} val = rowValues.{{$n}};
+            {{$.UpdateFn}}(val);
+            {{$rNames := rev $names}}{{range $j, $name := $rNames}}{{if gt $j 0 }}{{$jm1 := sub $j 1}}
+            rowValues.{{index $rNames $jm1 }} = rowValues.{{index $rNames $j}};
+            rowKeys.{{index $rNames $jm1 }} = rowKeys.{{index $rNames $j}};
+            {{end}}{{end}}
+            rowValues.first = val;
+            rowKeys.first = inKey;
+            done = true;
+        }
+        {{end}}
+        {{$fullNames := rev .RowFieldNameList }} 
+        if (!done) {
+            evictedKey = rowKeys.{{index $fullNames 0 }};
+            evictedValue = rowValues.{{index $fullNames 0 }};
+            {{range $j, $name := $fullNames}}{{if gt $j 0 }}{{$jm1 := sub $j 1}}
+            rowValues.{{index $fullNames $jm1 }} = rowValues.{{$name}};
+            rowKeys.{{index $fullNames $jm1 }} = rowKeys.{{$name}};
+            {{end}}{{end}}
+            {{.ValueName}} val = {{.DefaultValueName}};
+            {{.UpdateFn}}(val);
+            rowValues.first = val;
+        }
+        {{range $i, $n := .RowFieldNameList}}
+        {{$.KeyRegisterName}}{{$i}}.write(hsh, rowKeys.{{$n}});
+        {{$.ValueRegisterName}}{{$i}}.write(hsh, rowValues.{{$n}});{{end}}
+    }
