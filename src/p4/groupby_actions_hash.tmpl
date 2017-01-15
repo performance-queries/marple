@@ -1,0 +1,35 @@
+    register<{{.KeyName}}>(32w{{.TableSize}}) {{.KeyRegisterName}};
+    register<{{.ValueName}}>(32w{{.TableSize}}) {{.ValueRegisterName}};
+
+    // Using register regKeys, regValues.
+    action {{.LRUFn}}(out {{.KeyName}} evictedKey, out {{.ValueName}} evictedValue) {
+        {{.ValueName}} {{.DefaultValueName}} = {{.DefaultValueDefinition}};
+        {{.KeyName}} {{.DefaultKeyName}} = {{$.DefaultKeyDefinition}};
+        evictedKey = {{.DefaultKeyDefinition}};
+        evictedValue = {{.DefaultValueDefinition}};
+        {{.KeyName}} inKey;{{range $i, $field := $.KeyFields}}
+        inKey.{{$field}} = {{index $.KeySourceFields $i}};{{end}}
+
+        bit<32> hsh = 32w1;
+        hash(hsh, HashAlgorithm.crc32, 32w0, inKey, 32w{{.TableSize}});
+        {{.KeyName}} foundKey = {{.DefaultKeyDefinition}};
+        {{.ValueName}} foundValue = {{.DefaultValueDefinition}};
+        {{.KeyRegisterName}}.read(foundKey, hsh);
+        {{.ValueRegisterName}}.read(foundValue, hsh);
+        bool same = (foundKey == inKey);
+        bool zero = (foundKey == {{.DefaultKeyName}});
+        
+        {{.ValueName}} val = {{.DefaultValueDefinition}};
+        bool ok = same || zero;
+        // Should be shortened to evictedKey = !ok ? foundKey : 0 when supported.
+        {{range .KeyFields}}
+        evictedKey.{{.}} = !ok ? foundKey.{{.}} : 0;{{end}}
+        {{range .ValueFields}}
+        evictedValue.{{.}} = !ok ? foundValue.{{.}} : 0;{{end}}
+        {{range .ValueFields}}
+        val.{{.}} = ok ? foundValue.{{.}} : 0;{{end}}
+        {{.UpdateCode}}
+
+        {{.KeyRegisterName}}.write(hsh, inKey);
+        {{.ValueRegisterName}}.write(hsh, val);
+    }

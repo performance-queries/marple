@@ -58,6 +58,8 @@ func generateSourceMap(s *Schema) {
 	sourceMap["queue_time"] = "meta.queueing_meta.deq_timedelta"
 	sourceMap["srcip"] = "hdrs.ip.srcAddr"
 	sourceMap["dstip"] = "hdrs.ip.dstAddr"
+	sourceMap["srcport"] = "hdrs.tcp.isValid() ? (bit<32>)hdrs.tcp.srcPort : 0"
+	sourceMap["dstport"] = "hdrs.tcp.isValid() ? (bit<32>)hdrs.tcp.dstPort : 0"
 	sourceMap["proto"] = "(bit<32>)hdrs.ip.protocol"
 	sourceMap["pktlen"] = "(bit<32>)hdrs.ip.totalLen"
 	sourceMap["ingress_port"] = "(bit<32>)standard_meta.ingress_port"

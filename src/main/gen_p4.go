@@ -21,7 +21,7 @@ import (
 
 const (
 	finalTemplate          = "../p4/final_p4.tmpl"
-	groupByActionsTemplate = "../p4/groupby_actions.tmpl"
+	groupByActionsTemplate = "../p4/groupby_actions_hash.tmpl"
 )
 
 var outputFile = flag.String("output", "", "Location of the output (default = stdout).")
@@ -79,7 +79,8 @@ type GroupByActionData struct {
 	DefaultValueDefinition string
 	DefaultKeyName         string
 	DefaultKeyDefinition   string
-	FieldNames             []string
+	KeyFields              []string
+	ValueFields            []string
 	KeySourceFields        []string
 }
 
@@ -140,7 +141,8 @@ func genGroupByAction(s *Stage) string {
 		DefaultValueDefinition: "{" + strings.Join(defaultVal, ",") + "}",
 		DefaultKeyName:         "defaultKey_" + s.Name,
 		DefaultKeyDefinition:   "{" + strings.Join(defaultKey, ",") + "}",
-		FieldNames:             s.KeyFields,
+		KeyFields:              s.KeyFields,
+		ValueFields:            s.Registers,
 		KeySourceFields:        mapToSources(s.KeyFields),
 	}
 	t, err := template.New("groupby" + s.Name).Funcs(funcMap).ParseFiles(groupByActionsTemplate)
