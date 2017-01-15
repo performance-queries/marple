@@ -5,7 +5,11 @@ needlstk: A system for expressing network performance queries
 The name is a portmanteau of needle and stack to reflect the
 goal of finding needles in a haystack. It is pronounced "needle stack"
 
-QuickStart (requires maven)
+QuickStart (requires maven from the apache maven website)
+Requires java 8:
+sudo apt-add-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
 
 0. mvn install
 Packages sources into one assembly JAR for
