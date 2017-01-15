@@ -10,6 +10,8 @@ Requires java 8:
 sudo apt-add-repository ppa:webupd8team/java
 sudo apt-get update
 sudo apt-get install oracle-java8-installer
+Requires go:
+sudo apt-get install gccgo-go
 
 0. mvn install
 Packages sources into one assembly JAR for
