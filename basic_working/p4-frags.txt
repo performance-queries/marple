@@ -1,0 +1,25 @@
+=================================
+bit<32> switchId;
+bit<32> payload_length;
+bit<32> qid;
+bit<32> ingress_timestamp;
+bit<32> egress_timestamp;
+bit<32> queue_len;
+=================================
+bit<1> _R_valid;
+=================================
+[]
+=================================
+R
+[srcip, pktlen, dstport, tcpseq, inport, payloadlen, tout, qid, switch, qlen, uid, proto, tin, srcport, pktpath, dstip, outport]
+FILTER
+
+
+--
+// Preamble
+bool _tmp_R_valid;
+// Function body
+_tmp_R_valid = (meta.common_meta.queue_len) < (32w5);
+// Postamble
+meta.query_meta._R_valid = _tmp_R_valid ? (1w1) : (1w0);
+=================================

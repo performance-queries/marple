@@ -1,0 +1,1023 @@
+{
+  "program" : "basic_output.p4",
+  "__meta__" : {
+    "version" : [2, 0]
+  },
+  "header_types" : [
+    {
+      "name" : "Ethernet_h",
+      "id" : 0,
+      "fields" : [
+        ["dstAddr", 48, false],
+        ["srcAddr", 48, false],
+        ["etherType", 16, false]
+      ]
+    },
+    {
+      "name" : "Ipv4_h",
+      "id" : 1,
+      "fields" : [
+        ["version", 4, false],
+        ["ihl", 4, false],
+        ["diffserv", 8, false],
+        ["totalLen", 16, false],
+        ["identification", 16, false],
+        ["flags", 3, false],
+        ["fragOffset", 13, false],
+        ["ttl", 8, false],
+        ["protocol", 8, false],
+        ["hdrChecksum", 16, false],
+        ["srcAddr", 32, false],
+        ["dstAddr", 32, false]
+      ]
+    },
+    {
+      "name" : "scalars",
+      "id" : 2,
+      "fields" : [
+        ["nextHop_1", 32, false],
+        ["tmp_2", 8, false],
+        ["nextHop_2", 32, false],
+        ["nextHop_3", 32, false],
+        ["nextHop_0", 32, false],
+        ["_tmp_R_valid", 1, 0],
+        ["tmp_3", 1, 0],
+        ["tmp_4", 1, false],
+        ["_padding_0", 5, false]
+      ]
+    },
+    {
+      "name" : "QueryMetadata",
+      "id" : 3,
+      "fields" : [
+        ["_R_valid", 1, false],
+        ["_padding", 7, false]
+      ]
+    },
+    {
+      "name" : "CommonMetadata",
+      "id" : 4,
+      "fields" : [
+        ["switchId", 32, false],
+        ["payload_length", 32, false],
+        ["qid", 32, false],
+        ["ingress_timestamp", 32, false],
+        ["egress_timestamp", 32, false],
+        ["queue_len", 32, false]
+      ]
+    },
+    {
+      "name" : "intrinsic_metadata_t",
+      "id" : 5,
+      "fields" : [
+        ["ingress_global_timestamp", 48, false],
+        ["lf_field_list", 8, false],
+        ["mcast_grp", 16, false],
+        ["egress_rid", 16, false],
+        ["resubmit_flag", 8, false],
+        ["recirculate_flag", 8, false]
+      ]
+    },
+    {
+      "name" : "queueing_metadata_t",
+      "id" : 6,
+      "fields" : [
+        ["enq_timestamp", 48, false],
+        ["enq_qdepth", 16, false],
+        ["deq_timedelta", 32, false],
+        ["deq_qdepth", 16, false]
+      ]
+    },
+    {
+      "name" : "standard_metadata_t",
+      "id" : 7,
+      "fields" : [
+        ["ingress_port", 9, false],
+        ["egress_spec", 9, false],
+        ["egress_port", 9, false],
+        ["clone_spec", 32, false],
+        ["instance_type", 32, false],
+        ["drop", 1, false],
+        ["recirculate_port", 16, false],
+        ["packet_length", 32, false],
+        ["_padding_1", 4, false]
+      ]
+    }
+  ],
+  "headers" : [
+    {
+      "name" : "ethernet",
+      "id" : 0,
+      "header_type" : "Ethernet_h",
+      "metadata" : false
+    },
+    {
+      "name" : "ip",
+      "id" : 1,
+      "header_type" : "Ipv4_h",
+      "metadata" : false
+    },
+    {
+      "name" : "scalars",
+      "id" : 2,
+      "header_type" : "scalars",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "query_meta",
+      "id" : 3,
+      "header_type" : "QueryMetadata",
+      "metadata" : true
+    },
+    {
+      "name" : "common_meta",
+      "id" : 4,
+      "header_type" : "CommonMetadata",
+      "metadata" : true
+    },
+    {
+      "name" : "intrinsic_meta",
+      "id" : 5,
+      "header_type" : "intrinsic_metadata_t",
+      "metadata" : true
+    },
+    {
+      "name" : "queueing_meta",
+      "id" : 6,
+      "header_type" : "queueing_metadata_t",
+      "metadata" : true
+    },
+    {
+      "name" : "standard_metadata",
+      "id" : 7,
+      "header_type" : "standard_metadata_t",
+      "metadata" : true
+    }
+  ],
+  "header_stacks" : [],
+  "field_lists" : [],
+  "parsers" : [
+    {
+      "name" : "parser",
+      "id" : 0,
+      "init_state" : "start",
+      "parse_states" : [
+        {
+          "name" : "start",
+          "id" : 0,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "ethernet"
+                }
+              ],
+              "op" : "extract"
+            }
+          ],
+          "transitions" : [
+            {
+              "value" : "0x0800",
+              "mask" : null,
+              "next_state" : "parse_ipv4"
+            }
+          ],
+          "transition_key" : [
+            {
+              "type" : "field",
+              "value" : ["ethernet", "etherType"]
+            }
+          ]
+        },
+        {
+          "name" : "parse_ipv4",
+          "id" : 1,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "ip"
+                }
+              ],
+              "op" : "extract"
+            }
+          ],
+          "transitions" : [
+            {
+              "value" : "default",
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : []
+        }
+      ]
+    }
+  ],
+  "deparsers" : [
+    {
+      "name" : "deparser",
+      "id" : 0,
+      "order" : ["ethernet", "ip"]
+    }
+  ],
+  "meter_arrays" : [],
+  "counter_arrays" : [],
+  "register_arrays" : [],
+  "calculations" : [],
+  "learn_lists" : [],
+  "actions" : [
+    {
+      "name" : "Set_dmac",
+      "id" : 0,
+      "runtime_data" : [
+        {
+          "name" : "dmac",
+          "bitwidth" : 48
+        }
+      ],
+      "primitives" : [
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ethernet", "dstAddr"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "Drop_action",
+      "id" : 1,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "Drop_action",
+      "id" : 2,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "Drop_action",
+      "id" : 3,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "Set_smac",
+      "id" : 4,
+      "runtime_data" : [
+        {
+          "name" : "smac",
+          "bitwidth" : 48
+        }
+      ],
+      "primitives" : [
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ethernet", "srcAddr"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "update_R",
+      "id" : 5,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_3"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "b2d",
+                  "left" : null,
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "<",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["common_meta", "queue_len"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000005"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "_tmp_R_valid"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "b2d",
+                  "left" : null,
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "<",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["common_meta", "queue_len"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000005"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_4"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "hexstr",
+                    "value" : "0x01"
+                  },
+                  "right" : {
+                    "type" : "field",
+                    "value" : ["scalars", "tmp_4"]
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "<",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["common_meta", "queue_len"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000005"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_4"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "hexstr",
+                    "value" : "0x00"
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "?",
+                      "left" : {
+                        "type" : "hexstr",
+                        "value" : "0x01"
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "tmp_4"]
+                      },
+                      "cond" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["common_meta", "queue_len"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x00000005"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "not",
+                      "left" : null,
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["common_meta", "queue_len"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x00000005"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["query_meta", "_R_valid"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "hexstr",
+                    "value" : "0x00"
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "?",
+                      "left" : {
+                        "type" : "hexstr",
+                        "value" : "0x01"
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "tmp_4"]
+                      },
+                      "cond" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["common_meta", "queue_len"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x00000005"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "not",
+                      "left" : null,
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["common_meta", "queue_len"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x00000005"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "Set_nhop",
+      "id" : 6,
+      "runtime_data" : [
+        {
+          "name" : "ipv4_dest",
+          "bitwidth" : 32
+        },
+        {
+          "name" : "outPort",
+          "bitwidth" : 9
+        }
+      ],
+      "primitives" : [
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "nextHop_0"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 0
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_2"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["ip", "ttl"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xff"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ip", "ttl"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["ip", "ttl"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xff"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "egress_port"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 1
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "nextHop_2"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "act_1",
+      "id" : 7,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "drop"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "act_0",
+      "id" : 8,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "nextHop_1"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "nextHop_2"]
+            }
+          ]
+        },
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "nextHop_3"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "nextHop_1"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "act",
+      "id" : 9,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "modify_field",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "egress_port"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0002"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : ".drop",
+      "id" : 10,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "drop",
+          "parameters" : []
+        }
+      ]
+    }
+  ],
+  "pipelines" : [
+    {
+      "name" : "ingress",
+      "id" : 0,
+      "init_table" : "tbl_act",
+      "tables" : [
+        {
+          "name" : "tbl_act",
+          "id" : 0,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [9],
+          "actions" : ["act"],
+          "base_default_next" : "ipv4_match",
+          "next_tables" : {
+            "act" : "ipv4_match"
+          },
+          "default_entry" : {
+            "action_id" : 9,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "ipv4_match",
+          "id" : 1,
+          "key" : [
+            {
+              "match_type" : "lpm",
+              "target" : ["ip", "dstAddr"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "lpm",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [3, 6],
+          "actions" : ["Drop_action", "Set_nhop"],
+          "base_default_next" : "tbl_act_0",
+          "next_tables" : {
+            "Drop_action" : "tbl_act_0",
+            "Set_nhop" : "tbl_act_0"
+          },
+          "default_entry" : {
+            "action_id" : 3,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : false
+          }
+        },
+        {
+          "name" : "tbl_act_0",
+          "id" : 2,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [8],
+          "actions" : ["act_0"],
+          "base_default_next" : "dmac",
+          "next_tables" : {
+            "act_0" : "dmac"
+          },
+          "default_entry" : {
+            "action_id" : 8,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "dmac",
+          "id" : 3,
+          "key" : [
+            {
+              "match_type" : "exact",
+              "target" : ["scalars", "nextHop_3"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [2, 0],
+          "actions" : ["Drop_action", "Set_dmac"],
+          "base_default_next" : "smac",
+          "next_tables" : {
+            "Drop_action" : "smac",
+            "Set_dmac" : "smac"
+          },
+          "default_entry" : {
+            "action_id" : 2,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : false
+          }
+        },
+        {
+          "name" : "smac",
+          "id" : 4,
+          "key" : [
+            {
+              "match_type" : "exact",
+              "target" : ["standard_metadata", "egress_port"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 16,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [1, 4],
+          "actions" : ["Drop_action", "Set_smac"],
+          "base_default_next" : "tbl_act_1",
+          "next_tables" : {
+            "Drop_action" : "tbl_act_1",
+            "Set_smac" : "tbl_act_1"
+          },
+          "default_entry" : {
+            "action_id" : 1,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : false
+          }
+        },
+        {
+          "name" : "tbl_act_1",
+          "id" : 5,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [7],
+          "actions" : ["act_1"],
+          "base_default_next" : "Ing.exit",
+          "next_tables" : {
+            "act_1" : "Ing.exit"
+          },
+          "default_entry" : {
+            "action_id" : 7,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "Ing.exit",
+          "id" : 6,
+          "key" : [
+            {
+              "match_type" : "exact",
+              "target" : ["standard_metadata", "drop"]
+            }
+          ],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "actions" : [".drop"],
+          "action_ids" : [10],
+          "next_tables" : {
+            ".drop" : null
+          }
+        }
+      ],
+      "action_profiles" : [],
+      "conditionals" : []
+    },
+    {
+      "name" : "egress",
+      "id" : 1,
+      "init_table" : "tbl_update_R",
+      "tables" : [
+        {
+          "name" : "tbl_update_R",
+          "id" : 7,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [5],
+          "actions" : ["update_R"],
+          "base_default_next" : "Eg.exit",
+          "next_tables" : {
+            "update_R" : "Eg.exit"
+          },
+          "default_entry" : {
+            "action_id" : 5,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "Eg.exit",
+          "id" : 8,
+          "key" : [
+            {
+              "match_type" : "exact",
+              "target" : ["standard_metadata", "drop"]
+            }
+          ],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "actions" : [".drop"],
+          "action_ids" : [10],
+          "next_tables" : {
+            ".drop" : null
+          }
+        }
+      ],
+      "action_profiles" : [],
+      "conditionals" : []
+    }
+  ],
+  "checksums" : [],
+  "force_arith" : [
+    ["standard_metadata", "ingress_port"],
+    ["standard_metadata", "egress_spec"],
+    ["standard_metadata", "egress_port"],
+    ["standard_metadata", "clone_spec"],
+    ["standard_metadata", "instance_type"],
+    ["standard_metadata", "drop"],
+    ["standard_metadata", "recirculate_port"],
+    ["standard_metadata", "packet_length"]
+  ]
+}
