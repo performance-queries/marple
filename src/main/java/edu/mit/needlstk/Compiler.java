@@ -77,6 +77,10 @@ public class Compiler {
     ifc.visit(tree);
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
 
+    /// Only allow divisions by (constant) powers of 2.
+    DivisorChecker dc = new DivisorChecker(aggFunCode);
+    dc.checkDivisor();
+
     /// Adjust state updates which are linear-in-state
     System.out.println("Performing linear-in-state transformations...");
     Linear linear = new Linear(aggFunCode, hists, stateVars, fieldVars, globalSymTab);

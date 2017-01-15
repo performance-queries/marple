@@ -18,7 +18,8 @@ public class AugExpr {
     BINOP_ADD,
     BINOP_SUB,
     BINOP_MUL,
-    BINOP_DIV
+    BINOP_DIV,
+    BINOP_LSHIFT
   };
 
   /// Enum and operator identifying the structure of the expression tree
@@ -107,6 +108,8 @@ public class AugExpr {
         return Binop.BINOP_MUL;
       case "/":
         return Binop.BINOP_DIV;
+      case "<<":
+        return Binop.BINOP_LSHIFT;
       default:
         assert (false); // Expecting a different expression combinator?
         return null;
@@ -124,6 +127,8 @@ public class AugExpr {
         return "*";
       case BINOP_DIV:
         return "/";
+      case BINOP_LSHIFT:
+        return "<<";
       default:
         assert (false); // Expecting a different expression combinator?
         return null;
@@ -309,4 +314,55 @@ public class AugExpr {
   @Override public String toString() {
     return print();
   }
+
+  /// Helpers for a pass that transform expressions of divisions by powers of 2 internally to
+  /// shifts.  This isn't the ideal place to do this, but seems to serve as of now. A more ideal
+  /// design would use a general lambda function that can transform expressions, and the class
+  /// corresponding to the pass would supply the lambda.
+  private Integer getValue() {
+    assert (isValueExpr());
+    return this.value;
+  }
+
+  private void setValue(Integer val) {
+    assert (isValueExpr());
+    this.value = val;
+  }
+
+  private boolean isPowerOf2(Integer x) {
+    return (x & (x-1)) == 0;
+  }
+
+  private Integer getPowerOf2(Integer x) {
+    return new Integer((int)(Math.log(x) / Math.log(2)));
+  }
+
+  /// Helper function to transform ASTs with constant divisors which are powers of 2.
+  /// Other divisions are disallowed currently.
+  public void transformDivision() {
+    if (type == AugExprType.EXPR_ID || type == AugExprType.EXPR_VAL) {
+      // do nothing.
+      return;
+    } else if (type == AugExprType.EXPR_COMB) {
+      if (this.binop == Binop.BINOP_DIV) {
+        if (this.children.get(1).getType() == AugExprType.EXPR_VAL) {
+          Integer val = this.children.get(1).getValue();
+          if (isPowerOf2(val)) {
+            this.binop = Binop.BINOP_LSHIFT;
+            this.children.get(1).setValue(getPowerOf2(val));
+            /// Transform the other child independently next
+            this.children.get(0).transformDivision();
+          } else {
+            throw new RuntimeException("Divisor must be a power of 2!");
+          }
+        } else {
+          throw new RuntimeException("Divisor must be a constant value!");
+        }
+      } else { // other kinds of combinators are fine. Transform independently
+        this.children.get(0).transformDivision();
+        this.children.get(1).transformDivision();
+      }
+    }
+  }
+
 }

@@ -338,4 +338,24 @@ public class AugPred {
       return null;
     }
   }
+
+  /// Get all internally used expressions.
+  public ArrayList<AugExpr> getUsedExprs() {
+    ArrayList<AugExpr> exprs = new ArrayList<>();
+    if (type == AugPredType.PRED_TRUE || type == AugPredType.PRED_FALSE || type == AugPredType.PRED_ID) {
+      return exprs;
+    } else if (type == AugPredType.PRED_EQ || type == AugPredType.PRED_NE ||
+               type == AugPredType.PRED_GT || type == AugPredType.PRED_LT) {
+      return new ArrayList<AugExpr>(this.childExprs);
+    } else if (type == AugPredType.PRED_AND || type == AugPredType.PRED_OR) {
+      exprs.addAll(this.childPreds.get(0).getUsedExprs());
+      exprs.addAll(this.childPreds.get(1).getUsedExprs());
+      return exprs;
+    } else if (type == AugPredType.PRED_NOT) {
+      return this.childPreds.get(0).getUsedExprs();
+    } else {
+      assert (false); // Expecting one of the above predicate types.
+      return null;
+    }
+  }
 }
