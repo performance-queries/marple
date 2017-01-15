@@ -2,7 +2,8 @@ TODOS
 
 * A, B determination for linear-in-state: AST maintenance
   - main reason: possible direct use of simpler AS+B atom (no predicated versions)
-* passes to fix other cases: uid groupby, tout==inf, packet cloning for results
+* passes to fix other cases: uid groupby, tout==inf, packet cloning, should not
+  need to use switchId inside the p4 code
 
 domino related
 * can we reduce outcast.sql compiler output size? 15 stages may be high...

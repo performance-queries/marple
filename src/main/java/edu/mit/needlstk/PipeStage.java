@@ -1,6 +1,8 @@
 package edu.mit.needlstk;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 public class PipeStage {
   /// Type of query operation, e.g., filter, map, etc.
@@ -50,9 +52,13 @@ public class PipeStage {
     res += this.op.toString();
     res += "\n";
     if (this.op == OperationType.GROUPBY) {
-      res += ((FoldConfigInfo)this.configInfo).getKeyFields().toString();
+      FoldConfigInfo fci = (FoldConfigInfo)this.configInfo;
+      List<String> fieldList = fci.getKeyFields().stream().
+          map(var -> P4Printer.p4Ident(var, AggFunVarType.FIELD)).
+          collect(Collectors.toList());
+      res += fieldList.toString();
       res += "\n";
-      res += ((FoldConfigInfo)this.configInfo).getStateArgs().toString();
+      res += fci.getStateArgs().toString();
       res += "\n";
     } else {
       res += "\n\n";

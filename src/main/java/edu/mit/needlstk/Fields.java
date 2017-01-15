@@ -21,28 +21,12 @@ public class Fields {
   public static String tinHdr = "tin";
   public static String toutHdr = "tout";
   public static String pktpathHdr = "pktpath";
-  public static String qlenHdr = "qlen";
+  public static String qinHdr = "qin";
+  public static String qoutHdr = "qout";
+  public static String qtimeHdr = "qtime";
 
-  public static ArrayList<String> v1MetadataFields = new ArrayList<>(Arrays.asList(
-      inportHdr,
-      outportHdr,
-      pktlenHdr));
-
-  public static ArrayList<String> pktLogMetadataFields = new ArrayList<>(Arrays.asList(
+  public static ArrayList<String> fields = new ArrayList<>(Arrays.asList(
       switchHdr,
-      payloadlenHdr,
-      qidHdr,
-      tinHdr,
-      toutHdr,
-      qlenHdr));
-
-  public static ArrayList<String> metadataFields = new ArrayList<>();
-  static {
-    metadataFields.addAll(v1MetadataFields);
-    metadataFields.addAll(pktLogMetadataFields);
-  }
-
-  public static ArrayList<String> headerFields = new ArrayList<>(Arrays.asList(
       uidHdr,
       srcipHdr,
       dstipHdr,
@@ -50,44 +34,15 @@ public class Fields {
       dstportHdr,
       tcpseqHdr,
       protoHdr,
-      pktpathHdr));
-
-  public static final ArrayList<String> fields = new ArrayList<>();
-  static {
-    fields.addAll(metadataFields);
-    fields.addAll(headerFields);
-  }
-
-  /// Map from query field name to p4 field names
-  public static HashMap<String, String> p4Map = new HashMap<>();
-  static {
-    /// Metadata fields
-    p4Map.put(switchHdr,     "switch");            // TODO: corresponding p4 field?
-    p4Map.put(inportHdr,     "ingress_port");
-    p4Map.put(outportHdr,    "egress_port");
-    p4Map.put(pktlenHdr,     "packet_length");
-    p4Map.put(payloadlenHdr, "payload_length");    // TODO: corresponding p4 field?
-    p4Map.put(qidHdr,        "qid");               // TODO: corresponding p4 field?
-    p4Map.put(tinHdr,        "ingress_timestamp"); // TODO: corresponding p4 field?
-    p4Map.put(toutHdr,       "egress_timestamp");  // TODO: corresponding p4 field?
-    p4Map.put(qlenHdr,       "queue_len");         // TODO: corresponding p4 field?
-    /// Header fields
-    p4Map.put(uidHdr,        "ip.identification");
-    p4Map.put(srcipHdr,      "ip.srcAddr");
-    p4Map.put(dstipHdr,      "ip.dstAddr");
-    p4Map.put(srcportHdr,    "tcp.srcport");     // TODO: parse tcp srcport
-    p4Map.put(dstportHdr,    "tcp.dstport");     // TODO: parse tcp dstport
-    p4Map.put(tcpseqHdr,     "tcp.sequence");    // TODO: parse tcp sequence number
-    p4Map.put(protoHdr,      "ip.protocol");
-    p4Map.put(pktpathHdr,    "pktpath");         // TODO: add a pktpath header?
-  }
-
-  /// Map from query field name to domino field names
-  public static HashMap<String, String> dominoMap = new HashMap<>();
-  static {
-    for (String field: fields) { // domino prints all identifiers by same name
-      dominoMap.put(field, field);
-    } // except the switch:
-    dominoMap.put(switchHdr, "switch_hdr");
-  }
+      inportHdr,
+      outportHdr,
+      payloadlenHdr,
+      pktlenHdr,
+      qidHdr,
+      tinHdr,
+      toutHdr,
+      pktpathHdr,
+      qinHdr,
+      qoutHdr,
+      qtimeHdr));
 }
