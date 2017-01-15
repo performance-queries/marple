@@ -1,5 +1,5 @@
-def perc([tot, high], [qlen]):
-  if (qlen > 1000) { high = high + 1; }
+def perc([tot, high], [qin]):
+  if (qin > 1000) { high = high + 1; }
   tot = tot + 1;
   emit();
 
