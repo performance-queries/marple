@@ -180,18 +180,20 @@ func genStructsForGroupBy(s *Stage) []string {
 	return []string{keyStruct, valStruct}
 }
 
-// Prefix every line in 'body' with 'space'.
+// Prefix every line after the first in 'body' with 'space'.
 // Intended to be used with tabs to pretty print the code.
 func indentBy(body, space string) string {
 	bodyParts := strings.Split(body, "\n")
 	for i, p := range bodyParts {
-		bodyParts[i] = space + p
+		if i > 0 {
+			bodyParts[i] = space + p
+		}
 	}
 	return strings.Join(bodyParts, "\n")
 }
 
 func genBasicAction(name, code string) string {
-	return fmt.Sprintf("\taction %s() {\n%s\n\t}\n", name, indentBy(code, "\t\t"))
+	return fmt.Sprintf("\taction %s() {\n\t\t%s\n\t}\n", name, indentBy(code, "\t\t"))
 }
 
 func (s *Stage) ToData() *StageData {
@@ -202,11 +204,11 @@ func (s *Stage) ToData() *StageData {
 	case Project, Filter:
 		updateFn := "update_" + s.Name
 		sd.Actions = genBasicAction(updateFn, s.Code)
-		sd.Control = indentBy(updateFn+"();", "\t\t")
+		sd.Control = "\t\t" + updateFn + "();"
 	case GroupBy:
 		sd.Structs = genStructsForGroupBy(s)
 		sd.Actions = genGroupByAction(s)
-		cntrl := fmt.Sprintf("%s %s;\n%s %s;\n%s(%s, %s);", keyName, evKey, valName, evVal, "groupby_"+s.Name, evKey, evVal)
+		cntrl := fmt.Sprintf("\t\t%s %s;\n%s %s;\n%s(%s, %s);", keyName, evKey, valName, evVal, "groupby_"+s.Name, evKey, evVal)
 		sd.Control = indentBy(cntrl, "\t\t")
 	default:
 		panic("Stage type not supported")
