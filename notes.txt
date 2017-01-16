@@ -1,7 +1,5 @@
 TODOS
 
-* A, B determination for linear-in-state: AST maintenance
-  - main reason: possible direct use of simpler AS+B atom (no predicated versions)
 * passes to fix other cases: uid groupby, tout==inf, packet cloning, should not
   need to use switchId inside the p4 code
 
@@ -9,10 +7,7 @@ domino related
 * can we reduce outcast.sql compiler output size? 15 stages may be high...
 
 additional compiler passes
-* bounded packet history inference + splitting, i.e., on-switch and off-switch
-  - predicated expressions for state variables
-  - detect linear-in-state; find predicated A,B expressions
-  - vector-valued state: matrices
+* pass: detect vector-valued state with linear updates
 * pass: handling groupby code generation correctly with `uid` in aggregation
 * pass: combine with located expr tree to only install on specific switches
 * pass: rules needed to generate outputs for query. By default, assume each
