@@ -359,9 +359,9 @@ public class AugExpr {
             System.out.print("Changed division expression " + this.toString());
             this.binop = Binop.BINOP_RSHIFT;
             Integer shiftCount = getPowerOf2(val);
-            if (shiftCount > SHIFT_INT_WIDTH) {
+            if (shiftCount > P4Printer.SHIFT_INT_WIDTH) {
               throw new RuntimeException("Divisor cannot be greater than " +
-                                         String.valueOf(SHIFT_INT_WIDTH) +
+                                         String.valueOf(P4Printer.SHIFT_INT_WIDTH) +
                                          " bits long!");
             }
             this.children.get(1).setValue(shiftCount);
