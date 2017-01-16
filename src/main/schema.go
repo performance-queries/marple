@@ -124,7 +124,7 @@ func (s *Stage) ParseFrom(stageStr string) {
 		s.Op = Filter
 	case "PROJECT":
 		s.Op = Project
-	case "ZIP":
+	case "JOIN":
 		s.Op = Zip
 	}
 }
