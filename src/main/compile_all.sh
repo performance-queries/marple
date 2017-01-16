@@ -5,12 +5,11 @@
 ### The compiled JSON is *not* removed after this script finishes.
 
 go build
-numfiles=$(ls -l ../../example_queries | wc -l)
-numfiiles=$((numfiles - 1))
+numfiles=$(ls ../../example_queries | wc -l)
 i=1
 for f in `ls ../../example_queries`
 do
-    echo -ne "\r\033[KCompiling $f ($i of $numfiles)"
+    echo -ne "\r\033[K[Compiling $f ($i of $numfiles)]"
     ff=../../example_queries/$f
     cat $ff | java -ea -jar ../../target/Compiler-jar-with-dependencies.jar > /dev/null 2> /tmp/javacerr
     status=$?

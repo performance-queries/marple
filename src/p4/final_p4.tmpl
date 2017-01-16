@@ -253,6 +253,9 @@ control Eg(inout Headers hdrs,
     {{end}}
 
     apply {
+        meta.common_meta.switchId = {{.SwitchId}};
+        meta.common_meta.payload_length = hdrs.tcp.isValid() ? (bit<32>)hdrs.ip.packet_length - (bit<32>)hdrs.tcp.dataOffset : (bit<32>)hdrs.udp.length_;
+        meta.common_meta.egress_timestamp = meta.queue_meta.enq_timestamp[31:0] + (bit<32>)meta.queue_meta.deq_timedelta;
         {{range .Stages}}
 {{.Control}}
         {{end}}

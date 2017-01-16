@@ -86,6 +86,7 @@ type GroupByActionData struct {
 
 type TemplateData struct {
 	TemplateName string
+	SwitchId     int
 	CommonMeta   []string
 	QueryMeta    []string
 	Stages       []*StageData
@@ -206,6 +207,7 @@ func main() {
 	s := NewSchemaFromInput(*compilerOut)
 	data := &TemplateData{
 		TemplateName: "final_p4.tmpl",
+		SwitchId:     1,
 		CommonMeta:   s.CommonMeta,
 		QueryMeta:    s.QueryMeta,
 	}
@@ -226,77 +228,3 @@ func main() {
 		panic(err)
 	}
 }
-
-/*
-func main() {
-	flag.Parse()
-
-	t, err := template.New("p4").Funcs(funcMap).ParseFiles(*templateFile)
-	if err != nil {
-		panic(err)
-	}
-
-	keySize := int(*keyWidth)
-	valSize := int(*valWidth)
-
-	lruSegments := make([]LRUSegment, *lruWays)
-	for i := 0; i < int(*lruWays); i++ {
-		lruSegments[i].KeyStart = i * keySize
-		lruSegments[i].KeyEnd = (i+1)*keySize - 1
-		lruSegments[i].ValStart = i * valSize
-		lruSegments[i].ValEnd = (i+1)*valSize - 1
-	}
-	lruSegments[*lruWays-1].Evict = true
-	updateFunc := *updateStr
-	if len(updateFunc) == 0 {
-		br := bufio.NewReader(os.Stdin)
-		s, err := br.ReadString('\n')
-		for err == nil {
-			updateFunc += s
-			s, err = br.ReadString('\n')
-		}
-		// Add the remainder
-		updateFunc += s
-	}
-	updateFunc += "\n"
-	templateLoc := strings.Split(*templateFile, "/")
-
-	data := struct {
-		// Dimensions of the LRU.
-		KeySize, ValSize, LruWays, LruRows, KeyRowSize, ValRowSize int
-		// The update operation, as P4-16 code. Fills in the body of func(val, hdrs, meta, standard_meta) { .. }, modifying val in place.
-		KeyMask, ValueMask, Update, TemplateName string
-		// Dimensions of each entry in the LRU.
-		Segments []LRUSegment
-	}{
-		KeySize:      keySize,
-		ValSize:      valSize,
-		LruWays:      int(*lruWays),
-		LruRows:      int(*lruRows),
-		KeyRowSize:   int(*lruWays) * keySize,
-		ValRowSize:   int(*lruWays) * valSize,
-		KeyMask:      fmt.Sprintf("0x%x", (1<<*keyWidth - 1)),
-		ValueMask:    fmt.Sprintf("0x%x", (1<<*valWidth - 1)),
-		Update:       updateFunc,
-		Segments:     lruSegments,
-		TemplateName: templateLoc[len(templateLoc)-1],
-	}
-
-	var outF io.Writer
-	if len(*outputFile) > 0 {
-		outF, err = os.Create(*outputFile)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		outF = os.Stdout
-	}
-	ts := t.Templates()
-	if len(ts) != 1 {
-		panic("More than 1 defined template")
-	}
-	err = ts[0].Execute(outF, data)
-	if err != nil {
-		panic(err)
-	}
-}*/
