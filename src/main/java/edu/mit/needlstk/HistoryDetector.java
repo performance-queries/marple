@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   /// Maximum length of packet history permitted
-  private Integer MAX_PKT_HISTORY = 100;
+  public static Integer MAX_PKT_HISTORY = 100;
   /// Keep track of "outer" predicate for the current context
   private AugPred outerPred;
   private Integer outerPredId;
@@ -43,6 +43,8 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
   /// Tracking history information
   private HashMap<String, HashMap<String, PredHist>> currIterHist;
   private HashMap<String, HashMap<String, PredHist>> prevIterHist;
+  /// Tracking AST information
+  private HashMap<String, HashMap<String, PredAST>> ast;
 
   public HistoryDetector(HashMap<String, List<String>> statesMap,
                          HashMap<String, List<String>> fieldsMap) {
@@ -65,8 +67,10 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     /// Get a default history value in case the current outer predicate isn't completely covered by
     /// the current history.
     Integer defaultHist;
+    Integer noHist = -1;
     if (prevIterHist.get(currAggFun).containsKey(ident)) {
-      defaultHist = Math.min(prevIterHist.get(currAggFun).get(ident).getSingletonHist() + 1,
+      defaultHist = Math.min((Integer)prevIterHist.get(currAggFun).get(ident).getSingletonHist()
+                             + 1,
                              MAX_PKT_HISTORY);
     } else if (fields.get(currAggFun).contains(ident)) {
       defaultHist = 0;
@@ -84,8 +88,11 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     /// necessary.
     PredHist result;
     if (currIterHist.get(currAggFun).containsKey(ident)) {
-      result = currIterHist.get(currAggFun).get(ident).
-          getRelevantPredHist(givenOuterPredId, this.predTree.get(this.currAggFun), defaultHist);
+      result = new PredHist(currIterHist.get(currAggFun).get(ident).getRelevantPredHist(
+          givenOuterPredId,
+          this.predTree.get(this.currAggFun),
+          defaultHist,
+          noHist));
     } else {
       result = new PredHist(givenOuterPredId, defaultHist);
     }
@@ -106,7 +113,8 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
       // get maximum historical dependence among used vars in the current assignment
       PredTree pt = this.predTree.get(this.currAggFun);
       PredHist exprHist = getHistFromList(new AugExpr(ctx.expr()).getUsedVars(), this.outerPredId);
-      PredHist relevantOuterHist = this.outerPredHist.getRelevantPredHist(this.outerPredId, pt, -1);
+      PredHist relevantOuterHist = new PredHist(this.outerPredHist.getRelevantPredHist(
+          this.outerPredId, pt, -1, -1));
       PredHist assignHist = PredHist.getMaxHist(exprHist, relevantOuterHist, pt);
       // insert history entry for defined variable
       String ident = ctx.ID().getText();
@@ -295,5 +303,16 @@ public class HistoryDetector extends PerfQueryBaseVisitor<Void> {
     //   res += String.valueOf(entry.getKey()) + ": " + entry.getValue().print() + "\n";
     // }
     return res;
+  }
+
+  public HashMap<String, HashMap<String, Integer>> getConvergedHistory() {
+    HashMap<String, HashMap<String, Integer>> converged = new HashMap<>();
+    for (String aggFun: this.prevIterHist.keySet()) {
+      converged.put(aggFun, new HashMap<String, Integer>());
+      for (String var: this.prevIterHist.get(aggFun).keySet()) {
+        converged.get(aggFun).put(var, this.prevIterHist.get(aggFun).get(var).getSingletonHist());
+      }
+    }
+    return converged;
   }
 }

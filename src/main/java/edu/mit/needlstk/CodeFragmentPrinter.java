@@ -14,9 +14,9 @@ public class CodeFragmentPrinter {
       String decls = pc.getPacketFieldDeclsP4(pipe);
       HashSet<String> registers = pc.getAllRegisters(pipe);
       writer.println("=================================");
-      for (String pktLogField: Fields.pktLogMetadataFields) {
+      for (String pktLogField: P4Printer.pktLogMetadataFields) {
         writer.print(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE,
-                                     Fields.p4Map.get(pktLogField)).getP4());
+                                     P4Printer.p4Map.get(pktLogField)).getP4());
       }
       writer.println("=================================");
       writer.print(decls);
