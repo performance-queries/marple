@@ -54,6 +54,9 @@ public class PipeConstructor {
       case JOIN:
         return new ArrayList<String>(inputFieldSet);
       case PROJECT:
+        HashSet<String> schemaFields = new HashSet<>(setFields);
+        schemaFields.addAll(inputFieldSet);
+        return new ArrayList<>(schemaFields);
       case GROUPBY:
         return new ArrayList<String>(setFields);
       case PKTLOG:
