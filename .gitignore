@@ -5,3 +5,6 @@ target
 *-frags.txt
 domino-*.c
 src/p4/test_*
+src/main/*.frags
+src/main/*.p4
+src/main/*.json
