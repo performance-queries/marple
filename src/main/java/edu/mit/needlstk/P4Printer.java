@@ -7,6 +7,8 @@ public class P4Printer {
   public static Integer INT_WIDTH = 32;
   /// Default boolean bitwidth used for declarations in emitted code.
   public static Integer BOOL_WIDTH = 1;
+  /// Default integer bitwidth used when left shifting in emitted code.
+  public static Integer SHIFT_INT_WIDTH = 8;
   /// Type information for variables
   public static Integer INT_TYPE = 1;
   public static Integer BOOL_TYPE = 2;

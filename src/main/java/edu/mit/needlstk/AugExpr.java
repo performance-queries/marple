@@ -19,7 +19,7 @@ public class AugExpr {
     BINOP_SUB,
     BINOP_MUL,
     BINOP_DIV,
-    BINOP_LSHIFT
+    BINOP_RSHIFT
   };
 
   /// Enum and operator identifying the structure of the expression tree
@@ -109,7 +109,7 @@ public class AugExpr {
       case "/":
         return Binop.BINOP_DIV;
       case "<<":
-        return Binop.BINOP_LSHIFT;
+        return Binop.BINOP_RSHIFT;
       default:
         assert (false); // Expecting a different expression combinator?
         return null;
@@ -127,8 +127,8 @@ public class AugExpr {
         return "*";
       case BINOP_DIV:
         return "/";
-      case BINOP_LSHIFT:
-        return "<<";
+      case BINOP_RSHIFT:
+        return ">>";
       default:
         assert (false); // Expecting a different expression combinator?
         return null;
@@ -329,6 +329,11 @@ public class AugExpr {
     this.value = val;
   }
 
+  private void setWidth(Integer width) {
+    assert (isValueExpr());
+    this.width = width;
+  }
+
   private boolean isPowerOf2(Integer x) {
     return (x & (x-1)) == 0;
   }
@@ -349,8 +354,9 @@ public class AugExpr {
           Integer val = this.children.get(1).getValue();
           if (isPowerOf2(val)) {
             System.out.print("Changed division expression " + this.toString());
-            this.binop = Binop.BINOP_LSHIFT;
+            this.binop = Binop.BINOP_RSHIFT;
             this.children.get(1).setValue(getPowerOf2(val));
+            this.children.get(1).setWidth(P4Printer.SHIFT_INT_WIDTH);
             System.out.println(" to " + this.toString());
             /// Transform the other child independently next
             this.children.get(0).transformDivision();
