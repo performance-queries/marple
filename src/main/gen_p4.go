@@ -143,7 +143,7 @@ func genGroupByAction(s *Stage) string {
 		DefaultKeyDefinition:   "{" + strings.Join(defaultKey, ",") + "}",
 		KeyFields:              s.KeyFields,
 		ValueFields:            s.Registers,
-		KeySourceFields:        mapToSources(s.KeyFields),
+		KeySourceFields:        s.KeySourceFields,
 	}
 	t, err := template.New("groupby" + s.Name).Funcs(funcMap).ParseFiles(groupByActionsTemplate)
 	if err != nil {
@@ -211,7 +211,7 @@ func (s *Stage) ToData() *StageData {
 		cntrl := fmt.Sprintf("\t\t%s %s;\n%s %s;\n%s(%s, %s);", keyName, evKey, valName, evVal, "groupby_"+s.Name, evKey, evVal)
 		sd.Control = indentBy(cntrl, "\t\t")
 	default:
-		panic("Stage type not supported")
+		panic("Stage type " + s.Name + " not supported")
 	}
 	return sd
 }

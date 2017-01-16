@@ -1,7 +1,7 @@
 package main
 
 import (
-	//	"fmt"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -34,11 +34,12 @@ type Schema struct {
 }
 
 type Stage struct {
-	Op        OpType
-	Name      string
-	Code      string
-	KeyFields []string
-	Registers []string
+	Op              OpType
+	Name            string
+	Code            string
+	KeyFields       []string
+	KeySourceFields []string
+	Registers       []string
 }
 
 func generateSourceMap(s *Schema) {
@@ -104,9 +105,10 @@ func (s *Stage) ParseFrom(stageStr string) {
 	s.Name = params[0]
 	if len(params) > 3 {
 		kfs := strings.Split(strings.Trim(params[3], "[]"), ",")
-		for _, kf := range kfs {
+		for i, kf := range kfs {
 			if tr := strings.TrimSpace(kf); len(tr) > 0 {
-				s.KeyFields = append(s.KeyFields, tr)
+				s.KeySourceFields = append(s.KeySourceFields, tr)
+				s.KeyFields = append(s.KeyFields, fmt.Sprintf("f%d", i))
 			}
 		}
 		rs := strings.Split(strings.Trim(params[4], "[]"), ",")
