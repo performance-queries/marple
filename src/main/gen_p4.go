@@ -201,7 +201,7 @@ func (s *Stage) ToData() *StageData {
 	keyName, valName := "Key_"+s.Name, "Value_"+s.Name
 	evKey, evVal := "evictedKey_"+s.Name, "evictedValue_"+s.Name
 	switch s.Op {
-	case Project, Filter:
+	case Project, Filter, Zip:
 		updateFn := "update_" + s.Name
 		sd.Actions = genBasicAction(updateFn, s.Code)
 		sd.Control = "\t\t" + updateFn + "();"

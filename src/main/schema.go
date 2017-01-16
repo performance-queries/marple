@@ -103,13 +103,17 @@ func (s *Stage) ParseFrom(stageStr string) {
 	s.Code = parts[1]
 	s.Name = params[0]
 	if len(params) > 3 {
-		s.KeyFields = strings.Split(strings.Trim(params[3], "[]"), ",")
-		for i, kf := range s.KeyFields {
-			s.KeyFields[i] = strings.TrimSpace(kf)
+		kfs := strings.Split(strings.Trim(params[3], "[]"), ",")
+		for _, kf := range kfs {
+			if tr := strings.TrimSpace(kf); len(tr) > 0 {
+				s.KeyFields = append(s.KeyFields, tr)
+			}
 		}
-		s.Registers = strings.Split(strings.Trim(params[4], "[]"), ",")
-		for i, r := range s.Registers {
-			s.Registers[i] = strings.TrimSpace(r)
+		rs := strings.Split(strings.Trim(params[4], "[]"), ",")
+		for _, r := range rs {
+			if tr := strings.TrimSpace(r); len(tr) > 0 {
+				s.Registers = append(s.Registers, strings.TrimSpace(r))
+			}
 		}
 	}
 	switch params[2] {
@@ -122,7 +126,6 @@ func (s *Stage) ParseFrom(stageStr string) {
 		s.Op = Project
 	case "ZIP":
 		s.Op = Zip
-		panic("ZIP stages are not yet supported")
 	}
 }
 
