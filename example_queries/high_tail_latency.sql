@@ -4,4 +4,4 @@ def perc([tot, high], [qin]):
   emit();
 
 R1 = groupby(T, [qid, switch], perc);
-R2 = filter(R1, (high * 100) / tot > 1);
+R2 = filter(R1, (high * 100) > tot);

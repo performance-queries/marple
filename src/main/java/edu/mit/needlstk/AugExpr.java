@@ -348,8 +348,10 @@ public class AugExpr {
         if (this.children.get(1).getType() == AugExprType.EXPR_VAL) {
           Integer val = this.children.get(1).getValue();
           if (isPowerOf2(val)) {
+            System.out.print("Changed division expression " + this.toString());
             this.binop = Binop.BINOP_LSHIFT;
             this.children.get(1).setValue(getPowerOf2(val));
+            System.out.println(" to " + this.toString());
             /// Transform the other child independently next
             this.children.get(0).transformDivision();
           } else {

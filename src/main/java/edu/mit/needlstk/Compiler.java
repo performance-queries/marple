@@ -77,10 +77,6 @@ public class Compiler {
     ifc.visit(tree);
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
 
-    /// Only allow divisions by (constant) powers of 2.
-    DivisorChecker dc = new DivisorChecker(aggFunCode);
-    dc.checkDivisor();
-
     /// Adjust state updates which are linear-in-state
     System.out.println("Performing linear-in-state transformations...");
     Linear linear = new Linear(aggFunCode, hists, stateVars, fieldVars, globalSymTab);
@@ -100,6 +96,10 @@ public class Compiler {
                                              exprTreeCreator.getDepTable(),
                                              exprTreeCreator.getLastAssignedId());
     ArrayList<PipeStage> fullPipe = pc.stitchPipe();
+
+    /// A small P4-specific pass to only allow divisions by (constant) powers of 2.
+    DivisorChecker dc = new DivisorChecker(fullPipe);
+    dc.checkDivisor();
 
     /// Print P4 fragments into a file
     String fragsFile = CodeFragmentPrinter.writeP4(pc, fullPipe);
