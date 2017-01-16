@@ -4,9 +4,11 @@
 ### If it encounters an error, it prints that error and asks if you want to proceed.
 ### The compiled JSON is *not* removed after this script finishes.
 
+QUERY_DIR=../../example_queries
 go build
-numfiles=$(ls ../../example_queries | wc -l)
+numfiles=$(ls $QUERY_DIR | wc -l)
 i=1
+mkdir -p outputs
 for f in `ls ../../example_queries`
 do
     echo -ne "\r\033[K[Compiling $f ($i of $numfiles)]"
@@ -32,7 +34,7 @@ do
         cat /tmp/agerr
         exit 1
     fi
-    jsonf=${f/.sql/.json}
+    jsonf=outputs/${f/.sql/.json}
     ~/p4c/build/p4c-bm2-ss $p4f -o $jsonf > /dev/null 2> /tmp/p4err
     status=$?
     if [ $status -ne 0 ]
@@ -46,7 +48,6 @@ do
     i=$((i+1))
 done
 echo -e "\r\033[KCompilation complete!"
-exit 1
 rm *.p4
 rm *.frags
 rm domino-full.c
