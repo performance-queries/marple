@@ -1,12 +1,16 @@
 #!/bin/bash
 
+### This tests the compilation pipeline of all queries in $QUERY_DIR.
+### If it encounters an error, it prints that error and asks if you want to proceed.
+### The compiled JSON is *not* removed after this script finishes.
+
 go build
 numfiles=$(ls -l ../../example_queries | wc -l)
-numfiles=$((numfiles - 1))
+numfiiles=$((numfiles - 1))
 i=1
 for f in `ls ../../example_queries`
 do
-    echo -ne "\r\033[KAutogenerating $f ($i of $numfiles)"
+    echo -ne "\r\033[KCompiling $f ($i of $numfiles)"
     ff=../../example_queries/$f
     cat $ff | java -ea -jar ../../target/Compiler-jar-with-dependencies.jar > /dev/null 2> /tmp/javacerr
     status=$?
@@ -42,9 +46,8 @@ do
     fi
     i=$((i+1))
 done
-echo
+echo -e "\r\033[KCompilation complete!"
 exit 1
 rm *.p4
 rm *.frags
-rm *.json
 rm domino-full.c
