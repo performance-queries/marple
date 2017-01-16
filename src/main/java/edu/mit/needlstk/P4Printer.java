@@ -29,8 +29,8 @@ public class P4Printer {
     p4Map.put(Fields.outportHdr,    "egress_port");
     p4Map.put(Fields.pktlenHdr,     "packet_length");
     p4Map.put(Fields.payloadlenHdr, "payload_length");
-    p4Map.put(Fields.qidHdr,        "qid");
-    p4Map.put(Fields.tinHdr,        "global_ingress_timestamp");
+    p4Map.put(Fields.qidHdr,        "egress_port");
+    p4Map.put(Fields.tinHdr,        "enq_timestamp");
     p4Map.put(Fields.toutHdr,       "egress_timestamp");
     p4Map.put(Fields.qinHdr,        "enq_qdepth");
     p4Map.put(Fields.qoutHdr,       "deq_qdepth");
@@ -40,7 +40,7 @@ public class P4Printer {
     p4Map.put(Fields.dstipHdr,      "dstAddr");
     p4Map.put(Fields.srcportHdr,    "srcport");
     p4Map.put(Fields.dstportHdr,    "dstport");
-    p4Map.put(Fields.tcpseqHdr,     "sequence");
+    p4Map.put(Fields.tcpseqHdr,     "seqNo");
     p4Map.put(Fields.protoHdr,      "protocol");
     p4Map.put(Fields.pktpathHdr,    "pktpath");
   }
@@ -52,25 +52,25 @@ public class P4Printer {
   static {
     String STANDARD_TYPECAST  = "(bit<32>)";
     String META               = "meta.";
-    String STANDARD_METADATA  = META + "standard_metadata.";
-    String INTRINSIC_METADATA = META + "intrinsic_metadata.";
-    String QUEUE_METADATA     = META + "queue_metadata.";
-    String PKTLOG_METADATA    = META + "pktlog_metadata.";
+    String STANDARD_METADATA  = "standard_meta.";
+    String INTRINSIC_METADATA = META + "intrinsic_meta.";
+    String QUEUE_METADATA     = META + "queue_meta.";
+    String PKTLOG_METADATA    = META + "common_meta.";
     String HEADERS            = "hdrs.";
     String IP_PREFIX          = "ip.";
     String TCP_PREFIX         = "tcp.";
     p4PrefixMap.put(Fields.switchHdr,          PKTLOG_METADATA);
-    p4PrefixMap.put(Fields.inportHdr,          STANDARD_METADATA);
-    p4PrefixMap.put(Fields.outportHdr,         STANDARD_METADATA);
+    p4PrefixMap.put(Fields.inportHdr,          STANDARD_TYPECAST + STANDARD_METADATA);
+    p4PrefixMap.put(Fields.outportHdr,         STANDARD_TYPECAST + STANDARD_METADATA);
     p4PrefixMap.put(Fields.pktlenHdr,          STANDARD_TYPECAST + HEADERS + IP_PREFIX);
-    p4PrefixMap.put(Fields.payloadlenHdr,      HEADERS + TCP_PREFIX);
-    p4PrefixMap.put(Fields.qidHdr,             INTRINSIC_METADATA);
-    p4PrefixMap.put(Fields.tinHdr,             STANDARD_TYPECAST + INTRINSIC_METADATA);
+    p4PrefixMap.put(Fields.payloadlenHdr,      PKTLOG_METADATA);
+    p4PrefixMap.put(Fields.qidHdr,             STANDARD_TYPECAST + STANDARD_METADATA);
+    p4PrefixMap.put(Fields.tinHdr,             STANDARD_TYPECAST + QUEUE_METADATA);
     p4PrefixMap.put(Fields.toutHdr,            PKTLOG_METADATA);
     p4PrefixMap.put(Fields.qinHdr,             STANDARD_TYPECAST + QUEUE_METADATA);
     p4PrefixMap.put(Fields.qoutHdr,            STANDARD_TYPECAST + QUEUE_METADATA);
     p4PrefixMap.put(Fields.qtimeHdr,           QUEUE_METADATA);
-    p4PrefixMap.put(Fields.uidHdr,             HEADERS + IP_PREFIX);
+    p4PrefixMap.put(Fields.uidHdr,             STANDARD_TYPECAST + HEADERS + IP_PREFIX);
     p4PrefixMap.put(Fields.srcipHdr,           HEADERS + IP_PREFIX);
     p4PrefixMap.put(Fields.dstipHdr,           HEADERS + IP_PREFIX);
     p4PrefixMap.put(Fields.srcportHdr,         HEADERS + TCP_PREFIX);

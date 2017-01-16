@@ -23,10 +23,6 @@ const (
 	codeDelimiter  = "--"
 )
 
-// Map from each name to the fully qualified metadata struct it belongs to.
-// TODO: shouldn't be global.
-var sourceMap = map[string]string{}
-
 type Schema struct {
 	CommonMeta []string
 	QueryMeta  []string
@@ -42,6 +38,7 @@ type Stage struct {
 	Registers       []string
 }
 
+/*
 func generateSourceMap(s *Schema) {
 	for _, f := range s.CommonMeta {
 		parts := strings.Split(f, " ")
@@ -65,7 +62,7 @@ func generateSourceMap(s *Schema) {
 	sourceMap["pktlen"] = "(bit<32>)hdrs.ip.totalLen"
 	sourceMap["ingress_port"] = "(bit<32>)standard_meta.ingress_port"
 	sourceMap["egress_port"] = "(bit<32>)standard_meta.egress_port"
-}
+}*/
 
 func NewSchemaFromInput(input string) *Schema {
 	var schemaFile io.Reader
@@ -143,8 +140,15 @@ func (s *Schema) ParseFrom(schema string) {
 		if len(strings.TrimSpace(parts[i])) > 0 {
 			stage := &Stage{}
 			stage.ParseFrom(parts[i])
+			// If we're not grouping by anything, make it a single constant field.
+			if len(stage.KeyFields) == 0 {
+				stage.KeyFields = append(stage.KeyFields, "empty")
+				stage.KeySourceFields = append(stage.KeySourceFields, "1")
+			}
+			if len(stage.Registers) == 0 {
+				stage.Registers = append(stage.Registers, "empty")
+			}
 			s.Stages = append(s.Stages, stage)
 		}
 	}
-	generateSourceMap(s)
 }

@@ -97,21 +97,6 @@ type StageData struct {
 	Control string
 }
 
-// Maps sources that we need to use in each key to the place they come from,
-// i.e. standard metadata or metadata.
-func mapToSources(fields []string) []string {
-	// Map from each field to the fully qualified expression used to retrieve it from metadata.
-	sources := []string{}
-	for _, f := range fields {
-		src, ok := sourceMap[strings.TrimSpace(f)]
-		if !ok {
-			panic("Unable to find key field " + f + " in metadata struct")
-		}
-		sources = append(sources, src)
-	}
-	return sources
-}
-
 func genGroupByAction(s *Stage) string {
 	ways := int(*lruWays)
 	defaultVal := []string{}

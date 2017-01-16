@@ -26,7 +26,7 @@ header ipv4_t {
     bit<4>       version;
     bit<4>       ihl;
     bit<8>       diffserv;
-    bit<16>      totalLen;
+    bit<16>      packet_length;
     bit<16>      identification;
     bit<3>       flags;
     bit<13>      fragOffset;
@@ -38,8 +38,8 @@ header ipv4_t {
 }
 
 header tcp_t {
-    bit<16> srcPort;
-    bit<16> dstPort;
+    bit<16> srcport;
+    bit<16> dstport;
     bit<32> seqNo;
     bit<32> ackNo;
     bit<4>  dataOffset;
@@ -100,7 +100,7 @@ struct Metadata {
     // The structs below are read only.
     CommonMetadata common_meta;
     intrinsic_metadata_t intrinsic_meta;
-    queueing_metadata_t queueing_meta; 
+    queueing_metadata_t queue_meta; 
 }
 
 parser P(packet_in b,

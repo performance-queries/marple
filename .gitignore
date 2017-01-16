@@ -4,3 +4,4 @@ PerfQuery*.java
 target
 *-frags.txt
 domino-*.c
+src/p4/test_*
