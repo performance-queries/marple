@@ -38,6 +38,9 @@ public class AugExpr {
   public List<AugExpr> children;
   public Binop binop;
 
+  /// Internal definition of infinity.
+  public static Integer EXPR_INFINITY = Integer.MAX_VALUE;
+
   /// Constructor from expression in ANTLR (ExprContext)
   public AugExpr(PerfQueryParser.ExprContext ctx) {
     if (ctx instanceof PerfQueryParser.ExprColContext) {
@@ -48,7 +51,7 @@ public class AugExpr {
       this.type = AugExprType.EXPR_VAL;
       PerfQueryParser.ExprValContext newCtx = (PerfQueryParser.ExprValContext)ctx;
       String valText = newCtx.VALUE().getText();
-      this.value = (valText.equals("infinity")) ? -1 : Integer.valueOf(valText);
+      this.value = (valText.equals("infinity")) ? EXPR_INFINITY : Integer.valueOf(valText);
       this.width = DEFAULT_VAL_WIDTH;
     } else if (ctx instanceof PerfQueryParser.ExprCombContext) {
       this.type = AugExprType.EXPR_COMB;
@@ -355,7 +358,13 @@ public class AugExpr {
           if (isPowerOf2(val)) {
             System.out.print("Changed division expression " + this.toString());
             this.binop = Binop.BINOP_RSHIFT;
-            this.children.get(1).setValue(getPowerOf2(val));
+            Integer shiftCount = getPowerOf2(val);
+            if (shiftCount > SHIFT_INT_WIDTH) {
+              throw new RuntimeException("Divisor cannot be greater than " +
+                                         String.valueOf(SHIFT_INT_WIDTH) +
+                                         " bits long!");
+            }
+            this.children.get(1).setValue(shiftCount);
             this.children.get(1).setWidth(P4Printer.SHIFT_INT_WIDTH);
             System.out.println(" to " + this.toString());
             /// Transform the other child independently next
