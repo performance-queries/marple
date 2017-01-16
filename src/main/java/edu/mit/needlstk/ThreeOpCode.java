@@ -82,6 +82,10 @@ public class ThreeOpCode {
     this.stmts.add(newStmt);
   }
 
+  public void appendStmts(ArrayList<ThreeOpStmt> newStmts) {
+    this.stmts.addAll(newStmts);
+  }
+
   public void addDecl(ThreeOpDecl decl) {
     this.decls.add(decl);
   }

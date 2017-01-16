@@ -8,5 +8,5 @@ def flsum ([sum], []):
     sum = sum + 1
 
 R1 = groupby(T, [srcip, dstip, srcport, dstport, proto, switch], fl_detect);
-R2 = map(R1, [size_index], [size/100]);
+R2 = map(R1, [size_index], [size/128]);
 result = groupby(R2, [size_index], flsum);

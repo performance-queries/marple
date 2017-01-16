@@ -12,7 +12,11 @@ for f in example_queries/*.sql; do
   echo "Testing $f ...";
   cat $f | java -ea -jar $1 ;
   # Testing with domino
-  $DOMINO_BIN domino-full.c ${DOMINO_ATOMS}/nested_ifs.sk 16 10 ;
+  CURRDIR=`pwd`
+  cd $DOMINO_EXAMPLES
+  $DOMINO_BIN ${CURRDIR}/domino-full.c ${DOMINO_ATOMS}/mul_acc.sk 16 10 ;
+  $DOMINO_BIN ${CURRDIR}/domino-full.c ${DOMINO_ATOMS}/nested_ifs.sk 16 10 ;
+  cd -
 done
 
 echo ;

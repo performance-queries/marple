@@ -18,7 +18,8 @@ public class AugExpr {
     BINOP_ADD,
     BINOP_SUB,
     BINOP_MUL,
-    BINOP_DIV
+    BINOP_DIV,
+    BINOP_LSHIFT
   };
 
   /// Enum and operator identifying the structure of the expression tree
@@ -82,8 +83,22 @@ public class AugExpr {
     this.width = width;
   }
 
+  /// Constructor for combinational expressions with a specified binary operator
+  public AugExpr(AugExpr op1, AugExpr op2, String op) {
+    if (op != "+" && op != "-" && op != "*" && op != "/") {
+      throw new RuntimeException("Operators must be one of pre-specified arithmetic types:\n" +
+                                 "+ - * / \n");
+    }
+    this.type = AugExprType.EXPR_COMB;
+    this.children = new ArrayList<>(Arrays.asList(op1, op2));
+    this.binop = binopFromText(op);
+  }
+
+  /// Default constructor for inheritance
+  public AugExpr() { }
+
   /// Helper to get binary operator enum from token text
-  private Binop binopFromText(String txt) {
+  protected Binop binopFromText(String txt) {
     switch(txt) {
       case "+":
         return Binop.BINOP_ADD;
@@ -93,6 +108,8 @@ public class AugExpr {
         return Binop.BINOP_MUL;
       case "/":
         return Binop.BINOP_DIV;
+      case "<<":
+        return Binop.BINOP_LSHIFT;
       default:
         assert (false); // Expecting a different expression combinator?
         return null;
@@ -110,11 +127,13 @@ public class AugExpr {
         return "*";
       case BINOP_DIV:
         return "/";
+      case BINOP_LSHIFT:
+        return "<<";
       default:
         assert (false); // Expecting a different expression combinator?
         return null;
     }
-  }  
+  }
 
   private void copy(AugExpr copySrc) {
     this.type = copySrc.type;
@@ -147,6 +166,92 @@ public class AugExpr {
         assert(false);
         return null;
     }
+  }
+
+  /// If the expression is affine in the identifier provided, return the A and B coefficients as
+  /// expressions. Otherwise, an empty list is returned.
+  /// This detection is very simple and sound, although quite incomplete. The expression must either
+  /// be exactly equal to:
+  /// AugExpr(var) (OR)
+  /// AugExpr((expr*var) + (expr)) (OR)
+  /// AugExpr(value) (OR)
+  /// AugExpr(var + expr)
+  /// The order of the terms can move around, but the form is the same.
+  /// Note that the second form only allows expressions where the var (say x) is one of the two
+  /// topmost AST elements. For example, according to this function, (3*2)*x is recognized as affine
+  /// in x, but (3*x)*2 is not.
+  public ArrayList<AugExpr> getAffineCoefficients(String var) {
+    /// AugExpr(var)
+    if (this.isSingleIdentExpr(var)) {
+      return new ArrayList<AugExpr>(Arrays.asList(
+          new AugExpr(1),
+          new AugExpr(0)));
+    }
+    /// AugExpr(value)
+    if (this.isValueExpr()) {
+      return new ArrayList<AugExpr>(Arrays.asList(
+          new AugExpr(0),
+          this));
+    }
+    /// AugExpr((expr*var) + (expr))
+    if (! (type == AugExprType.EXPR_COMB)) return new ArrayList<AugExpr>();
+    AugExpr child0 = this.children.get(0);
+    AugExpr child1 = this.children.get(1);
+    if (this.isAddExpr()) {
+      if (child0.isLinearExpr(var) && ! child1.usesIdent(var)) {
+        return new ArrayList<AugExpr>(Arrays.asList(
+            child0.getLinearCoefficient(var),
+            child1));
+      } else if (child1.isLinearExpr(var) && ! child0.usesIdent(var)) {
+        return new ArrayList<AugExpr>(Arrays.asList(
+            child1.getLinearCoefficient(var),
+            child0));
+      }
+    }
+    return new ArrayList<AugExpr>();
+  }
+
+  /// Helpers for affine coefficient detection
+  public AugExpr getLinearCoefficient(String var) {
+    assert (this.isLinearExpr(var));
+    if (isSingleIdentExpr(var)) return new AugExpr(1);
+    else return this.children.get(0).isSingleIdentExpr(var) ?
+             this.children.get(1) : this.children.get(0);
+  }
+
+  public boolean isMulExpr() {
+    return (type == AugExprType.EXPR_COMB && binop == Binop.BINOP_MUL);
+  }
+
+  public boolean isAddExpr() {
+    return (type == AugExprType.EXPR_COMB && binop == Binop.BINOP_ADD);
+  }
+
+  public boolean isSingleIdentExpr(String var) {
+    return (type == AugExprType.EXPR_ID && ident.equals(var));
+  }
+
+  public boolean isValueExpr() {
+    return (type == AugExprType.EXPR_VAL);
+  }
+
+  public boolean usesIdent(String var) {
+    return this.getUsedVars().contains(var);
+  }
+
+  public boolean isLinearExpr(String var) {
+    if (isSingleIdentExpr(var)) return true;
+    if (isValueExpr()) return true;
+    if (! (type == AugExprType.EXPR_COMB)) return false;
+    AugExpr child0 = this.children.get(0);
+    AugExpr child1 = this.children.get(1);
+    return (this.isMulExpr() &&
+            ((child0.isSingleIdentExpr(var) && ! child1.usesIdent(var)) ||
+             (child1.isSingleIdentExpr(var) && ! child0.usesIdent(var))));
+  }
+
+  public boolean isAffine(String var) {
+    return (getAffineCoefficients(var).size() == 2);
   }
 
   /// Printing for inspection on console
@@ -200,4 +305,66 @@ public class AugExpr {
       return null;
     }
   }
+
+  /// Return type of the expression
+  public AugExprType getType() {
+    return this.type;
+  }
+
+  @Override public String toString() {
+    return print();
+  }
+
+  /// Helpers for a pass that transform expressions of divisions by powers of 2 internally to
+  /// shifts.  This isn't the ideal place to do this, but seems to serve as of now. A more ideal
+  /// design would use a general lambda function that can transform expressions, and the class
+  /// corresponding to the pass would supply the lambda.
+  private Integer getValue() {
+    assert (isValueExpr());
+    return this.value;
+  }
+
+  private void setValue(Integer val) {
+    assert (isValueExpr());
+    this.value = val;
+  }
+
+  private boolean isPowerOf2(Integer x) {
+    return (x & (x-1)) == 0;
+  }
+
+  private Integer getPowerOf2(Integer x) {
+    return new Integer((int)(Math.log(x) / Math.log(2)));
+  }
+
+  /// Helper function to transform ASTs with constant divisors which are powers of 2.
+  /// Other divisions are disallowed currently.
+  public void transformDivision() {
+    if (type == AugExprType.EXPR_ID || type == AugExprType.EXPR_VAL) {
+      // do nothing.
+      return;
+    } else if (type == AugExprType.EXPR_COMB) {
+      if (this.binop == Binop.BINOP_DIV) {
+        if (this.children.get(1).getType() == AugExprType.EXPR_VAL) {
+          Integer val = this.children.get(1).getValue();
+          if (isPowerOf2(val)) {
+            System.out.print("Changed division expression " + this.toString());
+            this.binop = Binop.BINOP_LSHIFT;
+            this.children.get(1).setValue(getPowerOf2(val));
+            System.out.println(" to " + this.toString());
+            /// Transform the other child independently next
+            this.children.get(0).transformDivision();
+          } else {
+            throw new RuntimeException("Divisor must be a power of 2!");
+          }
+        } else {
+          throw new RuntimeException("Divisor must be a constant value!");
+        }
+      } else { // other kinds of combinators are fine. Transform independently
+        this.children.get(0).transformDivision();
+        this.children.get(1).transformDivision();
+      }
+    }
+  }
+
 }

@@ -159,12 +159,11 @@ public class PipeConstructor {
       for (String field: fields) {
         /// Only look to add declaration if field hasn't been looked at so far.
         if (! fieldsChecked.contains(field)) {
-          if (predPacketFields.contains(field)) {
+          if (predPacketFields.contains(field)) { // predicate variable
             decls.add(new ThreeOpDecl(P4Printer.BOOL_WIDTH, P4Printer.INT_TYPE, field));
-          } else if ((! Fields.headerFields.contains(field)) &&
-                     (! Fields.metadataFields.contains(field))) {
+          } else if ((! Fields.fields.contains(field))) { // internal function variable
             decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE, field));
-          } // Else clause: packet fields which are headers or standard metadata
+          } // Otherwise: packet fields which are headers or the usual metadata
           fieldsChecked.add(field);
         }
       }
@@ -182,8 +181,7 @@ public class PipeConstructor {
         /// Only look to add declaration if field hasn't been looked at so far.
         if (! fieldsChecked.contains(field)) {
           decls.add(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE,
-                                    Fields.dominoMap.containsKey(field) ?
-                                    Fields.dominoMap.get(field) : field));
+                                    DominoPrinter.getDominoVarName(field)));
           fieldsChecked.add(field);
         }
       }

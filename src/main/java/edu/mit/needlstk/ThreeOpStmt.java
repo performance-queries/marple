@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 
 /// Template for three operand instructions
 /// These are statements of the form:
@@ -89,6 +90,36 @@ public class ThreeOpStmt {
       assert(false); // Expecting a new statement type?
       return null;
     }
+  }
+
+  /// Return expressions used to assign to the defined variables.
+  public ArrayList<AugExpr> getUsedExprs() {
+    if (type == StmtType.TERNARY) {
+      return new ArrayList<AugExpr>(Arrays.asList(exprIf, exprElse));
+    } else if (type == StmtType.EXPR_ASSIGN) {
+      return new ArrayList<AugExpr>(Arrays.asList(expr));
+    } else {
+      assert (type == StmtType.PRED_ASSIGN || type == StmtType.EMIT);
+      return new ArrayList<AugExpr>();
+    }
+  }
+
+  /// Return expressions used to define either a predicate or an assigned variable.
+  public ArrayList<AugExpr> getAllUsedExprs() {
+    if (type == StmtType.TERNARY || type == StmtType.EXPR_ASSIGN) {
+      return getUsedExprs();
+    } else if (type == StmtType.PRED_ASSIGN) {
+      return this.pred.getUsedExprs();
+    } else {
+      assert (type == StmtType.EMIT);
+      return new ArrayList<AugExpr>();
+    }
+  }
+
+  /// If the statement is ternary, return name of the enclosing predicate identifier.
+  public String getPredVarOfTernary() {
+    assert (type == StmtType.TERNARY);
+    return predVar;
   }
 
   /// Printing for visual inspection on console
@@ -198,6 +229,14 @@ public class ThreeOpStmt {
 
   public boolean isPredAssign() {
     return (type == StmtType.PRED_ASSIGN);
+  }
+
+  public boolean isTernary() {
+    return (type == StmtType.TERNARY);
+  }
+
+  public boolean isExprAssign() {
+    return (type == StmtType.EXPR_ASSIGN);
   }
 
   public String getEmitPred() {

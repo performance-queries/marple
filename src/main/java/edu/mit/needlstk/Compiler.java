@@ -68,6 +68,7 @@ public class Compiler {
     /// Detect bounded packet history
     HistoryDetector hd = new HistoryDetector(stateVars, fieldVars);
     hd.visit(tree);
+    HashMap<String, HashMap<String, Integer>> hists = hd.getConvergedHistory();
     System.out.println(hd.reportHistory());
 
     /// Produce code for aggregation functions
@@ -76,13 +77,14 @@ public class Compiler {
     ifc.visit(tree);
     HashMap<String, ThreeOpCode> aggFunCode = ifc.getAggFunCode();
 
-    System.out.println(aggFunCode);
+    /// Adjust state updates which are linear-in-state
+    System.out.println("Performing linear-in-state transformations...");
+    Linear linear = new Linear(aggFunCode, hists, stateVars, fieldVars, globalSymTab);
+    linear.extractLinearUpdates();
+    globalSymTab = linear.getGlobalSymTab();
+    aggFunCode   = linear.getAggFunCode();
 
-    /// Checking define-before-use in generated code retained for sanity checking later
-    // DefineBeforeUse codeChecker = new DefineBeforeUse(aggFunCode,
-    //                                                   stateVars,
-    //                                                   fieldVars);
-    // codeChecker.check();
+    System.out.println(aggFunCode);
 
     /// Produce code for all operators
     System.out.println("Generating code for all query operators...");
@@ -94,6 +96,10 @@ public class Compiler {
                                              exprTreeCreator.getDepTable(),
                                              exprTreeCreator.getLastAssignedId());
     ArrayList<PipeStage> fullPipe = pc.stitchPipe();
+
+    /// A small P4-specific pass to only allow divisions by (constant) powers of 2.
+    DivisorChecker dc = new DivisorChecker(fullPipe);
+    dc.checkDivisor();
 
     /// Print P4 fragments into a file
     String fragsFile = CodeFragmentPrinter.writeP4(pc, fullPipe);
