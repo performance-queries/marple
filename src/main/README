@@ -3,3 +3,9 @@ To autogenerate p4 code, run (from this dir)
 $> go build
 $> cat ${p4-frags.txt location} | ./main > ${output.p4 location}
 ```
+
+To compile all example queries in ../../example_queries:
+```
+$> ./compile_all.sh
+```
+Output fragment, p4, and json code will be placed in output/{frags,p4,json}.

@@ -60,6 +60,16 @@ type LRUSegment struct {
 	Evict bool
 }
 
+// The bitstring representation of a struct, which is stored in the register.
+// We have to parse a struct out from / in to this representation after
+// reading / writing from / to the register.
+type RawStruct struct {
+	Name    string
+	BitSize int
+	// The boundaries of the first field are Boundaries[0][0]:Boundaries[0][1]
+	Boundaries [][]int
+}
+
 type GroupByActionData struct {
 	UpdateFn               string
 	EqualsFn               string
@@ -81,6 +91,8 @@ type GroupByActionData struct {
 	DefaultKeyDefinition   string
 	KeyFields              []string
 	ValueFields            []string
+	KeyRegisters           []string
+	ValueRegisters         []string
 	KeySourceFields        []string
 }
 
@@ -98,15 +110,23 @@ type StageData struct {
 	Control string
 }
 
+func mapWith(s []string, f func(string) string) []string {
+	n := []string{}
+	for _, el := range s {
+		n = append(n, f(el))
+	}
+	return n
+}
+
 func genGroupByAction(s *Stage) string {
 	ways := int(*lruWays)
-	defaultVal := []string{}
-	for i := 0; i < len(s.Registers); i++ {
-		defaultVal = append(defaultVal, "0")
+	zeroFunc := func(s string) string {
+		return "0"
 	}
-	defaultKey := []string{}
-	for i := 0; i < len(s.KeyFields); i++ {
-		defaultKey = append(defaultKey, "0")
+	regFunc := func(prefix string) func(string) string {
+		return func(str string) string {
+			return fmt.Sprintf("reg%s_%s_%s", prefix, s.Name, str)
+		}
 	}
 	data := &GroupByActionData{
 		UpdateFn:               "update_" + s.Name,
@@ -124,12 +144,14 @@ func genGroupByAction(s *Stage) string {
 		RowFieldNameList:       []string{"first", "second", "third", "fourth"},
 		UpdateCode:             indentBy(strings.TrimSpace(s.Code), "\t\t"),
 		DefaultValueName:       "defaultVal_" + s.Name,
-		DefaultValueDefinition: "{" + strings.Join(defaultVal, ",") + "}",
+		DefaultValueDefinition: "{" + strings.Join(mapWith(s.Registers, zeroFunc), ",") + "}",
 		DefaultKeyName:         "defaultKey_" + s.Name,
-		DefaultKeyDefinition:   "{" + strings.Join(defaultKey, ",") + "}",
+		DefaultKeyDefinition:   "{" + strings.Join(mapWith(s.KeyFields, zeroFunc), ",") + "}",
 		KeyFields:              s.KeyFields,
 		ValueFields:            s.Registers,
 		KeySourceFields:        s.KeySourceFields,
+		KeyRegisters:           mapWith(s.KeyFields, regFunc("K")),
+		ValueRegisters:         mapWith(s.Registers, regFunc("V")),
 	}
 	t, err := template.New("groupby" + s.Name).Funcs(funcMap).ParseFiles(groupByActionsTemplate)
 	if err != nil {

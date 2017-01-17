@@ -1,8 +1,10 @@
-    register<{{.KeyName}}>(32w{{.TableSize}}) {{.KeyRegisterName}};
-    register<{{.ValueName}}>(32w{{.TableSize}}) {{.ValueRegisterName}};
+    {{range .KeyRegisters}}
+        register<bit<32>>(32w{{$.TableSize}}) {{.}};{{end}}
+    {{range .ValueRegisters}}
+    register<bit<32>>(32w{{$.TableSize}}) {{.}};{{end}}
 
     // Using register regKeys, regValues.
-    action {{.LRUFn}}(out {{.KeyName}} evictedKey, out {{.ValueName}} evictedValue) {
+    action {{.LRUFn}}(inout {{.KeyName}} evictedKey, inout {{.ValueName}} evictedValue) {
         {{.ValueName}} {{.DefaultValueName}} = {{.DefaultValueDefinition}};
         {{.KeyName}} {{.DefaultKeyName}} = {{$.DefaultKeyDefinition}};
         evictedKey = {{.DefaultKeyDefinition}};
@@ -14,10 +16,14 @@
         hash(hsh, HashAlgorithm.crc32, 32w0, inKey, 32w{{.TableSize}});
         {{.KeyName}} foundKey = {{.DefaultKeyDefinition}};
         {{.ValueName}} foundValue = {{.DefaultValueDefinition}};
-        {{.KeyRegisterName}}.read(foundKey, hsh);
-        {{.ValueRegisterName}}.read(foundValue, hsh);
-        bool same = (foundKey == inKey);
-        bool zero = (foundKey == {{.DefaultKeyName}});
+        {{range $i, $kr := .KeyRegisters}}
+        {{.}}.read(foundKey.{{index $.KeyFields $i}}, hsh);{{end}}
+        {{range $i, $vr := .ValueRegisters}}
+        {{.}}.read(foundValue.{{index $.ValueFields $i}}, hsh);{{end}}
+        bool same = true;{{range .KeyFields}}
+        same = (foundKey.{{.}} == inKey.{{.}}) ? same : false;{{end}}
+        bool zero = true;{{range .KeyFields}}
+        zero = (foundKey.{{.}} == {{$.DefaultKeyName}}.{{.}});{{end}}
         
         {{.ValueName}} val = {{.DefaultValueDefinition}};
         bool ok = same || zero;
@@ -30,6 +36,8 @@
         val.{{.}} = ok ? foundValue.{{.}} : 0;{{end}}
         {{.UpdateCode}}
 
-        {{.KeyRegisterName}}.write(hsh, inKey);
-        {{.ValueRegisterName}}.write(hsh, val);
+        {{range $i, $kr := .KeyRegisters}}
+        {{.}}.write(hsh, inKey.{{index $.KeyFields $i}});{{end}}
+        {{range $i, $vr := .ValueRegisters}}
+        {{.}}.write(hsh, val.{{index $.ValueFields $i}});{{end}}
     }
