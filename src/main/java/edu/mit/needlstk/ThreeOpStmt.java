@@ -150,10 +150,16 @@ public class ThreeOpStmt {
       assert (symTab.containsKey(result));
       assert (symTab.containsKey(predVar));
       /// Produce p4 line of code
-      res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
-             P4Printer.p4Ident(predVar, symTab.get(predVar)) + " ? ("
-             + exprIf.getP4(symTab) + ") : ("
-             + exprElse.getP4(symTab) + ");\n");
+      /// TODO: temporary change of printing to avoid potential p4c+BM issue.
+      res = "if (" + P4Printer.p4Ident(predVar, symTab.get(predVar)) + ") {\n  ";
+      res += P4Printer.p4Ident(result, symTab.get(result)) + " = " + exprIf.getP4(symTab) + ";";
+      res += "\n} else {\n  ";
+      res += P4Printer.p4Ident(result, symTab.get(result)) + " = " + exprElse.getP4(symTab) + ";";
+      res += "\n}\n";
+      // res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
+      //        P4Printer.p4Ident(predVar, symTab.get(predVar)) + " ? ("
+      //        + exprIf.getP4(symTab) + ") : ("
+      //        + exprElse.getP4(symTab) + ");\n");
     } else if(type == StmtType.PRED_ASSIGN) {
       assert (symTab.containsKey(result));
       res = (P4Printer.p4Ident(result, symTab.get(result)) + " = " +
