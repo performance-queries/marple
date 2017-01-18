@@ -15,7 +15,7 @@ public class P4Printer {
   /// Prefix used to print query-related metadata fields in emitted code.
   public static String PREFIX_QUERY_META = "meta.query_meta.";
   /// Placeholder prefix used to print register state in emitted code.
-  public static String PREFIX_STATE = "val.";
+  public static String PREFIX_STATE = "_val_";
   // Prefix to print constant values in emitted code. Use 32 bit integers.
   public static String MIDFIX_VALUE = "w";
   // True and False literals in P4
