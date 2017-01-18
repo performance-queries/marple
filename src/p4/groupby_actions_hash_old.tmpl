@@ -1,5 +1,5 @@
     {{range .KeyRegisters}}
-    register<bit<32>>(32w{{$.TableSize}}) {{.}};{{end}}
+        register<bit<32>>(32w{{$.TableSize}}) {{.}};{{end}}
     {{range .ValueRegisters}}
     register<bit<32>>(32w{{$.TableSize}}) {{.}};{{end}}
 
@@ -9,38 +9,35 @@
         {{.KeyName}} {{.DefaultKeyName}} = {{$.DefaultKeyDefinition}};
         evictedKey = {{.DefaultKeyDefinition}};
         evictedValue = {{.DefaultValueDefinition}};
-        {{.KeyName}} inKey = {{.DefaultKeyDefinition}};
-        {{range $i, $field := $.KeyFields}}
+        {{.KeyName}} inKey;{{range $i, $field := $.KeyFields}}
         inKey.{{$field}} = {{index $.KeySourceFields $i}};{{end}}
-        {{range .KeyFields}}
-        bit<32> _foundKey_{{.}} = 0;{{end}}
 
         bit<32> hsh = 32w1;
         hash(hsh, HashAlgorithm.crc32, 32w0, inKey, 32w{{.TableSize}});
-        {{range .ValueFields}}
-        bit<32> _foundValue_{{.}} = 0;{{end}}
+        {{.KeyName}} foundKey = {{.DefaultKeyDefinition}};
+        {{.ValueName}} foundValue = {{.DefaultValueDefinition}};
         {{range $i, $kr := .KeyRegisters}}
-        {{.}}.read(_foundKey_{{index $.KeyFields $i}}, hsh);{{end}}
+        {{.}}.read(foundKey.{{index $.KeyFields $i}}, hsh);{{end}}
         {{range $i, $vr := .ValueRegisters}}
-        {{.}}.read(_foundValue_{{index $.ValueFields $i}}, hsh);{{end}}
+        {{.}}.read(foundValue.{{index $.ValueFields $i}}, hsh);{{end}}
         bool same = true;{{range .KeyFields}}
-        same = (_foundKey_{{.}} == inKey.{{.}}) ? same : false;{{end}}
+        same = (foundKey.{{.}} == inKey.{{.}}) ? same : false;{{end}}
         bool zero = true;{{range .KeyFields}}
-        zero = (_foundKey_{{.}} == 0) ? zero : false;{{end}}
+        zero = (foundKey.{{.}} == {{$.DefaultKeyName}}.{{.}});{{end}}
         
         {{.ValueName}} val = {{.DefaultValueDefinition}};
         bool ok = same || zero;
         // Should be shortened to evictedKey = !ok ? foundKey : 0 when supported.
         {{range .KeyFields}}
-        evictedKey.{{.}} = !ok ? _foundKey_{{.}} : 0;{{end}}
+        evictedKey.{{.}} = !ok ? foundKey.{{.}} : 0;{{end}}
         {{range .ValueFields}}
-        evictedValue.{{.}} = !ok ? _foundValue_{{.}} : 0;{{end}}
+        evictedValue.{{.}} = !ok ? foundValue.{{.}} : 0;{{end}}
         {{range .ValueFields}}
-        bit<32> _val_{{.}} = ok ? _foundValue_{{.}} : 0;{{end}}
+        val.{{.}} = ok ? foundValue.{{.}} : 0;{{end}}
         {{.UpdateCode}}
 
         {{range $i, $kr := .KeyRegisters}}
         {{.}}.write(hsh, inKey.{{index $.KeyFields $i}});{{end}}
         {{range $i, $vr := .ValueRegisters}}
-        {{.}}.write(hsh, _val_{{index $.ValueFields $i}});{{end}}
+        {{.}}.write(hsh, val.{{index $.ValueFields $i}});{{end}}
     }
