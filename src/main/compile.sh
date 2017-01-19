@@ -41,5 +41,5 @@ then
     cat /tmp/p4err
     exit 1
 fi
-echo "Compilation complete. Check outputs/{frags,p4,json}/$f for outputs"
+echo "Compilation complete. Check outputs/{frags,p4,json} for outputs"
 rm -f domino-full.c

@@ -232,17 +232,10 @@ control Ing(inout Headers headers,
       }
 
     apply {
-        standard_meta.egress_port = 2;
-        IPv4Address nextHop; // temporary variable
-
+        IPv4Address nextHop;
         ipv4_match.apply(nextHop); // Match result will go into nextHop
-
-        //check_ttl.apply();
-
         dmac.apply(nextHop);
-
         smac.apply();
-        standard_meta.drop = 1w0;
     }
 }
 
