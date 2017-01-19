@@ -45,6 +45,7 @@ public class P4Printer {
     p4Map.put(Fields.tcpseqHdr,     "seqNo");
     p4Map.put(Fields.protoHdr,      "protocol");
     p4Map.put(Fields.pktpathHdr,    "pktpath");
+    p4Map.put(Fields.ingressTin,    "ingress_global_timestamp");
   }
 
   /// List of P4 prefixes to use while reading the basic fields of the schema. These names are to be
@@ -55,8 +56,8 @@ public class P4Printer {
     String STANDARD_TYPECAST  = "(bit<32>)";
     String META               = "meta.";
     String STANDARD_METADATA  = "standard_meta.";
-    String INTRINSIC_METADATA = META + "intrinsic_meta.";
-    String QUEUE_METADATA     = META + "queue_meta.";
+    String INTRINSIC_METADATA = META + "intrinsic_metadata.";
+    String QUEUE_METADATA     = META + "queueing_metadata.";
     String PKTLOG_METADATA    = META + "common_meta.";
     String HEADERS            = "hdrs.";
     String IP_PREFIX          = "ip.";
@@ -80,6 +81,7 @@ public class P4Printer {
     p4PrefixMap.put(Fields.tcpseqHdr,          HEADERS + TCP_PREFIX);
     p4PrefixMap.put(Fields.protoHdr,           STANDARD_TYPECAST + HEADERS + IP_PREFIX);
     p4PrefixMap.put(Fields.pktpathHdr,         PKTLOG_METADATA);
+    p4PrefixMap.put(Fields.ingressTin,         STANDARD_TYPECAST + INTRINSIC_METADATA);
     /// For convenience, the packet-log-specific fields must be separately listed too.
     for (String f: p4PrefixMap.keySet()) {
       if (p4PrefixMap.get(f).equals(PKTLOG_METADATA)) {

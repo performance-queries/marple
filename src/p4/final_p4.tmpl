@@ -99,8 +99,10 @@ struct Metadata {
     QueryMetadata query_meta;
     // The structs below are read only.
     CommonMetadata common_meta;
-    intrinsic_metadata_t intrinsic_meta;
-    queueing_metadata_t queue_meta; 
+    @name("intrinsic_metadata")
+    intrinsic_metadata_t intrinsic_metadata;
+    @name("queueing_metadata")
+    queueing_metadata_t queueing_metadata; 
 }
 
 parser P(packet_in b,
@@ -255,7 +257,7 @@ control Eg(inout Headers hdrs,
     apply {
         meta.common_meta.switchId = {{.SwitchId}};
         meta.common_meta.payload_length = hdrs.tcp.isValid() ? (bit<32>)hdrs.ip.packet_length - (bit<32>)hdrs.tcp.dataOffset : (bit<32>)hdrs.udp.length_;
-        meta.common_meta.egress_timestamp = meta.queue_meta.enq_timestamp[31:0] + (bit<32>)meta.queue_meta.deq_timedelta;
+        meta.common_meta.egress_timestamp = meta.queueing_metadata.enq_timestamp[31:0] + (bit<32>)meta.queueing_metadata.deq_timedelta;
         meta.common_meta.pktpath = 0;
         {{range .Stages}}
 {{.Control}}

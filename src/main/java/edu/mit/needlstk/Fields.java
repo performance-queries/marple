@@ -24,6 +24,7 @@ public class Fields {
   public static String qinHdr = "qin";
   public static String qoutHdr = "qout";
   public static String qtimeHdr = "qtime";
+  public static String ingressTin = "tingress";
 
   public static ArrayList<String> fields = new ArrayList<>(Arrays.asList(
       switchHdr,
