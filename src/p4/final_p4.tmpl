@@ -153,7 +153,6 @@ control Ing(inout Headers headers,
 
     /**
      * Set the next hop and the output port.
-     * Decrements ipv4 ttl field.
      * @param ivp4_dest ipv4 address of next hop
      * @param port output port
      */
@@ -161,8 +160,7 @@ control Ing(inout Headers headers,
                     IPv4Address ipv4_dest,
                     bit<9> outPort) {
         nextHop = ipv4_dest;
-        headers.ip.ttl = headers.ip.ttl-1;
-        standard_meta.egress_port = outPort;
+        standard_meta.egress_spec = outPort;
     }
 
     /**
