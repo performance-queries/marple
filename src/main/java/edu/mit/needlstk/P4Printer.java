@@ -76,8 +76,8 @@ public class P4Printer {
     p4PrefixMap.put(Fields.uidHdr,             STANDARD_TYPECAST + HEADERS + IP_PREFIX);
     p4PrefixMap.put(Fields.srcipHdr,           HEADERS + IP_PREFIX);
     p4PrefixMap.put(Fields.dstipHdr,           HEADERS + IP_PREFIX);
-    p4PrefixMap.put(Fields.srcportHdr,         HEADERS + TCP_PREFIX);
-    p4PrefixMap.put(Fields.dstportHdr,         HEADERS + TCP_PREFIX);
+    p4PrefixMap.put(Fields.srcportHdr,         PKTLOG_METADATA);
+    p4PrefixMap.put(Fields.dstportHdr,         PKTLOG_METADATA);
     p4PrefixMap.put(Fields.tcpseqHdr,          HEADERS + TCP_PREFIX);
     p4PrefixMap.put(Fields.protoHdr,           STANDARD_TYPECAST + HEADERS + IP_PREFIX);
     p4PrefixMap.put(Fields.pktpathHdr,         PKTLOG_METADATA);

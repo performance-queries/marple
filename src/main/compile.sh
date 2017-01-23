@@ -10,7 +10,7 @@ mkdir -p outputs/p4
 mkdir -p outputs/json
 ff=$1
 f=$(echo $ff | sed -e 's/.*\/\(.*\.sql\)/\1/')
-cat $ff | java -ea -jar ../../target/Compiler-jar-with-dependencies.jar > /dev/null 2> /tmp/javacerr
+cat $ff | java -ea -jar ~/marple/target/Compiler-jar-with-dependencies.jar > /dev/null 2> /tmp/javacerr
 status=$?
 if [ $status -ne 0 ]
 then
@@ -22,7 +22,7 @@ fi
 fragsf=outputs/frags/${f/.sql/.frags}
 mv p4-frags.txt $fragsf
 p4f=outputs/p4/${f/.sql/.p4}
-cat $fragsf | ./main > $p4f 2> /tmp/agerr
+cat $fragsf | ~/marple/src/main/main > $p4f 2> /tmp/agerr
 status=$?
 if [ $status -ne 0 ]
 then

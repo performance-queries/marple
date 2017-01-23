@@ -250,6 +250,8 @@ control Eg(inout Headers hdrs,
         meta.common_meta.payload_length = hdrs.tcp.isValid() ? (bit<32>)hdrs.ip.packet_length - (bit<32>)hdrs.tcp.dataOffset : (bit<32>)hdrs.udp.length_;
         meta.common_meta.egress_timestamp = meta.queueing_metadata.enq_timestamp[31:0] + (bit<32>)meta.queueing_metadata.deq_timedelta;
         meta.common_meta.pktpath = 0;
+        meta.common_meta.srcport = (hdrs.tcp.srcport == 0) ? (bit<32>)hdrs.tcp.srcport : (bit<32>)hdrs.udp.srcPort;
+        meta.common_meta.dstport = (hdrs.tcp.srcport == 0) ? (bit<32>)hdrs.tcp.dstport : (bit<32>)hdrs.udp.dstPort;
         {{range .Stages}}
 {{.Control}}
         {{end}}
@@ -261,6 +263,8 @@ control DP(packet_out b, in Headers p) {
     apply {
         b.emit(p.ethernet);
         b.emit(p.ip);
+        b.emit(p.tcp);
+        b.emit(p.udp);
     }
 }
 
