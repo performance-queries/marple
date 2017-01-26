@@ -72,6 +72,30 @@ public class Linear {
     assert (aggFuns.equals(this.states.keySet()));
     assert (aggFuns.equals(this.fields.keySet()));
     assert (aggFuns.equals(this.symTab.keySet()));
+    /// For each function and state, detect whether all infinite history states are
+    /// linear-in-state. if they are, transform to use the multiply accumulate atom. Otherwise,
+    /// leave the function unchanged.
+    /// TODO (NG): there is some code repetition in this function. Clean up later.
+    boolean infStatesPresent = false;
+    boolean allInfStatesLis  = true;
+    for (String fun: aggFuns) {
+      List<String> stateList = this.states.get(fun);
+      ArrayList<String> infStates = getInfHistoryStates(stateList, this.hists.get(fun));
+      ThreeOpCode currToc = this.tocs.get(fun);
+      HashMap<String, Integer> newHist = getPredHist(currToc, this.hists.get(fun),
+  this.fields.get(fun));
+      for (String state: infStates) {
+        infStatesPresent = true;
+        boolean lis = detectLinearInState(currToc, state, newHist);
+        if (! lis) allInfStatesLis = false;
+      }
+    }
+    /// Only transform if infinite history states are present AND they're all LIS.
+    if (infStatesPresent && ! allInfStatesLis) {
+      System.out.println("Skipping the linear-in-state transformation pass.");
+      return;
+    }
+    
     /// For each function and state, detect and adjust linear-in-state updates.
     for (String fun: aggFuns) {
       List<String> stateList = this.states.get(fun);
