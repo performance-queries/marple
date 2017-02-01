@@ -35,38 +35,6 @@ public class CodeFragmentPrinter {
     }
   }
 
-  public static boolean writeDominoSepFiles(PipeConstructor pc, ArrayList<PipeStage> pipe) {
-    String fPrefix = "domino-";
-    String fSuffix = ".c";
-    try {
-      /// Print final output for inspection
-      String decls = pc.getNonRegisterDeclsDomino(pipe);
-      String regs  = pc.getAllRegisterDeclsDomino(pipe);
-      for (PipeStage stage: pipe) {
-        if (stage.getOp() == OperationType.GROUPBY) {
-          String fileName = fPrefix + stage.getPipeName() + fSuffix;
-          PrintWriter writer = new PrintWriter(fileName, "UTF-8");
-          writer.print("// Packet fields\n");
-          writer.print("struct Packet {\n");
-          writer.print(decls);
-          writer.print("};\n\n");
-          writer.print("// State declarations\n");
-          writer.print(regs);
-          writer.print("\n");
-          writer.print("// Fold function definition\n");
-          writer.print("void func(struct Packet pkt) {\n");
-          writer.print(stage.getDominoFragment());          
-          writer.print("}\n\n");
-          writer.close();
-        }
-      }
-      return true;
-    } catch (IOException e) {
-      System.err.println("Could not write into domino fragments files!");
-      return false;
-    }
-  }
-
   public static boolean writeDominoMonolithic(PipeConstructor pc, ArrayList<PipeStage> pipe) {
     String fPrefix = "domino-";
     String fSuffix = ".c";
