@@ -27,19 +27,10 @@ const (
 var outputFile = flag.String("output", "", "Location of the output (default = stdout).")
 var lruRows = flag.Uint("lru-rows", 1024, "Number of rows in the LRU")
 type GroupByActionData struct {
-	UpdateFn               string
-	EqualsFn               string
-	ZeroFn                 string
 	LRUFn                  string
 	KeyName                string
 	ValueName              string
-	RowKeyName             string
-	RowValueName           string
-	KeyRegisterName        string
-	ValueRegisterName      string
 	TableSize              int
-	LruWays                int
-	RowFieldNameList       []string
 	UpdateCode             string
 	DefaultValueName       string
 	DefaultValueDefinition string
@@ -84,18 +75,10 @@ func genGroupByAction(s *Stage) string {
 		}
 	}
 	data := &GroupByActionData{
-		UpdateFn:               "update_" + s.Name,
-		EqualsFn:               "equals_" + s.Name,
-		ZeroFn:                 "isZero_" + s.Name,
 		LRUFn:                  "groupby_" + s.Name,
 		KeyName:                "Key_" + s.Name,
 		ValueName:              "Value_" + s.Name,
-		RowKeyName:             "RowKey_" + s.Name,
-		RowValueName:           "RowValue_" + s.Name,
-		KeyRegisterName:        "KeyReg_" + s.Name,
-		ValueRegisterName:      "ValueReg_" + s.Name,
 		TableSize:              int(*lruRows),
-		RowFieldNameList:       []string{"first", "second", "third", "fourth"},
 		UpdateCode:             indentBy(strings.TrimSpace(s.Code), "\t\t"),
 		DefaultValueName:       "defaultVal_" + s.Name,
 		DefaultValueDefinition: "{" + strings.Join(mapWith(s.Registers, zeroFunc), ",") + "}",
