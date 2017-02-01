@@ -28,16 +28,6 @@ var outputFile = flag.String("output", "", "Location of the output (default = st
 var lruRows = flag.Uint("lru-rows", 1024, "Number of rows in the LRU")
 var compilerOut = flag.String("compiler-output", "", "The compiler output in string form. If not specified, will read from stdin.")
 
-// The bitstring representation of a struct, which is stored in the register.
-// We have to parse a struct out from / in to this representation after
-// reading / writing from / to the register.
-type RawStruct struct {
-	Name    string
-	BitSize int
-	// The boundaries of the first field are Boundaries[0][0]:Boundaries[0][1]
-	Boundaries [][]int
-}
-
 type GroupByActionData struct {
 	UpdateFn               string
 	EqualsFn               string
