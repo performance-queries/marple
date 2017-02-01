@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	finalTemplate          = "../p4/final_p4.tmpl"
-	groupByActionsTemplate = "../p4/groupby_actions_hash.tmpl"
+	finalTemplate          = "final_p4.tmpl"
+	groupByActionsTemplate = "groupby_actions_hash.tmpl"
 )
 
 var outputFile = flag.String("output", "", "Location of the output (default = stdout).")
