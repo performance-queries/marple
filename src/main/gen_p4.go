@@ -30,35 +30,6 @@ var valWidth = flag.Uint("value-width", 16, "Width of each value, in bits")
 var lruRows = flag.Uint("lru-rows", 1024, "Number of rows in the LRU")
 var lruWays = flag.Uint("lru-ways", 4, "Number of ways in the LRU. Total LRU size = lru-rows * lru-ways")
 var compilerOut = flag.String("compiler-output", "", "The compiler output in string form. If not specified, will read from stdin.")
-var funcMap = template.FuncMap{
-	"add":   func(x, y int) int { return x + y },
-	"sub":   func(x, y int) int { return x - y },
-	"slice": func(x []string, a, b int) []string { return x[a:b] },
-	"rev": func(x []string) []string {
-		y := []string{}
-		for i := range x {
-			y = append(y, x[len(x)-i-1])
-		}
-		return y
-	},
-	"rep": func(x string, y int) string {
-		r := []string{}
-		for i := 0; i < y; i++ {
-			r = append(r, x)
-		}
-		return strings.Join(r, ",")
-	},
-}
-
-type LRUSegment struct {
-	// Inclusive start and end indices within the bitvector representing the LRU row in the keys table.
-	// KeyStart < KeyEnd, since unlike in P4, we're counting from the LSB.
-	KeyStart, KeyEnd int
-	// Likewise for values
-	ValStart, ValEnd int
-	// Whether we should evict this key if no match (true on the least-recent entry)
-	Evict bool
-}
 
 // The bitstring representation of a struct, which is stored in the register.
 // We have to parse a struct out from / in to this representation after
@@ -153,7 +124,7 @@ func genGroupByAction(s *Stage) string {
 		KeyRegisters:           mapWith(s.KeyFields, regFunc("K")),
 		ValueRegisters:         mapWith(s.Registers, regFunc("V")),
 	}
-	t, err := template.New("groupby" + s.Name).Funcs(funcMap).ParseFiles(groupByActionsTemplate)
+	t, err := template.New("groupby" + s.Name).ParseFiles(groupByActionsTemplate)
 	if err != nil {
 		panic(err)
 	}
@@ -237,7 +208,7 @@ func main() {
 		data.Stages = append(data.Stages, stage.ToData())
 	}
 
-	t, err := template.New("final").Funcs(funcMap).ParseFiles(finalTemplate)
+	t, err := template.New("final").ParseFiles(finalTemplate)
 	if err != nil {
 		panic(err)
 	}
