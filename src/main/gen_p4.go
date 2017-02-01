@@ -26,7 +26,6 @@ const (
 
 var outputFile = flag.String("output", "", "Location of the output (default = stdout).")
 var lruRows = flag.Uint("lru-rows", 1024, "Number of rows in the LRU")
-var lruWays = flag.Uint("lru-ways", 4, "Number of ways in the LRU. Total LRU size = lru-rows * lru-ways")
 var compilerOut = flag.String("compiler-output", "", "The compiler output in string form. If not specified, will read from stdin.")
 
 // The bitstring representation of a struct, which is stored in the register.
@@ -88,7 +87,6 @@ func mapWith(s []string, f func(string) string) []string {
 }
 
 func genGroupByAction(s *Stage) string {
-	ways := int(*lruWays)
 	zeroFunc := func(s string) string {
 		return "0"
 	}
@@ -109,7 +107,6 @@ func genGroupByAction(s *Stage) string {
 		KeyRegisterName:        "KeyReg_" + s.Name,
 		ValueRegisterName:      "ValueReg_" + s.Name,
 		TableSize:              int(*lruRows),
-		LruWays:                ways,
 		RowFieldNameList:       []string{"first", "second", "third", "fourth"},
 		UpdateCode:             indentBy(strings.TrimSpace(s.Code), "\t\t"),
 		DefaultValueName:       "defaultVal_" + s.Name,
