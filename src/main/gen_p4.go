@@ -25,8 +25,6 @@ const (
 )
 
 var outputFile = flag.String("output", "", "Location of the output (default = stdout).")
-var keyWidth = flag.Uint("key-width", 16, "Width of each key, in bits")
-var valWidth = flag.Uint("value-width", 16, "Width of each value, in bits")
 var lruRows = flag.Uint("lru-rows", 1024, "Number of rows in the LRU")
 var lruWays = flag.Uint("lru-ways", 4, "Number of ways in the LRU. Total LRU size = lru-rows * lru-ways")
 var compilerOut = flag.String("compiler-output", "", "The compiler output in string form. If not specified, will read from stdin.")
