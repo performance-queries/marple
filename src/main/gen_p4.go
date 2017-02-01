@@ -26,8 +26,6 @@ const (
 
 var outputFile = flag.String("output", "", "Location of the output (default = stdout).")
 var lruRows = flag.Uint("lru-rows", 1024, "Number of rows in the LRU")
-var compilerOut = flag.String("compiler-output", "", "The compiler output in string form. If not specified, will read from stdin.")
-
 type GroupByActionData struct {
 	UpdateFn               string
 	EqualsFn               string
@@ -182,7 +180,7 @@ func (s *Stage) ToData() *StageData {
 
 func main() {
 	flag.Parse()
-	s := NewSchemaFromInput(*compilerOut)
+	s := NewSchemaFromInput()
 	data := &TemplateData{
 		TemplateName: "final_p4.tmpl",
 		SwitchId:     1,

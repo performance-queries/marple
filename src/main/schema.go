@@ -64,17 +64,9 @@ func generateSourceMap(s *Schema) {
 	sourceMap["egress_port"] = "(bit<32>)standard_meta.egress_port"
 }*/
 
-func NewSchemaFromInput(input string) *Schema {
+func NewSchemaFromInput() *Schema {
 	var schemaFile io.Reader
-	if len(input) == 0 {
-		schemaFile = os.Stdin
-	} else {
-		s, err := os.Open(input)
-		if err != nil {
-			panic(err)
-		}
-		schemaFile = s
-	}
+	schemaFile = os.Stdin
 	contents, err := ioutil.ReadAll(schemaFile)
 	if err != nil {
 		panic(err)
