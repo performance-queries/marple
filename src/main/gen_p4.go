@@ -17,19 +17,13 @@ const (
 var tableSize = flag.Uint("table-size", 1024, "Number of rows in the table")
 
 type GroupByActionData struct {
-    LRUFn                  string // the groupby function to read from registers, do the aggregation, and write back
-    KeyName                string
-    ValueName              string
+    StageName              string
     TableSize              int
     UpdateCode             string // Code for the aggregation function
-    DefaultValueName       string
     DefaultValueDefinition string // {0, 0, ... #(pieces of state stored in the aggregation function)}
-    DefaultKeyName         string
     DefaultKeyDefinition   string // {0, 0, ... #(fields that are grouped by in the aggregation function)}
     KeyFields              []string // names of the groupby fields
     ValueFields            []string // names of the state variables
-    KeyRegisters           []string // one register for each key field
-    ValueRegisters         []string // one register for each state variable
     KeySourceFields        []string // packet headers / metadata fields for the key
 }
 
@@ -60,26 +54,15 @@ func genGroupByAction(s *Stage) string {
     zeroFunc := func(s string) string {
         return "0"
     }
-    regFunc := func(prefix string) func(string) string {
-        return func(str string) string {
-            return fmt.Sprintf("reg%s_%s_%s", prefix, s.Name, str)
-        }
-    }
     data := &GroupByActionData{
-        LRUFn:                  "groupby_" + s.Name,
-        KeyName:                "Key_" + s.Name,
-        ValueName:              "Value_" + s.Name,
-        TableSize:              int(*tableSize),
+        StageName: 		s.Name,
+	TableSize:              int(*tableSize),
         UpdateCode:             indentBy(strings.TrimSpace(s.Code), "\t\t"),
-        DefaultValueName:       "defaultVal_" + s.Name,
         DefaultValueDefinition: "{" + strings.Join(mapWith(s.Registers, zeroFunc), ",") + "}",
-        DefaultKeyName:         "defaultKey_" + s.Name,
         DefaultKeyDefinition:   "{" + strings.Join(mapWith(s.KeyFields, zeroFunc), ",") + "}",
         KeyFields:              s.KeyFields,
         ValueFields:            s.Registers,
         KeySourceFields:        s.KeySourceFields,
-        KeyRegisters:           mapWith(s.KeyFields, regFunc("K")),
-        ValueRegisters:         mapWith(s.Registers, regFunc("V")),
     }
     t, err := template.New("groupby" + s.Name).ParseFiles(groupByActionsTemplate)
     if err != nil {

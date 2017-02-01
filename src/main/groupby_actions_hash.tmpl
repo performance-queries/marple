@@ -1,15 +1,15 @@
-    {{range .KeyRegisters}}
-    register<bit<32>>(32w{{$.TableSize}}) {{.}};{{end}}
-    {{range .ValueRegisters}}
-    register<bit<32>>(32w{{$.TableSize}}) {{.}};{{end}}
+    {{range .KeyFields}}
+    register<bit<32>>(32w{{$.TableSize}}) regK_{{$.StageName}}_{{.}};{{end}}
+    {{range .ValueFields}}
+    register<bit<32>>(32w{{$.TableSize}}) regV_{{$.StageName}}_{{.}};{{end}}
 
     // Using register regKeys, regValues.
-    action {{.LRUFn}}(inout {{.KeyName}} evictedKey, inout {{.ValueName}} evictedValue) {
-        {{.ValueName}} {{.DefaultValueName}} = {{.DefaultValueDefinition}};
-        {{.KeyName}} {{.DefaultKeyName}} = {{$.DefaultKeyDefinition}};
+    action groupby_{{.StageName}}(inout Key_{{.StageName}} evictedKey, inout Value_{{.StageName}} evictedValue) {
+        Value_{{.StageName}} defaultValue = {{.DefaultValueDefinition}};
+        Key_{{.StageName}} defaultKey = {{$.DefaultKeyDefinition}};
         evictedKey = {{.DefaultKeyDefinition}};
         evictedValue = {{.DefaultValueDefinition}};
-        {{.KeyName}} inKey = {{.DefaultKeyDefinition}};
+        Key_{{.StageName}} inKey = {{.DefaultKeyDefinition}};
         {{range $i, $field := $.KeyFields}}
         inKey.{{$field}} = {{index $.KeySourceFields $i}};{{end}}
         {{range .KeyFields}}
@@ -19,16 +19,16 @@
         hash(hsh, HashAlgorithm.crc32, 32w0, inKey, 32w{{.TableSize}});
         {{range .ValueFields}}
         bit<32> _foundValue_{{.}} = 0;{{end}}
-        {{range $i, $kr := .KeyRegisters}}
-        {{.}}.read(_foundKey_{{index $.KeyFields $i}}, hsh);{{end}}
-        {{range $i, $vr := .ValueRegisters}}
-        {{.}}.read(_foundValue_{{index $.ValueFields $i}}, hsh);{{end}}
+        {{range $i, $kf := .KeyFields}}
+        regK_{{$.StageName}}_{{$kf}}.read(_foundKey_{{index $.KeyFields $i}}, hsh);{{end}}
+        {{range $i, $vf := .ValueFields}}
+        regV_{{$.StageName}}_{{$vf}}.read(_foundValue_{{index $.ValueFields $i}}, hsh);{{end}}
         bool same = true;{{range .KeyFields}}
         same = (_foundKey_{{.}} == inKey.{{.}}) ? same : false;{{end}}
         bool zero = true;{{range .KeyFields}}
         zero = (_foundKey_{{.}} == 0) ? zero : false;{{end}}
         
-        {{.ValueName}} val = {{.DefaultValueDefinition}};
+        Value_{{.StageName}} val = {{.DefaultValueDefinition}};
         bool ok = same || zero;
         // Should be shortened to evictedKey = !ok ? foundKey : 0 when supported.
         {{range .KeyFields}}
@@ -39,8 +39,8 @@
         bit<32> _val_{{.}} = ok ? _foundValue_{{.}} : 0;{{end}}
         {{.UpdateCode}}
 
-        {{range $i, $kr := .KeyRegisters}}
-        {{.}}.write(hsh, inKey.{{index $.KeyFields $i}});{{end}}
-        {{range $i, $vr := .ValueRegisters}}
-        {{.}}.write(hsh, _val_{{index $.ValueFields $i}});{{end}}
+        {{range $i, $kf := .KeyFields}}
+        regK_{{$.StageName}}_{{$kf}}.write(hsh, inKey.{{index $.KeyFields $i}});{{end}}
+        {{range $i, $vf := .ValueFields}}
+        regV_{{$.StageName}}_{{$vf}}.write(hsh, _val_{{index $.ValueFields $i}});{{end}}
     }
