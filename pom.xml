@@ -105,6 +105,11 @@
       <version>4.5.3</version>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId> <!-- Apache commons -->
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId> <!-- Java's unit testing framework -->
       <artifactId>junit</artifactId>
       <version>3.8.1</version>

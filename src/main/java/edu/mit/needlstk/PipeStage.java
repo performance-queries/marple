@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import org.stringtemplate.v4.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import org.apache.commons.io.IOUtils;
+import java.io.InputStream;
 
 public class PipeStage {
   /// Type of query operation, e.g., filter, map, etc.
@@ -52,8 +54,8 @@ public class PipeStage {
       return " action " + this.pipeName + "() {\n" + configInfo.getP4() + "\n}";
     } else {
      try {
-      ST groupby_template = new ST(new String(Files.readAllBytes(Paths.get("groupby.tmpl"))),
-                                   '$', '$');
+      InputStream is = CodeFragmentPrinter.class.getClassLoader().getResourceAsStream("groupby.tmpl");
+      ST groupby_template = new ST(IOUtils.toString(is, "UTF-8"), '$', '$');
       groupby_template.add("KeyFields", this.getQualifiedKeyFields());
       groupby_template.add("ValueFields", this.getValueFields());
       groupby_template.add("StageName", this.pipeName);
@@ -61,7 +63,7 @@ public class PipeStage {
       groupby_template.add("UpdateCode", configInfo.getP4());
       return groupby_template.render();
      } catch (Exception e) {
-      // TODO: Fill this in.
+      e.printStackTrace();
       return "";
      }
     }

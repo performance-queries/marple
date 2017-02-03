@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.stringtemplate.v4.*;
+import org.apache.commons.io.IOUtils;
+import java.io.InputStream;
 
 /// Class with static members to help print code fragments of different kinds.
 public class CodeFragmentPrinter {
@@ -22,7 +24,8 @@ public class CodeFragmentPrinter {
   public static String writeP4(PipeConstructor pc, ArrayList<PipeStage> pipe) {
     try {
       PrintWriter writer = new PrintWriter("output.p4", "UTF-8"); // unhardcode
-      ST p4_template = new ST(new String(Files.readAllBytes(Paths.get("p4.tmpl"))), '$', '$');
+      InputStream is = CodeFragmentPrinter.class.getClassLoader().getResourceAsStream("p4.tmpl");
+      ST p4_template = new ST(IOUtils.toString(is, "UTF-8"), '$', '$');
       p4_template.add("SwitchId", 666);         // Unhardcode this.
       p4_template.add("QueryMetadata", pc.getAllPacketFields(pipe)); // Query metadata
       List<GroupbyStruct> groupby_structs = new ArrayList<GroupbyStruct>();// groupby structs k
@@ -39,6 +42,7 @@ public class CodeFragmentPrinter {
       return "";
     } catch (IOException e) {
       System.err.println("Could not write into output.p4");
+      e.printStackTrace();
       return null;
     }
   }
