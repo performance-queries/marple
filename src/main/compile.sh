@@ -4,6 +4,7 @@
 ### If it encounters an error, it prints that error and asks if you want to proceed.
 ### The compiled JSON is *not* removed after this script finishes.
 
+mkdir -p outputs/p4
 mkdir -p outputs/json
 ff=$1
 f=$(echo $ff | sed -e 's/.*\/\(.*\.sql\)/\1/')
@@ -18,7 +19,7 @@ then
 fi
 jsonf=outputs/json/${f/.sql/.json}
 ~/p4c/build/p4c-bm2-ss output.p4 -o $jsonf > /dev/null 2> /tmp/p4err
-rm -rf output.p4
+mv output.p4 outputs/p4/${f/.sql/.p4}
 status=$?
 if [ $status -ne 0 ]
 then
