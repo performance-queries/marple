@@ -3,6 +3,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.stream.Collectors;
+import org.stringtemplate.v4.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class PipeStage {
   /// Type of query operation, e.g., filter, map, etc.
@@ -42,6 +45,46 @@ public class PipeStage {
     res += configInfo.getP4();
     res += "\n";
     return res;
+  }
+
+  public String getAction() {
+    if (this.op != OperationType.GROUPBY) {
+      return " action " + this.pipeName + "() {\n" + configInfo.getP4() + "\n}";
+    } else {
+     try {
+      ST groupby_template = new ST(new String(Files.readAllBytes(Paths.get("groupby.tmpl"))),
+                                   '$', '$');
+      groupby_template.add("KeyFields", this.getKeyFields());
+      groupby_template.add("ValueFields", this.getValueFields());
+      groupby_template.add("StageName", this.pipeName);
+      groupby_template.add("TableSize", 1024); // TODO: Unhardcode this.
+      groupby_template.add("UpdateCode", configInfo.getP4());
+      return groupby_template.render();
+     } catch (Exception e) {
+      // TODO: Fill this in.
+      return "";
+     }
+    }
+  }
+
+  public String getAction_call() {
+    if (this.op != OperationType.GROUPBY) {
+      return " action " + this.pipeName + "();\n";
+    } else {
+      return  " Key_" + this.pipeName + "  evictedKey_ " + this.pipeName + "\n;"
+            + " Value_" + this.pipeName + " evictedValue_ " + this.pipeName + "\n;"
+            + " action " + this.pipeName + "(evictedKey_, evictedValue_)" + "\n;";
+    }
+  }
+
+  public List<String> getKeyFields() {
+    assert(this.op == OperationType.GROUPBY);
+    return ((FoldConfigInfo)(this.configInfo)).getKeyFields().stream().collect(Collectors.toList());
+  }
+
+  public List<String> getValueFields() {
+    assert(this.op == OperationType.GROUPBY);
+    return ((FoldConfigInfo)(this.configInfo)).getStateArgs().stream().collect(Collectors.toList());
   }
 
   public String getP4Fragment() {

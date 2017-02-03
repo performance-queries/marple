@@ -104,7 +104,7 @@ public class Compiler {
     /// Print P4 fragments into a file
     String fragsFile = CodeFragmentPrinter.writeP4(pc, fullPipe);
     if (fragsFile != null) {
-      System.out.println("P4 fragments output in " + fragsFile);
+      System.out.println("P4 fragments output in output.p4");// TODO: unhardcode
     }
 
     boolean printed = CodeFragmentPrinter.writeDominoMonolithic(pc, fullPipe);

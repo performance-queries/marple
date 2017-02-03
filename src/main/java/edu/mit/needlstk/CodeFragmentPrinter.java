@@ -1,36 +1,44 @@
 package edu.mit.needlstk;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashSet;
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import org.stringtemplate.v4.*;
 
 /// Class with static members to help print code fragments of different kinds.
 public class CodeFragmentPrinter {
+  static class GroupbyStruct {
+    public String struct_name;
+    public List<String> fields;
+    public GroupbyStruct(String t_struct_name, List<String> t_fields) {
+      this.struct_name = t_struct_name;
+      this.fields = t_fields;
+    }
+  }
+
   public static String writeP4(PipeConstructor pc, ArrayList<PipeStage> pipe) {
-    String fileName = "p4-frags.txt";
     try {
-      /// Print final output for inspection
-      PrintWriter writer = new PrintWriter(fileName, "UTF-8");
-      String decls = pc.getPacketFieldDeclsP4(pipe);
-      HashSet<String> registers = pc.getAllRegisters(pipe);
-      writer.println("=================================");
-      for (String pktLogField: P4Printer.pktLogMetadataFields) {
-        writer.print(new ThreeOpDecl(P4Printer.INT_WIDTH, P4Printer.INT_TYPE,
-                                     P4Printer.p4Map.get(pktLogField)).getP4());
-      }
-      writer.println("=================================");
-      writer.print(decls);
-      writer.println("=================================");
-      writer.println(registers);
-      writer.println("=================================");
+      PrintWriter writer = new PrintWriter("output.p4", "UTF-8"); // unhardcode
+      ST p4_template = new ST(new String(Files.readAllBytes(Paths.get("p4.tmpl"))), '$', '$');
+      p4_template.add("SwitchId", 666);         // Unhardcode this.
+      p4_template.add("QueryMetadata", pc.getAllPacketFields(pipe)); // Query metadata
+      List<GroupbyStruct> groupby_structs = new ArrayList<GroupbyStruct>();// groupby structs k
       for (PipeStage stage: pipe) {
-        writer.print(stage.getP4Fragment());
-        writer.println("=================================");
+        if (stage.getOp() == OperationType.GROUPBY) {
+          groupby_structs.add(new GroupbyStruct("Key_"+stage.getPipeName(), stage.getKeyFields()));
+          groupby_structs.add(new GroupbyStruct("Value_"+stage.getPipeName(), stage.getKeyFields()));
+        }
       }
+      p4_template.add("GroupbyStructs", groupby_structs);
+      p4_template.add("Stages", pipe);    // Add every stage's information
+      writer.print(p4_template.render()); // render template
       writer.close();
-      return fileName;
+      return "";
     } catch (IOException e) {
-      System.err.println("Could not write into P4 fragments file! " + fileName);
+      System.err.println("Could not write into output.p4");
       return null;
     }
   }
