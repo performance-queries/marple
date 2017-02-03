@@ -98,7 +98,9 @@ struct QueryMetadata {
 }
 
 // Template hole: key and value structs, one for each groupby
-$GroupbyStructs :{ GroupbyStruct | struct $GroupbyStruct.struct_name$ { $GroupbyStruct.fields :{ field | bit<32> f$i0$;$\n$}$ \}$\n$}$
+$GroupbyStructs :{ GroupbyStruct | struct $GroupbyStruct.struct_name$ {
+  $GroupbyStruct.fields :{ field | bit<32> f$i0$;$\n$}$
+\}$\n$$\n$}$
 
 struct Metadata {
     QueryMetadata query_meta;
