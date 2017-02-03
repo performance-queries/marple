@@ -102,8 +102,8 @@ public class Compiler {
     dc.checkDivisor();
 
     /// Print P4 fragments into a file
-    String fragsFile = CodeFragmentPrinter.writeP4(pc, fullPipe);
-    if (fragsFile != null) {
+    boolean success = CodeFragmentPrinter.writeP4(pc, fullPipe);
+    if (success) {
       System.out.println("P4 fragments output in output.p4");// TODO: unhardcode
     }
 

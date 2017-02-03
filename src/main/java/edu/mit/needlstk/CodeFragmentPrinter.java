@@ -21,7 +21,7 @@ public class CodeFragmentPrinter {
     }
   }
 
-  public static String writeP4(PipeConstructor pc, ArrayList<PipeStage> pipe) {
+  public static boolean writeP4(PipeConstructor pc, ArrayList<PipeStage> pipe) {
     try {
       PrintWriter writer = new PrintWriter("output.p4", "UTF-8"); // unhardcode
       InputStream is = CodeFragmentPrinter.class.getClassLoader().getResourceAsStream("p4.tmpl");
@@ -39,11 +39,12 @@ public class CodeFragmentPrinter {
       p4_template.add("Stages", pipe);    // Add every stage's information
       writer.print(p4_template.render()); // render template
       writer.close();
-      return "";
+      return true;
     } catch (IOException e) {
       System.err.println("Could not write into output.p4");
       e.printStackTrace();
-      return null;
+      System.exit(1);
+      return false;
     }
   }
 

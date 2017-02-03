@@ -64,6 +64,7 @@ public class PipeStage {
       return groupby_template.render();
      } catch (Exception e) {
       e.printStackTrace();
+      System.exit(1);
       return "";
      }
     }
