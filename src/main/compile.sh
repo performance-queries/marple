@@ -18,8 +18,8 @@ then
     exit 1
 fi
 jsonf=outputs/json/${f/.sql/.json}
-~/p4c/build/p4c-bm2-ss output.p4 -o $jsonf > /dev/null 2> /tmp/p4err
 mv output.p4 outputs/p4/${f/.sql/.p4}
+~/p4c/build/p4c-bm2-ss outputs/p4/${f/.sql/.p4} -o $jsonf > /dev/null 2> /tmp/p4err
 status=$?
 if [ $status -ne 0 ]
 then
