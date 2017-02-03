@@ -1,0 +1,44 @@
+$KeyFields : { field | register<bit<32>>(32w$TableSize$) regK_$StageName$_f$i0$}$
+$ValueFields : { field | register<bit<32>>(32w$TableSize$) regV_$StageName$_$field$}$
+
+// Using register regKeys, regValues.
+action groupby_$StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageName$ evictedValue) {
+    // Populate key fields from the current packet.
+    $KeyFields : { field | bit<32> inKey_f$i0$ = 0;$\n$}$
+
+    // existingKey_* and existingValue_* are the
+    // key and value fields that already exist in the computed hash bucket.
+    $KeyFields : { field | bit<32> existingKey_f$i0$ = 0;$\n$}$
+    $ValueFields : { field | bit<32> existingValue_$field$ = 0;$\n$}$
+
+    bit<32> hash_table_index = 32w0;
+    hash(hash_table_index, HashAlgorithm.crc32, 32w0, inKey, 32w$TableSize$);
+    $KeyFields : { field | regK_$StageName$_f$i0$.read(existingKey_f$i0$, hash_table_index);$\n$}$
+    $ValueFields:{ field | regV_$StageName$_$field$.read(existingValue_$field$, hash_table_index);$\n$}$
+
+    // No key present at hash_table_index
+    bool no_key_present = true;
+    $KeyFields : { field | no_key_present = (existingKey_f$i0$ == 0) ? no_key_present : false;$\n$}$
+
+    // Hit in hash table (key matched against a stored key)
+    bool key_matches = true;
+    $KeyFields : { field | key_matches = (existingKey_f$i0$ == inKey_f$i0$) ? key_matches : false;$\n$}$
+   
+    // There is no eviction if either foundKey == inKey or foundKey == 0.
+    bool ok = key_matches || no_key_present;
+    $KeyFields   : { field | evictedKey.$field$ = !ok ? existingKey_f$i0$ : 0;$\n$}$
+    $ValueFields : { field | evictedValue.$field$ = !ok ? existingValue_$field$ : 0;$\n$}$
+
+    // Get value if there is no eviction
+    $ValueFields : { field | bit<32> _val_$field$ = ok ? existingValue_$field$ : 0;$\n$}$
+    
+    // Execute code that updates value registers. The code should reference values by their
+    // _val_* variable names directly.
+    $UpdateCode$
+
+    // Write the new key and value into the register.
+    // Note that we still write inKey even if it was
+    // identical to foundKey (since bmv2 doesn't allow conditional method calls).
+    $KeyFields : { field | regK_$StageName$_f$i0$.write(hash_table_index, inKey_f$i0$);$\n$}$
+    $ValueFields:{ field | regV_$StageName$_$field$.read(hash_table_index, _val_$field$);$\n$}$
+}
