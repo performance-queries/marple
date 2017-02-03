@@ -1,44 +1,51 @@
-$KeyFields : { field | register<bit<32>>(32w$TableSize$) regK_$StageName$_f$i0$}$
-$ValueFields : { field | register<bit<32>>(32w$TableSize$) regV_$StageName$_$field$}$
+// Template hole: register for each field in key
+$KeyFields : { field | register<bit<32>>(32w$TableSize$) regK_$StageName$_f$i0$;$\n$}$
 
-// Using register regKeys, regValues.
+// Template hole: register for each field in value
+$ValueFields : { field | register<bit<32>>(32w$TableSize$) regV_$StageName$_$field$;$\n$}$
+
+// Template hole: action signature for groupby
 action groupby_$StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageName$ evictedValue) {
-    // Populate key fields from the current packet.
-    $KeyFields : { field | bit<32> inKey_f$i0$ = 0;$\n$}$
 
-    // existingKey_* and existingValue_* are the
+    // Template hole: Populate inKey's fields from the current packet.
+    Key_$StageName$ inKey;
+    $KeyFields: { field | inKey.f$i0$ = $field$;$\n$}$
+
+    // Template hole: existingKey_* and existingValue_* are the
     // key and value fields that already exist in the computed hash bucket.
     $KeyFields : { field | bit<32> existingKey_f$i0$ = 0;$\n$}$
     $ValueFields : { field | bit<32> existingValue_$field$ = 0;$\n$}$
 
+    // Template hole: hash inKey into hash table to compute hash index
     bit<32> hash_table_index = 32w0;
     hash(hash_table_index, HashAlgorithm.crc32, 32w0, inKey, 32w$TableSize$);
+
+    // Template hole: Use hash_table_index to read out existing key and value
     $KeyFields : { field | regK_$StageName$_f$i0$.read(existingKey_f$i0$, hash_table_index);$\n$}$
     $ValueFields:{ field | regV_$StageName$_$field$.read(existingValue_$field$, hash_table_index);$\n$}$
 
-    // No key present at hash_table_index
+    // Template hole: Check if no key is present at hash_table_index
     bool no_key_present = true;
     $KeyFields : { field | no_key_present = (existingKey_f$i0$ == 0) ? no_key_present : false;$\n$}$
 
-    // Hit in hash table (key matched against a stored key)
+    // Template hole: Check if there is a match in the hash table (inKey matches against a stored key)
     bool key_matches = true;
-    $KeyFields : { field | key_matches = (existingKey_f$i0$ == inKey_f$i0$) ? key_matches : false;$\n$}$
-   
-    // There is no eviction if either foundKey == inKey or foundKey == 0.
+    $KeyFields : { field | key_matches = (existingKey_f$i0$ == inKey.f$i0$) ? key_matches : false;$\n$}$
+ 
+    // Template hole: There is no eviction if either existingKey == inKey or existingKey == 0.
     bool ok = key_matches || no_key_present;
-    $KeyFields   : { field | evictedKey.$field$ = !ok ? existingKey_f$i0$ : 0;$\n$}$
+    $KeyFields   : { field | evictedKey.$field$   = !ok ? existingKey_f$i0$     : 0;$\n$}$
     $ValueFields : { field | evictedValue.$field$ = !ok ? existingValue_$field$ : 0;$\n$}$
 
-    // Get value if there is no eviction
-    $ValueFields : { field | bit<32> _val_$field$ = ok ? existingValue_$field$ : 0;$\n$}$
-    
-    // Execute code that updates value registers. The code should reference values by their
+    // Template hole: Get value if there is no eviction
+    $ValueFields : { field | bit<32> _val_$field$ = ok ? existingValue_$field$  : 0;$\n$}$
+ 
+    // Template hole: Execute code that updates value registers.
+    // The code should reference values by their
     // _val_* variable names directly.
     $UpdateCode$
 
-    // Write the new key and value into the register.
-    // Note that we still write inKey even if it was
-    // identical to foundKey (since bmv2 doesn't allow conditional method calls).
+    // Template hole: Write the inKey and the updated (or initial) value into the register.
     $KeyFields : { field | regK_$StageName$_f$i0$.write(hash_table_index, inKey_f$i0$);$\n$}$
     $ValueFields:{ field | regV_$StageName$_$field$.read(hash_table_index, _val_$field$);$\n$}$
 }

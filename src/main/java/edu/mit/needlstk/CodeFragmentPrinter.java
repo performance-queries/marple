@@ -29,7 +29,7 @@ public class CodeFragmentPrinter {
       for (PipeStage stage: pipe) {
         if (stage.getOp() == OperationType.GROUPBY) {
           groupby_structs.add(new GroupbyStruct("Key_"+stage.getPipeName(), stage.getKeyFields()));
-          groupby_structs.add(new GroupbyStruct("Value_"+stage.getPipeName(), stage.getKeyFields()));
+          groupby_structs.add(new GroupbyStruct("Value_"+stage.getPipeName(), stage.getValueFields()));
         }
       }
       p4_template.add("GroupbyStructs", groupby_structs);
