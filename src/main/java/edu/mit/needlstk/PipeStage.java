@@ -54,7 +54,7 @@ public class PipeStage {
      try {
       ST groupby_template = new ST(new String(Files.readAllBytes(Paths.get("groupby.tmpl"))),
                                    '$', '$');
-      groupby_template.add("KeyFields", this.getKeyFields());
+      groupby_template.add("KeyFields", this.getQualifiedKeyFields());
       groupby_template.add("ValueFields", this.getValueFields());
       groupby_template.add("StageName", this.pipeName);
       groupby_template.add("TableSize", 1024); // TODO: Unhardcode this.
@@ -77,39 +77,18 @@ public class PipeStage {
     }
   }
 
-  public List<String> getKeyFields() {
+  public List<String> getQualifiedKeyFields() {
     assert(this.op == OperationType.GROUPBY);
-    return ((FoldConfigInfo)(this.configInfo)).getKeyFields().stream().collect(Collectors.toList());
+    FoldConfigInfo fci = (FoldConfigInfo)this.configInfo;
+    return fci.getKeyFields().stream().
+          map(var -> P4Printer.p4Ident(var, AggFunVarType.FIELD)).
+          collect(Collectors.toList());
   }
 
   public List<String> getValueFields() {
     assert(this.op == OperationType.GROUPBY);
-    return ((FoldConfigInfo)(this.configInfo)).getStateArgs().stream().collect(Collectors.toList());
-  }
-
-  public String getP4Fragment() {
-    String res = this.pipeName;
-    res += "\n";
-    res += this.fields.toString();
-    res += "\n";
-    res += this.op.toString();
-    res += "\n";
-    if (this.op == OperationType.GROUPBY) {
-      FoldConfigInfo fci = (FoldConfigInfo)this.configInfo;
-      List<String> fieldList = fci.getKeyFields().stream().
-          map(var -> P4Printer.p4Ident(var, AggFunVarType.FIELD)).
-          collect(Collectors.toList());
-      res += fieldList.toString();
-      res += "\n";
-      res += fci.getStateArgs().toString();
-      res += "\n";
-    } else {
-      res += "\n\n";
-    }
-    res += "--\n";
-    // res += configInfo.print();
-    res += configInfo.getP4();
-    return res;
+    FoldConfigInfo fci = (FoldConfigInfo)this.configInfo;
+    return fci.getStateArgs().stream().collect(Collectors.toList());
   }
 
   public String getDominoFragment() {

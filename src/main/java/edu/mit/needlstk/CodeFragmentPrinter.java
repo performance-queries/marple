@@ -28,7 +28,7 @@ public class CodeFragmentPrinter {
       List<GroupbyStruct> groupby_structs = new ArrayList<GroupbyStruct>();// groupby structs k
       for (PipeStage stage: pipe) {
         if (stage.getOp() == OperationType.GROUPBY) {
-          groupby_structs.add(new GroupbyStruct("Key_"+stage.getPipeName(), stage.getKeyFields()));
+          groupby_structs.add(new GroupbyStruct("Key_"+stage.getPipeName(), stage.getQualifiedKeyFields()));
           groupby_structs.add(new GroupbyStruct("Value_"+stage.getPipeName(), stage.getValueFields()));
         }
       }
