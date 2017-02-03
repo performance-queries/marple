@@ -53,5 +53,5 @@ action groupby_$StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageN
 
     // Template hole: Write the inKey and the updated (or initial) value into the register.
     $KeyFields : { field | regK_$StageName$_f$i0$.write(hash_table_index, inKey.f$i0$);$\n$}$
-    $ValueFields:{ field | regV_$StageName$_f$i0$.read(hash_table_index, _val_$field$);$\n$}$
+    $ValueFields:{ field | regV_$StageName$_f$i0$.write(hash_table_index, _val_$field$);$\n$}$
 }
