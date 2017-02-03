@@ -73,9 +73,9 @@ public class PipeStage {
     if (this.op != OperationType.GROUPBY) {
       return " action " + this.pipeName + "();\n";
     } else {
-      return  " Key_" + this.pipeName + "  evictedKey_ " + this.pipeName + "\n;"
-            + " Value_" + this.pipeName + " evictedValue_ " + this.pipeName + "\n;"
-            + " action " + this.pipeName + "(evictedKey_, evictedValue_)" + "\n;";
+      return  " Key_" + this.pipeName + "  evictedKey_ " + this.pipeName + ";\n"
+            + " Value_" + this.pipeName + " evictedValue_ " + this.pipeName + ";\n"
+            + " action " + this.pipeName + "(evictedKey_, evictedValue_)" + ";\n";
     }
   }
 
