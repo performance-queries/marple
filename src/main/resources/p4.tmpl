@@ -94,7 +94,7 @@ struct CommonMetadata {
 
 // Template hole: all temporary fields used in the query
 struct QueryMetadata {
-  $QueryMetadata :{ field | bit<32> $field$;$\n$}$
+  $QueryMetadata :{ field | $field$$\n$}$
 }
 
 // Template hole: key and value structs, one for each groupby

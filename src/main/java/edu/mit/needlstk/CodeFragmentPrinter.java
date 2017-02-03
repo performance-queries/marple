@@ -27,8 +27,17 @@ public class CodeFragmentPrinter {
       InputStream is = CodeFragmentPrinter.class.getClassLoader().getResourceAsStream("p4.tmpl");
       ST p4_template = new ST(IOUtils.toString(is, "UTF-8"), '$', '$');
       p4_template.add("SwitchId", 666);         // Unhardcode this.
-      p4_template.add("QueryMetadata", pc.getAllPacketFields(pipe)); // Query metadata
-      List<GroupbyStruct> groupby_structs = new ArrayList<GroupbyStruct>();// groupby structs k
+
+      // XXX: Restoring NG's old code using getPacketFieldDeclList
+      // Need to find out how this differs from getAllPacketFields
+      ArrayList<ThreeOpDecl> decls = pc.getPacketFieldDeclList(pipe);
+      List<String> res = new ArrayList<String>();
+      for (ThreeOpDecl decl: decls) {
+        res.add(decl.getP4());
+      }
+      p4_template.add("QueryMetadata", res); // Query metadata
+
+      List<GroupbyStruct> groupby_structs = new ArrayList<GroupbyStruct>();// groupby structs
       for (PipeStage stage: pipe) {
         if (stage.getOp() == OperationType.GROUPBY) {
           groupby_structs.add(new GroupbyStruct("Key_"+stage.getPipeName(), stage.getQualifiedKeyFields()));

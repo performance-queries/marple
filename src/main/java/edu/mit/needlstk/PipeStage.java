@@ -51,7 +51,7 @@ public class PipeStage {
 
   public String getAction() {
     if (this.op != OperationType.GROUPBY) {
-      return " action " + this.pipeName + "() {\n" + configInfo.getP4() + "\n}";
+      return "action " + this.pipeName + "() {\n" + configInfo.getP4() + "\n}";
     } else {
      try {
       InputStream is = CodeFragmentPrinter.class.getClassLoader().getResourceAsStream("groupby.tmpl");

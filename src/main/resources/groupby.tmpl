@@ -12,7 +12,7 @@ $KeyFields : { field | register<bit<32>>(32w$TableSize$) regK_$StageName$_f$i0$;
 $ValueFields : { field | register<bit<32>>(32w$TableSize$) regV_$StageName$_f$i0$;$\n$}$
 
 // Template hole: action signature for groupby
-action groupby_$StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageName$ evictedValue) {
+action $StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageName$ evictedValue) {
 
     // Template hole: Populate inKey's fields from the current packet.
     Key_$StageName$ inKey;

@@ -152,7 +152,7 @@ public class PipeConstructor {
     return nonRegisters;
   }
 
-  private ArrayList<ThreeOpDecl> getPacketFieldDeclList(ArrayList<PipeStage> pipe) {
+  public ArrayList<ThreeOpDecl> getPacketFieldDeclList(ArrayList<PipeStage> pipe) {
     ArrayList<ThreeOpDecl> decls = new ArrayList<>();
     HashSet<String> fieldsChecked = new HashSet<>();
     for (PipeStage stage: pipe) {
