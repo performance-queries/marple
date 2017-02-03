@@ -1,8 +1,15 @@
+// Some overall comments pertaining to groupbys:
+// 1. inKey represents the incoming key. evictedKey and evictedValue represent evicted keys and values (if any).
+// 2. inKey and evictedKey are of type struct Key_$StageName$. evictedValue is of type struct Value_$StageName$.
+// 3. The fields within both structs are named f0, f1, f2, ...
+// 4. The reason we use these opaque names (f0) is because the key fields have fully qualified names, e.g., foo.bar.
+// 5. And the name key.foo.bar.... doesn't work without resorting to nested structs.
+
 // Template hole: register for each field in key
 $KeyFields : { field | register<bit<32>>(32w$TableSize$) regK_$StageName$_f$i0$;$\n$}$
 
 // Template hole: register for each field in value
-$ValueFields : { field | register<bit<32>>(32w$TableSize$) regV_$StageName$_$field$;$\n$}$
+$ValueFields : { field | register<bit<32>>(32w$TableSize$) regV_$StageName$_f$i0$;$\n$}$
 
 // Template hole: action signature for groupby
 action groupby_$StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageName$ evictedValue) {
@@ -14,7 +21,7 @@ action groupby_$StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageN
     // Template hole: existingKey_* and existingValue_* are the
     // key and value fields that already exist in the computed hash bucket.
     $KeyFields : { field | bit<32> existingKey_f$i0$ = 0;$\n$}$
-    $ValueFields : { field | bit<32> existingValue_$field$ = 0;$\n$}$
+    $ValueFields : { field | bit<32> existingValue_f$i0$ = 0;$\n$}$
 
     // Template hole: hash inKey into hash table to compute hash index
     bit<32> hash_table_index = 32w0;
@@ -22,7 +29,7 @@ action groupby_$StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageN
 
     // Template hole: Use hash_table_index to read out existing key and value
     $KeyFields : { field | regK_$StageName$_f$i0$.read(existingKey_f$i0$, hash_table_index);$\n$}$
-    $ValueFields:{ field | regV_$StageName$_$field$.read(existingValue_$field$, hash_table_index);$\n$}$
+    $ValueFields:{ field | regV_$StageName$_f$i0$.read(existingValue_f$i0$, hash_table_index);$\n$}$
 
     // Template hole: Check if no key is present at hash_table_index
     bool no_key_present = true;
@@ -34,18 +41,17 @@ action groupby_$StageName$(inout Key_$StageName$ evictedKey, inout Value_$StageN
  
     // Template hole: There is no eviction if either existingKey == inKey or existingKey == 0.
     bool ok = key_matches || no_key_present;
-    $KeyFields   : { field | evictedKey.$field$   = !ok ? existingKey_f$i0$     : 0;$\n$}$
-    $ValueFields : { field | evictedValue.$field$ = !ok ? existingValue_$field$ : 0;$\n$}$
+    $KeyFields   : { field | evictedKey.f$i0$   = !ok ? existingKey_f$i0$     : 0;$\n$}$
+    $ValueFields : { field | evictedValue.f$i0$ = !ok ? existingValue_f$i0$   : 0;$\n$}$
 
-    // Template hole: Get value if there is no eviction
-    $ValueFields : { field | bit<32> _val_$field$ = ok ? existingValue_$field$  : 0;$\n$}$
+    // Template hole: Get value if there is no eviction, pass this on to update code
+    $ValueFields : { field | bit<32> _val_$field$ = ok ? existingValue_f$i0$  : 0;$\n$}$
  
     // Template hole: Execute code that updates value registers.
-    // The code should reference values by their
-    // _val_* variable names directly.
+    // The code should reference values by their _val_* variable names directly.
     $UpdateCode$
 
     // Template hole: Write the inKey and the updated (or initial) value into the register.
-    $KeyFields : { field | regK_$StageName$_f$i0$.write(hash_table_index, inKey_f$i0$);$\n$}$
-    $ValueFields:{ field | regV_$StageName$_$field$.read(hash_table_index, _val_$field$);$\n$}$
+    $KeyFields : { field | regK_$StageName$_f$i0$.write(hash_table_index, inKey.f$i0$);$\n$}$
+    $ValueFields:{ field | regV_$StageName$_f$i0$.read(hash_table_index, _val_$field$);$\n$}$
 }
