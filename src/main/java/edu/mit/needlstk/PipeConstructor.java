@@ -192,15 +192,6 @@ public class PipeConstructor {
     return decls;
   }
 
-  public String getPacketFieldDeclsP4(ArrayList<PipeStage> pipe) {
-    ArrayList<ThreeOpDecl> decls = getPacketFieldDeclList(pipe);
-    String res = "";
-    for (ThreeOpDecl decl: decls) {
-      res += decl.getP4();
-    }
-    return res;
-  }
-
   public String getNonRegisterDeclsDomino(ArrayList<PipeStage> pipe) {
     ArrayList<ThreeOpDecl> decls = getNonRegisterDeclList(pipe);
     String res = "";
