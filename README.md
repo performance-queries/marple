@@ -5,13 +5,23 @@ needlstk: A system for expressing network performance queries
 The name is a portmanteau of needle and stack to reflect the
 goal of finding needles in a haystack. It is pronounced "needle stack"
 
-QuickStart (requires maven from the apache maven website)
+QuickStart
+
 Requires java 8:
 sudo apt-add-repository ppa:webupd8team/java
 sudo apt-get update
 sudo apt-get install oracle-java8-installer
+
+Requires maven from the apache maven website:
+https://maven.apache.org/download.cgi#Installation
+
 Requires go:
-sudo apt-get install gccgo-go
+sudo apt-get install gccgo
+sudo apt-get install golang-go
+
+If compiling queries to the domino backend, install the domino
+compiler by following instructions from:
+https://github.com/packet-transactions/domino-compiler
 
 0. mvn install
 Packages sources into one assembly JAR for
