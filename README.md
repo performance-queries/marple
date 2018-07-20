@@ -15,10 +15,6 @@ sudo apt-get install oracle-java8-installer
 Requires maven from the apache maven website:
 https://maven.apache.org/download.cgi#Installation
 
-Requires go:
-sudo apt-get install gccgo
-sudo apt-get install golang-go
-
 If compiling queries to the domino backend, install the domino
 compiler by following instructions from:
 https://github.com/packet-transactions/domino-compiler
